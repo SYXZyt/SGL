@@ -1,6 +1,6 @@
 ﻿cmake_minimum_required(VERSION 3.10)
 
-if (DEFINED ENV{VCOKG_ROOT})
+if (DEFINED ENV{VCPKG_ROOT})
 	set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_ROOT}/scripts/buildsystems/vcpkg.cmake" CACHE STRING "")
 	set(VCPKG_TARGET_TRIPLET "x64-windows")
 	message("Using toolchain ${CMAKE_TOOLCHAIN_FILE}")

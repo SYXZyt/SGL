@@ -3,6 +3,12 @@
 #include <string>
 #include <type_traits>
 
+#ifdef _WIN32
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
+
 namespace sgl
 {
     using String = std::u8string;

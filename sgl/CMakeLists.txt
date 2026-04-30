@@ -7,7 +7,8 @@ add_library(sgl SHARED
     src/sgl/String.cpp
     src/sgl/Maths/Maths.cpp
     src/sgl/Maths/Vec2.cpp
-)
+    src/sgl/Memory/Memory.cpp
+ "src/sgl/Memory/StlAllocator.h" "src/sgl/Collections/List.h")
 
 include(CMake/Dependencies.cmake)
 
@@ -23,6 +24,6 @@ target_compile_definitions(sgl PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
 target_include_directories(sgl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
 
 target_compile_options(sgl PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX /MP>
+    $<$<CXX_COMPILER_ID:MSVC>:/W3 /WX /MP>
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wall -Werror>
 )
