@@ -8,7 +8,10 @@ add_library(sgl SHARED
     src/sgl/Maths/Maths.cpp
     src/sgl/Maths/Vec2.cpp
     src/sgl/Memory/Memory.cpp
- "src/sgl/Memory/StlAllocator.h" "src/sgl/Collections/List.h" "src/sgl/FileSystem.cpp" "src/sgl/Error.h" "src/sgl/Error.cpp")
+    src/sgl/FileSystem.cpp
+    src/sgl/Error.cpp
+    src/sgl/Window.cpp
+ "src/sgl/Game.h" "src/sgl/Game.cpp")
 
 include(CMake/Dependencies.cmake)
 
@@ -28,4 +31,8 @@ target_compile_definitions(sgl PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
 target_compile_options(sgl PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W3 /WX /MP>
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wall -Werror>
+)
+
+set_target_properties(sgl PROPERTIES
+	DEBUG_POSTFIX "-d"
 )
