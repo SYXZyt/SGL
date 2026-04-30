@@ -1,5 +1,4 @@
 #include "String.h"
-#include <cstdarg>
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -230,21 +229,4 @@ std::wstring sgl::ToWString(const std::u8string& str)
     return result;
 
 #endif
-}
-
-std::u8string sgl::FormatString(const char8_t* format, ...)
-{
-	va_list args;
-	va_start(args, format);
-
-	int size = vsnprintf(nullptr, 0, reinterpret_cast<const char*>(format), args);
-	va_end(args);
-
-	std::u8string result(size, 0);
-	va_start(args, format);
-
-	vsnprintf(reinterpret_cast<char*>(result.data()), static_cast<size_t>(size) + 1, reinterpret_cast<const char*>(format), args);
-	va_end(args);
-
-	return result;
 }

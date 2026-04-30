@@ -9,7 +9,7 @@ namespace sgl
     public:
         using value_type = T;
 
-        static T* allocator(std::size_t n)
+        static T* allocate(std::size_t n)
         {
             if (n > (std::size_t)-1 / sizeof(T))
                 return nullptr;

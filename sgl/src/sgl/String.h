@@ -2,6 +2,7 @@
 #include <sgl/sgl.h>
 #include <string>
 #include <type_traits>
+#include <format>
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -21,8 +22,6 @@ namespace sgl
 
     extern SGL_API std::wstring ToWString(const std::string& str);
     extern SGL_API std::wstring ToWString(const std::u8string& str);
-
-    extern SGL_API std::u8string FormatString(const char8_t* format, ...);
 
 #ifdef _WIN32
     extern SGL_API const char* HResultToString(HRESULT hr);
@@ -157,5 +156,14 @@ namespace sgl
 	template <typename From, typename To>
 	To ConvertString(const From& str) {
 		return StringConverter<From, To>::Convert(str);
+	}
+
+	template<typename... Args>
+	inline std::u8string FormatString(const char8_t* format, Args&&... args)
+	{
+		const char* fmt = (const char*)format;
+		std::string tmp = std::vformat(fmt, std::make_format_args(args...));
+
+		return std::u8string((const char8_t*)tmp.data(), tmp.size());
 	}
 }
