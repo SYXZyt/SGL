@@ -5,7 +5,7 @@
 #ifdef _DEBUG
 #define SGL_REPORT_ERROR(msg) do { sgl::ReportError((msg), __FILE__, __LINE__); } while (0)
 #else
-#define SGL_REPORT_ERROR(msg) do { sgl::ReportError((mag)); } while (0)
+#define SGL_REPORT_ERROR(msg) do { sgl::ReportError((msg)); } while (0)
 #endif
 
 namespace sgl

@@ -11,6 +11,15 @@ void sgl::Window::PollEvents()
     {
         switch (event.type)
         {
+            case SDL_EVENT_WINDOW_RESIZED:
+            {
+                mScreenSize = { event.window.data1, event.window.data2 };
+                mHalfScreenSize = mScreenSize / 2;
+
+                mResize.Invoke(mScreenSize);
+
+                break;
+            }
             case SDL_EVENT_QUIT:
                 mWantClose = true;
                 break;
@@ -38,8 +47,8 @@ sgl::Window::Window(const Config& cfg) :
         return;
     }
 
-    mScreenSize.width = (int)cfg.width;
-    mScreenSize.height = (int)cfg.height;
+    mScreenSize = { (int)cfg.width, (int)cfg.height };
+    mHalfScreenSize = mScreenSize / 2;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);

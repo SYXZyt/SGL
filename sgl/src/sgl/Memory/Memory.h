@@ -3,6 +3,7 @@
 #include <new>
 #include <typeinfo>
 #include <utility>
+#include <stddef.h>
 
 #define SGL_ALLOCATOR_FRIEND friend struct sgl::Memory;
 

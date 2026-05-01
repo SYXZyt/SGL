@@ -73,7 +73,6 @@ void sgl::ReportError(const String& message, const char* file, int line)
         {
             case 'a':
                 std::abort();
-                [[fallthrough]]
             case 'i':
                 break;
             case 'r':

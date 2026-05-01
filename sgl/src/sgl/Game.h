@@ -9,6 +9,8 @@ namespace sgl
     class Game
     {
     private:
+        static Game* sInstance;
+
         Window mWindow;
         Ptr<GraphicsDevice> mGraphics;
 

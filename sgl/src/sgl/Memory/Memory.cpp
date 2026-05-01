@@ -1,6 +1,7 @@
 #include "Memory.h"
 #include <vector>
 #include <print>
+#include <osbridge.h>
 
 static std::vector<sgl::Memory::Track> gTracks;
 static size_t gTotalAllocated = 0;
@@ -89,13 +90,13 @@ void* sgl::Memory::Realloc(void* ptr, size_t newSize)
     }
 #endif
 
-    size_t currentSize = _msize(ptr);
+    size_t currentSize = osbridge::GetPointerSize(ptr);
     gTotalAllocated -= currentSize;
 
     void* newPtr = std::realloc(ptr, newSize);
     gTotalAllocated += newSize;
 
-    return ptr;
+    return newPtr;
 }
 
 void sgl::Memory::Free(void* ptr) noexcept
@@ -128,7 +129,7 @@ void sgl::Memory::Free(void* ptr) noexcept
     }
 #endif
 
-    gTotalAllocated -= _msize(ptr);
+    gTotalAllocated -= osbridge::GetPointerSize(ptr);
 
     std::free(ptr);
 }

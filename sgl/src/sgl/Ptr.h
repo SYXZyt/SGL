@@ -22,7 +22,7 @@ namespace sgl
         {
             U* castedPtr = dynamic_cast<U*>(mPtr);
             if (!castedPtr)
-                return nullptr_t{};
+                return std::nullptr_t{};
 
             Ptr<U> newPtr;
 
@@ -79,11 +79,11 @@ namespace sgl
             return *mPtr;
         }
 
-        bool operator==(nullptr_t) const {
+        bool operator==(std::nullptr_t) const {
             return mPtr == nullptr;
         }
 
-        bool operator!=(nullptr_t) const {
+        bool operator!=(std::nullptr_t) const {
             return mPtr != nullptr;
         }
 
@@ -107,7 +107,7 @@ namespace sgl
             return Ref();
         }
 
-        Ptr& operator=(nullptr_t)
+        Ptr& operator=(std::nullptr_t)
         {
             Reset();
             return *this;
@@ -160,7 +160,7 @@ namespace sgl
             mRc(nullptr) {
         }
 
-        Ptr(nullptr_t) :
+        Ptr(std::nullptr_t) :
             mPtr(nullptr),
             mRc(nullptr) {
         }
