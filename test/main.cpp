@@ -29,5 +29,5 @@ int main(int, char**)
     MyGame game;
     game.Run();
 
-    return 1;
+    return 0;
 }

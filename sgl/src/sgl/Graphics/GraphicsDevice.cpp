@@ -158,6 +158,12 @@ void sgl::GraphicsDevice::Init()
     mHeight = size.height;
 
     glViewport(0, 0, mWidth, mHeight);
+
+    Logger::Log(u8"SDL Version: " + AnyToString(SDL_VERSIONNUM_MAJOR(SDL_VERSION)) + u8"." + AnyToString(SDL_VERSIONNUM_MINOR(SDL_VERSION)) + u8"." + AnyToString(SDL_VERSIONNUM_MICRO(SDL_VERSION)));
+    Logger::Log(String(u8"OpenGL Version: ") + (char8_t*)glGetString(GL_VERSION));
+    Logger::Log(String(u8"GLSL Version: ") + (char8_t*)glGetString(GL_SHADING_LANGUAGE_VERSION));
+    Logger::Log(String(u8"Vendor: ") + (char8_t*)glGetString(GL_VENDOR));
+    Logger::Log(String(u8"Renderer: ") + (char8_t*)glGetString(GL_RENDERER));
 }
 
 void sgl::GraphicsDevice::Shutdown()

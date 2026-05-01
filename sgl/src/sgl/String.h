@@ -168,7 +168,7 @@ namespace sgl
 	}
 
 	template <typename T>
-	inline String ToString(const T& t) {
+	inline String AnyToString(const T& t) {
 		return ConvertString<std::string, String>(std::to_string(t));
 	}
 }

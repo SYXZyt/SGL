@@ -1,7 +1,7 @@
 #include "ANSI.h"
 
 sgl::String sgl::ANSI::Colours::MakeRGB(uint8 r, uint8 g, uint8 b) {
-    return u8"\033[38;2;" + ToString((uint16)r) + u8";" + ToString((uint16)g) + u8";" + ToString((uint16)b) + u8"m";
+    return u8"\033[38;2;" + AnyToString((uint16)r) + u8";" + AnyToString((uint16)g) + u8";" + AnyToString((uint16)b) + u8"m";
 }
 
 sgl::Colour sgl::ANSI::ColourFromANSI(const String& ansiCode)
