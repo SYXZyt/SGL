@@ -3,7 +3,6 @@ project(SYXZGameLibrary)
 
 add_library(sgl SHARED
     src/sgl/sgl.h
-    src/sgl/String.h
     src/sgl/String.cpp
     src/sgl/Maths/Maths.cpp
     src/sgl/Maths/Vec2.cpp
@@ -11,7 +10,8 @@ add_library(sgl SHARED
     src/sgl/FileSystem.cpp
     src/sgl/Error.cpp
     src/sgl/Window.cpp
- "src/sgl/Game.h" "src/sgl/Game.cpp")
+    src/sgl/Game.cpp
+)
 
 include(CMake/Dependencies.cmake)
 
