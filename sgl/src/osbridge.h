@@ -5,4 +5,5 @@
 namespace osbridge
 {
     SGL_API extern size_t GetPointerSize(void* ptr);
+    SGL_API extern bool SupportAnsi();
 }

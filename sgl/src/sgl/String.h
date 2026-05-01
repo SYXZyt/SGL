@@ -166,4 +166,9 @@ namespace sgl
 
 		return std::u8string((const char8_t*)tmp.data(), tmp.size());
 	}
+
+	template <typename T>
+	inline String ToString(const T& t) {
+		return ConvertString<std::string, String>(std::to_string(t));
+	}
 }

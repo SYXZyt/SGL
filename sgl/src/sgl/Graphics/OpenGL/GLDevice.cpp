@@ -1,6 +1,93 @@
 #include "GLDevice.h"
 #include <glad/glad.h>
 #include <sgl/Game.h>
+#include <sgl/Util/Logger.h>
+
+static void OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
+{
+	sgl::String msg;
+
+	switch (source)
+	{
+	case GL_DEBUG_SOURCE_API:
+		msg += u8"Source: API\n";
+		break;
+	case GL_DEBUG_SOURCE_WINDOW_SYSTEM:
+		msg += u8"Source: Window System\n";
+		break;
+	case GL_DEBUG_SOURCE_SHADER_COMPILER:
+		msg += u8"Source: Shader Compiler\n";
+		break;
+	case GL_DEBUG_SOURCE_THIRD_PARTY:
+		msg += u8"Source: Third Party\n";
+		break;
+	case GL_DEBUG_SOURCE_APPLICATION:
+		msg += u8"Source: Application\n";
+		break;
+	case GL_DEBUG_SOURCE_OTHER:
+		msg += u8"Source: Other\n";
+		break;
+	default:
+		msg += u8"Source: Unknown\n";
+		break;
+	};
+
+	switch (type)
+	{
+	case GL_DEBUG_TYPE_ERROR:
+		msg += u8"Type: Error\n";
+		break;
+	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
+		msg += u8"Type: Deprecated Behaviour\n";
+		break;
+	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
+		msg += u8"Type: Undefined Behaviour\n";
+		break;
+	case GL_DEBUG_TYPE_PORTABILITY:
+		msg += u8"Type: Portability\n";
+		break;
+	case GL_DEBUG_TYPE_PERFORMANCE:
+		msg += u8"Type: Performance\n";
+		break;
+	case GL_DEBUG_TYPE_MARKER:
+		msg += u8"Type: Marker\n";
+		break;
+	case GL_DEBUG_TYPE_PUSH_GROUP:
+		msg += u8"Type: Push Group\n";
+		break;
+	case GL_DEBUG_TYPE_POP_GROUP:
+		msg += u8"Type: Pop Group\n";
+		break;
+	case GL_DEBUG_TYPE_OTHER:
+		msg += u8"Type: Other\n";
+		break;
+	default:
+		msg += u8"Type: Unknown\n";
+		break;
+	}
+
+	switch (severity)
+	{
+	case GL_DEBUG_SEVERITY_HIGH:
+		msg += u8"Severity: High\n";
+		break;
+	case GL_DEBUG_SEVERITY_MEDIUM:
+		msg += u8"Severity: Medium\n";
+		break;
+	case GL_DEBUG_SEVERITY_LOW:
+		msg += u8"Severity: Low\n";
+		break;
+	case GL_DEBUG_SEVERITY_NOTIFICATION:
+		msg += u8"Severity: Notification\n";
+		break;
+	default:
+		msg += u8"Severity: Unknown\n";
+		break;
+	}
+
+	msg += sgl::ConvertString<const char*, sgl::String>(message);
+	sgl::Logger::Log(msg);
+}
 
 void sgl::Graphics::GLDevice::Resize(const Vec2i& newsize)
 {
@@ -36,6 +123,12 @@ void sgl::Graphics::GLDevice::Present()
 void sgl::Graphics::GLDevice::Init()
 {
     glEnable(GL_DEPTH_TEST);
+
+#ifdef _DEBUG
+    glEnable(GL_DEBUG_OUTPUT);
+    glDebugMessageCallback(OpenGLDebugCallback, nullptr);
+    glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, nullptr, GL_FALSE);
+#endif
 
     mWindow = Get<Game>().GetWindow().SDLWindow();
 

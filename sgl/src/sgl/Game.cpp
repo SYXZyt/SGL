@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <sgl/Util/Logger.h>
 
 sgl::Game* sgl::Game::sInstance = nullptr;
 

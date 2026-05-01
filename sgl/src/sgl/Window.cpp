@@ -1,6 +1,7 @@
 #include "Window.h"
 #include <sgl/Error.h>
 #include <glad/glad.h>
+#include <sgl/Util/Logger.h>
 
 const sgl::Window::Config& sgl::Window::Config::Default = {};
 
@@ -41,6 +42,8 @@ sgl::Window::Window(const Config& cfg) :
     }
 #endif
 
+    Logger::Init();
+
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         SGL_REPORT_ERROR(u8"Failed to init sdl");
@@ -74,4 +77,6 @@ sgl::Window::~Window()
     SDL_GL_DestroyContext(mGLContext);
     SDL_DestroyWindow(mWindow);
     SDL_Quit();
+
+    Logger::Shutdown();
 }

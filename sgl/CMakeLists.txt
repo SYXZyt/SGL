@@ -16,6 +16,8 @@ add_library(sgl SHARED
     src/sgl/GraphicsDevice.cpp
     src/sgl/Colour.cpp
     src/sgl/Graphics/OpenGL/GLDevice.cpp
+    src/sgl/Util/ANSI.cpp
+    src/sgl/Util/Logger.cpp
 )
 
 include(CMake/Dependencies.cmake)
