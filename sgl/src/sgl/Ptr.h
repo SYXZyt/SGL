@@ -193,6 +193,6 @@ namespace sgl
 
     template <typename T, typename... Args>
     Ptr<T> MakePtr(Args&&... args) {
-        return Ptr<T>(Memory::New<t>(std::forward<Args>(args)...))
+        return Ptr<T>(Memory::New<T>(std::forward<Args>(args)...));
     }
 }
