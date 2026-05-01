@@ -40,6 +40,10 @@ target_compile_options(sgl PRIVATE
 
 target_compile_definitions(sgl PRIVATE $<$<PLATFORM_ID:Windows>:SGL_DIRECTX>)
 
+if (CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(sgl PRIVATE -D_DEBUG)
+endif ()
+
 set_target_properties(sgl PROPERTIES
 	DEBUG_POSTFIX "-d"
 )
