@@ -37,6 +37,10 @@ namespace sgl::Maths
         return x * x;
     }
 
+	constexpr int Sq(int x) {
+		return x * x;
+	}
+
     constexpr bool IsMultiple(float value, float multiple) {
 		return (int)value % (int)multiple == 0;
 	}
@@ -53,7 +57,19 @@ namespace sgl::Maths
 		return a > b ? a : b;
 	}
 
+	constexpr int Min(int a, int b) {
+		return a < b ? a : b;
+	}
+
+	constexpr int Max(int a, int b) {
+		return a > b ? a : b;
+	}
+
 	constexpr float Clamp(float value, float min, float max) {
+		return Max(min, Min(max, value));
+	}
+
+	constexpr int Clamp(int value, int min, int max) {
 		return Max(min, Min(max, value));
 	}
 
@@ -134,4 +150,21 @@ namespace sgl::Maths
 	SGL_API extern Vec2 Floor(const Vec2& v);
 
 	SGL_API extern bool IsNan(const Vec2& v);
+
+
+	SGL_API extern float Dist(const Vec2i& a, const Vec2i& b);
+	SGL_API extern float Dist2(const Vec2i& a, const Vec2i& b);
+
+	SGL_API extern float Angle(const Vec2i& a, const Vec2i& b);
+
+	SGL_API extern float Direction(const Vec2i& v);
+
+	SGL_API extern float Length(const Vec2i& v);
+	SGL_API extern float Length2(const Vec2i& v);
+
+	SGL_API extern float Dot(const Vec2i& a, const Vec2i& b);
+
+	SGL_API extern float AspectRatio(const Vec2i& v);
+
+	SGL_API extern Vec2i Clamp(const Vec2i& v, const Vec2i& min, const Vec2i& max);
 }

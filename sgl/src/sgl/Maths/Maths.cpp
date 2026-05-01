@@ -140,4 +140,56 @@ namespace sgl::Maths
 	bool IsNan(const Vec2& v) {
 		return std::isnan(v.x) || std::isnan(v.y);
 	}
+
+	float Dist(const Vec2i& a, const Vec2i& b) {
+		return Sqrt(Dist2(a, b));
+	}
+
+	float Dist2(const Vec2i& a, const Vec2i& b)
+	{
+		const float dx = (float)(b.x - a.x);
+		const float dy = (float)(b.y - a.y);
+
+		return dx * dx + dy * dy;
+	}
+
+	float Angle(const Vec2i& a, const Vec2i& b)
+	{
+		const float dot = Dot(a, b);
+		const float lengths = Length(a) * Length(b);
+
+		return ACos(dot / lengths);
+	}
+
+	float Direction(const Vec2i& v) {
+		return ATan2((float)v.y, (float)v.x);
+	}
+
+	float Length(const Vec2i& v) {
+		return Sqrt(Length2(v));
+	}
+
+	float Length2(const Vec2i& v) {
+		return (float)(Sq(v.x) + Sq(v.y));
+	}
+
+	float Dot(const Vec2i& a, const Vec2i& b) {
+		return (float)(a.x * b.x + a.y * b.y);
+	}
+
+	float AspectRatio(const Vec2i& v)
+	{
+		if (v.y == 0.f)
+			return INF;
+
+		return (float)v.width / (float)v.height;
+	}
+
+	Vec2i Clamp(const Vec2i& v, const Vec2i& min, const Vec2i& max)
+	{
+		return Vec2i(
+			Clamp(v.x, min.x, max.x),
+			Clamp(v.y, min.y, max.y)
+		);
+	}
 }

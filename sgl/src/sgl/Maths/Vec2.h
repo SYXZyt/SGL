@@ -62,4 +62,64 @@ namespace sgl
 
 		Vec2(const Vec2& other);
     };
+
+	struct SGL_API Vec2i final
+	{
+		static const Vec2i& Zero;
+		static const Vec2i& One;
+		static const Vec2i& Left;
+		static const Vec2i& Right;
+		static const Vec2i& Up;
+		static const Vec2i& Down;
+		static const Vec2i& Infinity;
+		static const Vec2i& NegativeInfinity;
+
+		union
+		{
+			struct { int x, y; };
+			struct { int u, v; };
+			struct { int width, height; };
+			int values[2];
+		};
+
+		Vec2i operator+(const Vec2i& other) const;
+		Vec2i operator-(const Vec2i& other) const;
+		Vec2i operator*(const Vec2i& other) const;
+		Vec2i operator/(const Vec2i& other) const;
+
+		Vec2i operator*(int scalar) const;
+		Vec2i operator/(int scalar) const;
+
+		Vec2i operator-() const;
+
+		Vec2i& operator+=(const Vec2i& other);
+		Vec2i& operator-=(const Vec2i& other);
+		Vec2i& operator*=(const Vec2i& other);
+		Vec2i& operator/=(const Vec2i& other);
+
+		Vec2i& operator*=(int scalar);
+		Vec2i& operator/=(int scalar);
+
+		bool operator==(const Vec2i& other) const;
+		bool operator!=(const Vec2i& other) const;
+
+		Vec2i& operator=(const Vec2i& other);
+
+		Vec2i();
+		Vec2i(int scalar);
+		Vec2i(float x, float y);
+		Vec2i(double x, double y);
+
+		Vec2i(int8 x, int8 y);
+		Vec2i(int16 x, int16 y);
+		Vec2i(int32 x, int32 y);
+		Vec2i(int64 x, int64 y);
+
+		Vec2i(uint8 x, uint8 y);
+		Vec2i(uint16 x, uint16 y);
+		Vec2i(uint32 x, uint32 y);
+		Vec2i(uint64 x, uint64 y);
+
+		Vec2i(const Vec2i& other);
+	};
 }
