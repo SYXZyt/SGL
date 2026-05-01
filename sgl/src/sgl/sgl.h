@@ -32,6 +32,8 @@ using word = uint16_t;
 using dword = uint32_t;
 using qword = uint64_t;
 
+using gluint = uint32;
+
 #define SGL_ENUM_FLAG(i) = (1 << (i))
 
 #define sglFuncPtr(returnType, ...) returnType(*)(__VA_ARGS__)

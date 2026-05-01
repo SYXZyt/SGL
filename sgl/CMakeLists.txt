@@ -15,6 +15,7 @@ add_library(sgl SHARED
     src/glad/glad.c
     src/sgl/GraphicsDevice.cpp
     src/sgl/Colour.cpp
+    src/sgl/Graphics/OpenGL/GLDevice.cpp
 )
 
 include(CMake/Dependencies.cmake)

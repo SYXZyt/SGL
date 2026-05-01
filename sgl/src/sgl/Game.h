@@ -17,10 +17,6 @@ namespace sgl
         void OnResize(const Vec2i& newsize);
 
     protected:
-        Window& GetWindow() {
-            return mWindow;
-        }
-
         virtual void Initialise() {}
         virtual void Deinitialise() {}
 
@@ -31,6 +27,14 @@ namespace sgl
         virtual void Render() = 0;
 
     public:
+        static Game& Get() {
+            return *sInstance;
+        }
+
+        Window& GetWindow() {
+            return mWindow;
+        }
+
         GraphicsDevice& GetGraphics() {
             return mGraphics.Ref();
         }
