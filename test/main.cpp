@@ -8,7 +8,7 @@ class MyGame final : public sgl::Game
 public:
     void Update() override
     {
-
+        
     }
 
     void Render() override

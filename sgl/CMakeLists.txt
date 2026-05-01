@@ -16,9 +16,11 @@ add_library(sgl SHARED
     src/sgl/Graphics/GraphicsDevice.cpp
     src/sgl/Graphics/VertexLayout.cpp
     src/sgl/Graphics/VertexArray.cpp
+    src/sgl/Graphics/Shader.cpp
     src/sgl/Colour.cpp
     src/sgl/Util/ANSI.cpp
     src/sgl/Util/Logger.cpp
+    src/sgl/OpenGLThreadSync.cpp
 )
 
 include(CMake/Dependencies.cmake)

@@ -3,6 +3,7 @@
 #include <sgl/Window.h>
 #include <sgl/Ptr.h>
 #include <sgl/Graphics/GraphicsDevice.h>
+#include <sgl/Asset/Resource.h>
 
 namespace sgl
 {
