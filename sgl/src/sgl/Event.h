@@ -129,5 +129,9 @@ namespace sgl
             for (const auto& e : mHandlers)
                 e.handler(args...);
         }
+
+        void Clear() {
+            mHandlers.clear();
+        }
     };
 }

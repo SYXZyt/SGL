@@ -29,8 +29,6 @@ namespace sgl
         };
 
     private:
-        Event<const Vec2i&> mResize;
-
         Vec2i mScreenSize;
         Vec2i mHalfScreenSize;
 
@@ -46,6 +44,8 @@ namespace sgl
         void PollEvents();
 
     public:
+        Event<const Vec2i&> OnResize;
+
 #ifdef _WIN32
         HWND GetWin32Handle() const {
             return mHwnd;
@@ -70,10 +70,6 @@ namespace sgl
         
         bool WantClose() const {
             return mWantClose;
-        }
-
-        Event<const Vec2i&>& OnResize() {
-            return mResize;
         }
 
         explicit Window(const Config& cfg);

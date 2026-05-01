@@ -16,7 +16,7 @@ void sgl::Window::PollEvents()
                 mScreenSize = { event.window.data1, event.window.data2 };
                 mHalfScreenSize = mScreenSize / 2;
 
-                mResize.Invoke(mScreenSize);
+                OnResize.Invoke(mScreenSize);
 
                 break;
             }

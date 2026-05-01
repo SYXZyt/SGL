@@ -25,6 +25,11 @@ void sgl::Game::Run()
 sgl::Game::Game(const Window::Config& cfg) :
     mWindow(Window(cfg))
 {
-    mWindow.OnResize() += std::pair(this, &Game::OnResize);
+    mWindow.OnResize += std::pair(this, &Game::OnResize);
     sInstance = this;
+}
+
+sgl::Game::~Game()
+{
+    mWindow.OnResize -= std::pair(this, &Game::OnResize);
 }

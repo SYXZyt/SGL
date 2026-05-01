@@ -38,6 +38,6 @@ namespace sgl
         void Run();
 
         Game(const Window::Config& cfg);
-        virtual ~Game() = default;
+        virtual ~Game();
     };
 }
