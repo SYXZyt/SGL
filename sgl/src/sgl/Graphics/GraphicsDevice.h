@@ -3,7 +3,7 @@
 #include <sgl/Colour.h>
 #include <sgl/Maths/Vec2.h>
 #include <sgl/Ptr.h>
-#include <sgl/GraphicsAPI.h>
+#include <SDL3/SDL.h>
 
 namespace sgl
 {
@@ -20,31 +20,25 @@ namespace sgl
     SGL_API extern ClearFlag& operator|=(ClearFlag& a, ClearFlag b);
     SGL_API extern ClearFlag& operator&=(ClearFlag& a, ClearFlag b);
 
-    class GraphicsDevice
+    class GraphicsDevice final
     {
-        friend class Game;
     private:
-        static Ptr<GraphicsDevice> Create(GraphicsAPI api);
-
-    protected:
         Colour mClearColour;
+        SDL_Window* mWindow;
 
         uint32 mWidth;
         uint32 mHeight;
 
+
     public:
-        virtual void SetClearColour(const Colour& colour) {
-            mClearColour = colour;
-        }
+        void SetClearColour(const Colour& colour);
 
-        virtual void Resize(const Vec2i& newsize) = 0;
+        void Resize(const Vec2i& newsize);
 
-        virtual void Clear(ClearFlag flag) = 0;
-        virtual void Present() = 0;
+        void Clear(ClearFlag flag);
+        void Present();
 
-        virtual void Init() = 0;
-        virtual void Shutdown() = 0;
-
-        virtual ~GraphicsDevice() = default;
+        void Init();
+        void Shutdown();
     };
 }

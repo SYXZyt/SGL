@@ -5,25 +5,25 @@ sgl::Game* sgl::Game::sInstance = nullptr;
 
 void sgl::Game::OnResize(const Vec2i& newsize)
 {
-    mGraphics->Resize(newsize);
+    mGraphics.Resize(newsize);
 }
 
 void sgl::Game::Run()
 {
     LoadContent();
 
-    mGraphics->SetClearColour(Colour::CornflowerBlue);
+    mGraphics.SetClearColour(Colour::CornflowerBlue);
 
     while (!mWindow.WantClose())
     {
         mWindow.PollEvents();
     
-        mGraphics->Clear(ClearFlag::COLOUR | ClearFlag::DEPTH);
+        mGraphics.Clear(ClearFlag::COLOUR | ClearFlag::DEPTH);
 
         Update();
         Render();
 
-        mGraphics->Present();
+        mGraphics.Present();
     }
 
     UnloadContent();
@@ -31,18 +31,18 @@ void sgl::Game::Run()
 
 sgl::Game::Game(const Window::Config& cfg) :
     mWindow(Window(cfg)),
-    mGraphics(GraphicsDevice::Create(cfg.graphicsApi))
+    mGraphics({})
 {
     sInstance = this;
 
     mWindow.OnResize += std::pair(this, &Game::OnResize);
 
-    mGraphics->Init();
+    mGraphics.Init();
 }
 
 sgl::Game::~Game()
 {
     mWindow.OnResize -= std::pair(this, &Game::OnResize);
 
-    mGraphics->Shutdown();
+    mGraphics.Shutdown();
 }

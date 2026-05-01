@@ -1,7 +1,7 @@
-#include "GLDevice.h"
+#include "GraphicsDevice.h"
 #include <glad/glad.h>
-#include <sgl/Game.h>
 #include <sgl/Util/Logger.h>
+#include <sgl/Game.h>
 
 static void OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* userParam)
 {
@@ -89,7 +89,33 @@ static void OpenGLDebugCallback(GLenum source, GLenum type, GLuint id, GLenum se
 	sgl::Logger::Log(msg);
 }
 
-void sgl::Graphics::GLDevice::Resize(const Vec2i& newsize)
+sgl::ClearFlag sgl::operator|(ClearFlag a, ClearFlag b) {
+    return (ClearFlag)((uint8)a | (uint8)b);
+}
+
+sgl::ClearFlag sgl::operator&(ClearFlag a, ClearFlag b) {
+    return (ClearFlag)((uint8)a & (uint8)b);
+}
+
+sgl::ClearFlag& sgl::operator|=(ClearFlag& a, ClearFlag b)
+{
+    a = (ClearFlag)((uint8)a | (uint8)b);
+    return a;
+}
+
+sgl::ClearFlag& sgl::operator&=(ClearFlag& a, ClearFlag b)
+{
+    a = (ClearFlag)((uint8)a & (uint8)b);
+    return a;
+}
+
+void sgl::GraphicsDevice::SetClearColour(const Colour& colour)
+{
+    mClearColour = colour;
+    glClearColor(colour.r, colour.g, colour.b, colour.a);
+}
+
+void sgl::GraphicsDevice::Resize(const Vec2i &newsize)
 {
     mWidth = newsize.width;
     mHeight = newsize.height;
@@ -97,13 +123,7 @@ void sgl::Graphics::GLDevice::Resize(const Vec2i& newsize)
     glViewport(0, 0, mWidth, mHeight);
 }
 
-void sgl::Graphics::GLDevice::SetClearColour(const Colour &colour)
-{
-    GraphicsDevice::SetClearColour(colour);
-    glClearColor(colour.r, colour.g, colour.b, colour.a);
-}
-
-void sgl::Graphics::GLDevice::Clear(ClearFlag flag)
+void sgl::GraphicsDevice::Clear(ClearFlag flag)
 {
     GLbitfield glFlags = 0;
     if ((uint8)(flag & ClearFlag::COLOUR) != 0)
@@ -115,12 +135,13 @@ void sgl::Graphics::GLDevice::Clear(ClearFlag flag)
     glClear(glFlags);
 }
 
-void sgl::Graphics::GLDevice::Present()
+
+void sgl::GraphicsDevice::Present()
 {
     SDL_GL_SwapWindow(mWindow);
 }
 
-void sgl::Graphics::GLDevice::Init()
+void sgl::GraphicsDevice::Init()
 {
     glEnable(GL_DEPTH_TEST);
 
@@ -139,6 +160,6 @@ void sgl::Graphics::GLDevice::Init()
     glViewport(0, 0, mWidth, mHeight);
 }
 
-void sgl::Graphics::GLDevice::Shutdown()
+void sgl::GraphicsDevice::Shutdown()
 {
 }

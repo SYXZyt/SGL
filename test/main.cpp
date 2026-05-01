@@ -16,7 +16,8 @@ public:
 
     }
 
-    MyGame() : sgl::Game(sgl::Window::Config::Default) {}
+    MyGame() : sgl::Game(sgl::Window::Config::Default) {
+    }
 };
 
 static void OnEvent() {

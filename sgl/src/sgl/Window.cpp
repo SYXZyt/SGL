@@ -34,14 +34,6 @@ sgl::Window::Window(const Config& cfg) :
     , mHwnd(nullptr)
 #endif
 {
-#ifndef SGL_DIRECTX
-    if (cfg.graphicsApi == GraphicsAPI::DIRECTX11)
-    {
-        SGL_REPORT_ERROR(u8"Directx is not supported on this build");
-        abort();
-    }
-#endif
-
     Logger::Init();
 
     if (!SDL_Init(SDL_INIT_VIDEO))
@@ -64,12 +56,9 @@ sgl::Window::Window(const Config& cfg) :
     mHwnd = (HWND)SDL_GetPointerProperty(props, SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
 #endif
 
-    if (cfg.graphicsApi == GraphicsAPI::OPENGL)
-    {
-        mGLContext = SDL_GL_CreateContext(mWindow);
-        SDL_GL_MakeCurrent(mWindow, mGLContext);
-        gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
-    }
+    mGLContext = SDL_GL_CreateContext(mWindow);
+    SDL_GL_MakeCurrent(mWindow, mGLContext);
+    gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 }
 
 sgl::Window::~Window()

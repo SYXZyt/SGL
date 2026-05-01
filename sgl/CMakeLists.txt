@@ -13,9 +13,8 @@ add_library(sgl SHARED
     src/sgl/Window.cpp
     src/sgl/Game.cpp
     src/glad/glad.c
-    src/sgl/GraphicsDevice.cpp
+    src/sgl/Graphics/GraphicsDevice.cpp
     src/sgl/Colour.cpp
-    src/sgl/Graphics/OpenGL/GLDevice.cpp
     src/sgl/Util/ANSI.cpp
     src/sgl/Util/Logger.cpp
 )

@@ -3,7 +3,6 @@
 #include <SDL3/SDL.h>
 #include <sgl/Maths/Vec2.h>
 #include <sgl/String.h>
-#include <sgl/GraphicsAPI.h>
 #include <sgl/Event.h>
 
 namespace sgl {
@@ -24,7 +23,6 @@ namespace sgl
             String title = u8"sgl";
             uint32 width = 1920;
             uint32 height = 1080;
-            GraphicsAPI graphicsApi = GraphicsAPI::OPENGL;
             bool resizable = true;
         };
 

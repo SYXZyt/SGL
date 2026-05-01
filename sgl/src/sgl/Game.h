@@ -2,7 +2,7 @@
 #include <sgl/sgl.h>
 #include <sgl/Window.h>
 #include <sgl/Ptr.h>
-#include <sgl/GraphicsDevice.h>
+#include <sgl/Graphics/GraphicsDevice.h>
 
 namespace sgl
 {
@@ -12,7 +12,7 @@ namespace sgl
         static Game* sInstance;
 
         Window mWindow;
-        Ptr<GraphicsDevice> mGraphics;
+        GraphicsDevice mGraphics;
 
         void OnResize(const Vec2i& newsize);
 
@@ -36,7 +36,7 @@ namespace sgl
         }
 
         GraphicsDevice& GetGraphics() {
-            return mGraphics.Ref();
+            return mGraphics;
         }
 
         void Run();
