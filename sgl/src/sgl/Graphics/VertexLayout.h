@@ -47,7 +47,5 @@ namespace sgl
         }
 
         SGL_API void Add(VertexElementType type);
-
-        SGL_API void Apply() const;
     };
 }

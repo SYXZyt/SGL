@@ -15,6 +15,7 @@ add_library(sgl SHARED
     src/glad/glad.c
     src/sgl/Graphics/GraphicsDevice.cpp
     src/sgl/Graphics/VertexLayout.cpp
+    src/sgl/Graphics/VertexArray.cpp
     src/sgl/Colour.cpp
     src/sgl/Util/ANSI.cpp
     src/sgl/Util/Logger.cpp

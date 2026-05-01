@@ -89,33 +89,3 @@ void sgl::VertexLayout::Add(VertexElementType type)
 
     mOffset += GetFormatSize(count, glType);
 }
-
-void sgl::VertexLayout::Apply() const
-{
-    for (const VertexElement& e : mElements)
-    {
-        glEnableVertexAttribArray(e.index);
-
-        if (e.integer)
-        {
-            glVertexAttribIPointer(
-                e.index,
-                e.count,
-                e.type,
-                Stride(),
-                (const void*)(uintptr_t)e.offset
-            );
-        }
-        else
-        {
-            glVertexAttribPointer(
-                e.index,
-                e.count,
-                e.type,
-                e.normalised,
-                Stride(),
-                (const void*)(uintptr_t)e.offset
-            );
-        }
-    }
-}
