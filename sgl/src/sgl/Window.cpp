@@ -18,8 +18,20 @@ void sgl::Window::PollEvents()
     }
 }
 
-sgl::Window::Window(const Config& cfg)
+sgl::Window::Window(const Config& cfg) :
+    mWindow(nullptr)
+#ifdef _WIN32
+    , mHwnd(nullptr)
+#endif
 {
+#ifndef SGL_DIRECTX
+    if (cfg.graphicsApi == GraphicsAPI::DIRECTX11)
+    {
+        SGL_REPORT_ERROR(u8"Directx is not supported on this build");
+        abort();
+    }
+#endif
+
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
         SGL_REPORT_ERROR(u8"Failed to init sdl");
