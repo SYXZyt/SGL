@@ -11,7 +11,9 @@ add_library(sgl SHARED
     src/sgl/Error.cpp
     src/sgl/Window.cpp
     src/sgl/Game.cpp
-)
+    src/glad/glad.c
+    src/sgl/GraphicsDevice.cpp
+ "src/sgl/Colour.h" "src/sgl/Colour.cpp" "src/sgl/Event.h" )
 
 include(CMake/Dependencies.cmake)
 
@@ -32,6 +34,8 @@ target_compile_options(sgl PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W3 /WX /MP>
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wall -Werror>
 )
+
+target_compile_definitions(sgl PRIVATE $<$<PLATFORM_ID:Windows>:SGL_DIRECTX>)
 
 set_target_properties(sgl PROPERTIES
 	DEBUG_POSTFIX "-d"

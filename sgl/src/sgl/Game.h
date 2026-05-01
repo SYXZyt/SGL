@@ -1,6 +1,8 @@
 #pragma once
 #include <sgl/sgl.h>
 #include <sgl/Window.h>
+#include <sgl/Ptr.h>
+#include <sgl/GraphicsDevice.h>
 
 namespace sgl
 {
@@ -8,6 +10,9 @@ namespace sgl
     {
     private:
         Window mWindow;
+        Ptr<GraphicsDevice> mGraphics;
+
+        void OnResize(const Vec2i& newsize);
 
     protected:
         Window& GetWindow() {
@@ -24,8 +29,13 @@ namespace sgl
         virtual void Render() = 0;
 
     public:
+        GraphicsDevice& GetGraphics() {
+            return mGraphics.Ref();
+        }
+
         void Run();
 
         Game(const Window::Config& cfg);
+        virtual ~Game() = default;
     };
 }

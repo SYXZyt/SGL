@@ -1,5 +1,10 @@
 #include "Game.h"
 
+void sgl::Game::OnResize(const Vec2i& newsize)
+{
+
+}
+
 void sgl::Game::Run()
 {
     LoadContent();
@@ -16,5 +21,7 @@ void sgl::Game::Run()
 }
 
 sgl::Game::Game(const Window::Config& cfg) :
-    mWindow(Window(cfg)) {
+    mWindow(Window(cfg))
+{
+    mWindow.OnResize() += std::pair(this, &Game::OnResize);
 }

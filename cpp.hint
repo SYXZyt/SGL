@@ -4,3 +4,4 @@
 #define SGL_API __declspec(dllexport)
 #define SGL_API __declspec(dllimport)
 #define SGL_API
+#define SGL_ENUM_FLAG(idx) (i << (idx))
