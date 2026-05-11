@@ -84,7 +84,7 @@ static void LogMessage()
     std::println("{}", sgl::ConvertString<sgl::String, std::string>(colouredOutput));
 
 #ifdef _WIN32
-    OutputDebugStringW(sgl::ConvertString<st::String, std::wstring>(whiteOutput).c_str());
+    OutputDebugStringW(sgl::ConvertString<sgl::String, std::wstring>(whiteOutput).c_str());
     OutputDebugStringW(L"\r\n");
 #endif
 
