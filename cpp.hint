@@ -5,3 +5,5 @@
 #define SGL_API __declspec(dllimport)
 #define SGL_API
 #define SGL_ENUM_FLAG(idx) (i << (idx))
+#define SGL_BEGIN extern "C" {
+#define SGL_BEGIN

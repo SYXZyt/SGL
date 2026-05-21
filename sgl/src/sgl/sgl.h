@@ -1,5 +1,6 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
+#include <stdbool.h>
 
 #ifdef _WIN32
     #ifdef SGL_EXPORTS
@@ -11,41 +12,38 @@
     #define SGL_API
 #endif
 
+#ifdef __cplusplus
+#define SGL_BEGIN extern "C" {
+#define SGL_END }
+#else
+#define SGL_BEGIN
+#define SGL_END
+#endif
+
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
 #endif
 
-using uint8 = uint8_t;
-using uint16 = uint16_t;
-using uint32 = uint32_t;
-using uint64 = uint64_t;
+typedef uint8_t uint8;
+typedef uint16_t uint16;
+typedef uint32_t uint32;
+typedef uint64_t uint64;
 
-using int8 = int8_t;
-using int16 = int16_t;
-using int32 = int32_t;
-using int64 = int64_t;
+typedef int8_t int8;
+typedef int16_t int16;
+typedef int32_t int32;
+typedef int64_t int64;
 
-using byte = uint8_t;
-using word = uint16_t;
-using dword = uint32_t;
-using qword = uint64_t;
+typedef uint8_t byte;
+typedef uint16_t word;
+typedef uint32_t dword;
+typedef uint64_t qword;
 
-using gluint = uint32;
-using glint = int32;
+typedef uint32 gluint;
+typedef int32 glint;
 
 #define SGL_ENUM_FLAG(i) = (1 << (i))
 
-#define sglFuncPtr(returnType, ...) returnType(*)(__VA_ARGS__)
-
-#define cbuffer struct alignas(16)
-
-namespace sgl
-{
-    // If we use singletons, then this can be used to get any singleton
-    template <typename T>
-    T& Get() {
-        return T::Get();
-    }
-}
+#define sglFuncPtr(name, returnType, ...) returnType(*name)(__VA_ARGS__)

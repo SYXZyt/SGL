@@ -2,25 +2,11 @@ cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
 add_library(sgl SHARED
-    src/osbridge.cpp
-    src/sgl/sgl.h
-    src/sgl/String.cpp
-    src/sgl/Maths/Maths.cpp
-    src/sgl/Maths/Vec2.cpp
-    src/sgl/Memory/Memory.cpp
-    src/sgl/FileSystem.cpp
-    src/sgl/Error.cpp
-    src/sgl/Window.cpp
-    src/sgl/Game.cpp
-    src/glad/glad.c
-    src/sgl/Graphics/GraphicsDevice.cpp
-    src/sgl/Graphics/VertexLayout.cpp
-    src/sgl/Graphics/VertexArray.cpp
-    src/sgl/Graphics/Shader.cpp
-    src/sgl/Colour.cpp
-    src/sgl/Util/ANSI.cpp
-    src/sgl/Util/Logger.cpp
-    src/sgl/OpenGLThreadSync.cpp
+    src/SGL/SGL.h
+    src/SGL/Window.h
+    src/SGL/Window.cpp
+    src/SGL/Maths/Vec2.h
+    src/SGL/Maths/Vec2.cpp
 )
 
 include(CMake/Dependencies.cmake)
