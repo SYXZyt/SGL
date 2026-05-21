@@ -5,10 +5,10 @@ SGL_BEGIN
 
 typedef struct sgl_EngineConfig
 {
-    const char* title = nullptr;
-    uint32 width = 1920;
-    uint32 height = 1080;
-    bool resizable = true;
+    const char* title;
+    uint32 width;
+    uint32 height;
+    bool resizable;
 } sgl_EngineConfig;
 
 typedef struct sgl_Window
