@@ -1,7 +1,5 @@
 #include "Vec2.h"
-
-#define sgl_Maths_INF 0
-#define sgl_Maths_NEG_INF 0
+#include <SGL/Maths/Maths.h>
 
 const sgl_Vec2 sgl_Vec2_Zero = { 0, 0 };
 const sgl_Vec2 sgl_Vec2_One = { 1, 1 };

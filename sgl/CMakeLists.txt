@@ -7,7 +7,7 @@ add_library(sgl SHARED
     src/SGL/Window.cpp
     src/SGL/Maths/Vec2.h
     src/SGL/Maths/Vec2.cpp
-)
+ "src/SGL/Maths/Maths.h" "src/SGL/Maths/Maths.cpp")
 
 include(CMake/Dependencies.cmake)
 
