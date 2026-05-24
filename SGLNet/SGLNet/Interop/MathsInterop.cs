@@ -10,7 +10,7 @@ namespace SGLNet.Interop
         private static sgl_Maths_Length_ptr sgl_Maths_Length;
         public static float Length(in Vec2 v)
         {
-            sgl_Maths_Length ??= Marshal.GetDelegateForFunctionPointer<sgl_Maths_Length_ptr>(NativeLibrary.GetExport(Native.LibHandle, nameof(sgl_Maths_Length)));
+            sgl_Maths_Length ??= Native.GetFunction<sgl_Maths_Length_ptr>(nameof(sgl_Maths_Length));
             return sgl_Maths_Length(v);
         }
 
@@ -19,7 +19,7 @@ namespace SGLNet.Interop
         private static sgl_Maths_Length2_ptr sgl_Maths_Length2;
         public static float Length2(in Vec2 v)
         {
-            sgl_Maths_Length2 ??= Marshal.GetDelegateForFunctionPointer<sgl_Maths_Length2_ptr>(NativeLibrary.GetExport(Native.LibHandle, nameof(sgl_Maths_Length2)));
+            sgl_Maths_Length2 ??= Native.GetFunction<sgl_Maths_Length2_ptr>(nameof(sgl_Maths_Length2));
             return sgl_Maths_Length2(v);
         }
     }

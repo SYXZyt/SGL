@@ -86,7 +86,19 @@ namespace SGLNet.Maths
         public static bool operator ==(Vec2 left, Vec2 right) =>
             left.x == right.x && left.y == right.y;
 
+        public static bool operator !=(Vec2 left, Vec2 right) =>
+            !(left == right);
 
+        public override readonly bool Equals(object obj)
+        {
+            if (obj is null || obj is not Vec2)
+                return false;
+
+            return this == (Vec2)obj;
+        }
+
+        public override readonly int GetHashCode() =>
+            HashCode.Combine(x.GetHashCode(), y.GetHashCode());
 
         public Vec2() : this(0f) { }
 
