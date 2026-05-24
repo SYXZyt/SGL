@@ -7,7 +7,7 @@
 #include <unistd.h>
 #endif
 
-size_t osbridge::GetPointerSize(void* ptr)
+size_t sgl_os_GetPointerSize(void* ptr)
 {
 #ifdef _WIN32
     return _msize(ptr);
@@ -16,7 +16,7 @@ size_t osbridge::GetPointerSize(void* ptr)
 #endif
 }
 
-bool osbridge::SupportAnsi()
+bool sgl_os_SupportAnsi()
 {
 #ifdef _WIN32
     DWORD mode = 0;

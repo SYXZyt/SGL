@@ -2,12 +2,18 @@ cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
 add_library(SGL SHARED
+    src/osbridge.h
+    src/osbridge.cpp
     src/SGL/SGL.h
     src/SGL/Window.h
     src/SGL/Window.cpp
     src/SGL/Maths/Vec2.h
     src/SGL/Maths/Vec2.cpp
- "src/SGL/Maths/Maths.h" "src/SGL/Maths/Maths.cpp")
+    src/SGL/Maths/Maths.h
+    src/SGL/Maths/Maths.cpp
+    src/SGL/Util/Memory.h
+    src/SGL/Util/Memory.cpp
+)
 
 include(CMake/Dependencies.cmake)
 
