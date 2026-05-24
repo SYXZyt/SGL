@@ -1,14 +1,16 @@
-﻿using SGLNet.Maths;
+﻿using SGLNet.Util;
 
 namespace SGLNet
 {
     internal class Class1
     {
-        static void Main(string[] args)
+        static void Main(string[] _)
         {
-            Vec2 v = new(1, 1);
-            Console.WriteLine($"Length : {Mathf.Length(in v)}");
-            Console.WriteLine($"Length2: {Mathf.Length2(in v)}");
+            Runtime.Init();
+            Logger.Init();
+            
+            Logger.Shutdown();
+            Runtime.Shutdown();
         }
     }
 }
