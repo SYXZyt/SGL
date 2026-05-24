@@ -3,4 +3,4 @@ project(SYXZGameLibrary)
 
 add_executable(Test "main.c")
 
-target_link_libraries(Test PRIVATE sgl)
+target_link_libraries(Test PRIVATE SGL)

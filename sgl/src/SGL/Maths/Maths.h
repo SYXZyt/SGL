@@ -22,6 +22,7 @@ SGL_API extern const float sgl_Maths_NAN;
 SGL_API extern float sgl_Maths_Sqrt(float x);
 #define sgl_Maths_Sq(x) (x) * (x)
 
+// Closest we got to constexpr
 #define sgl_Maths_IsMultiple(value, multiple) (int)(value) % (int)(multiple) == 0;
 
 #define sgl_Maths_Lerp(a, b, t) (a) * (1.f - (t)) + (b) * (t)

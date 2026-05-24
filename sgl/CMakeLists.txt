@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
-add_library(sgl SHARED
+add_library(SGL SHARED
     src/SGL/SGL.h
     src/SGL/Window.h
     src/SGL/Window.cpp
@@ -12,29 +12,29 @@ add_library(sgl SHARED
 include(CMake/Dependencies.cmake)
 
 if (WIN32)
-    target_link_libraries(sgl PRIVATE d3d11.lib d3dcompiler.lib)
+    target_link_libraries(SGL PRIVATE d3d11.lib d3dcompiler.lib)
 endif ()
 
-target_link_libraries(sgl PUBLIC SDL3::SDL3)
+target_link_libraries(SGL PUBLIC SDL3::SDL3)
 
-target_compile_definitions(sgl PRIVATE SGL_EXPORTS)
-target_compile_definitions(sgl PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
+target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
+target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
 
-target_include_directories(sgl PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(SGL PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
 
-target_compile_definitions(sgl PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
+target_compile_definitions(SGL PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
 
-target_compile_options(sgl PRIVATE
+target_compile_options(SGL PRIVATE
     $<$<CXX_COMPILER_ID:MSVC>:/W3 /WX /MP>
     $<$<CXX_COMPILER_ID:Clang,GNU>:-Wall -Werror>
 )
 
-target_compile_definitions(sgl PRIVATE $<$<PLATFORM_ID:Windows>:SGL_DIRECTX>)
+target_compile_definitions(SGL PRIVATE $<$<PLATFORM_ID:Windows>:SGL_DIRECTX>)
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_compile_definitions(sgl PRIVATE -D_DEBUG)
+    target_compile_definitions(SGL PRIVATE -D_DEBUG)
 endif ()
 
-set_target_properties(sgl PROPERTIES
+set_target_properties(SGL PROPERTIES
 	DEBUG_POSTFIX "-d"
 )
