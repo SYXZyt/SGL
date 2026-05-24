@@ -139,10 +139,10 @@ float sgl_Maths_Dist_i(sgl_Vec2i a, sgl_Vec2i b) {
 
 float sgl_Maths_Dist2_i(sgl_Vec2i a, sgl_Vec2i b)
 {
-    const float dx = b.x - a.x;
-    const float dy = b.y - a.y;
+    const int dx = b.x - a.x;
+    const int dy = b.y - a.y;
 
-    return sgl_Maths_Sq(dx) + sgl_Maths_Sq(dy);
+    return (float)(sgl_Maths_Sq(dx) + sgl_Maths_Sq(dy));
 }
 
 float sgl_Maths_Angle_i(sgl_Vec2i a, sgl_Vec2i b)
@@ -154,7 +154,7 @@ float sgl_Maths_Angle_i(sgl_Vec2i a, sgl_Vec2i b)
 }
 
 float sgl_Maths_Direction_i(sgl_Vec2i v) {
-    return sgl_Maths_ATan2(v.y, v.x);
+    return sgl_Maths_ATan2((float)v.y, (float)v.x);
 }
 
 float sgl_Maths_Length_i(sgl_Vec2i v) {
@@ -162,11 +162,11 @@ float sgl_Maths_Length_i(sgl_Vec2i v) {
 }
 
 float sgl_Maths_Length2_i(sgl_Vec2i v) {
-    return sgl_Maths_Sq(v.x) + sgl_Maths_Sq(v.y);
+    return (float)(sgl_Maths_Sq(v.x) + sgl_Maths_Sq(v.y));
 }
 
 float sgl_Maths_Dot_i(sgl_Vec2i a, sgl_Vec2i b) {
-    return a.x * b.x + a.y * b.y;
+    return (float)a.x * b.x + a.y * b.y;
 }
 
 float sgl_Maths_AspectRatio_i(sgl_Vec2i v)
@@ -174,5 +174,5 @@ float sgl_Maths_AspectRatio_i(sgl_Vec2i v)
     if (v.y == 0.f)
         return sgl_Maths_INF;
 
-    return v.width / v.height;
+    return (float)v.width / v.height;
 }

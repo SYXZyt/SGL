@@ -48,10 +48,10 @@ typedef struct sgl_Vec2i
 {
     union
     {
-        struct { float x, y; };
-        struct { float u, v; };
-        struct { float width, height; };
-        float values[2];
+        struct { int x, y; };
+        struct { int u, v; };
+        struct { int width, height; };
+        int values[2];
     };
 } sgl_Vec2i;
 
@@ -64,16 +64,16 @@ SGL_API extern const sgl_Vec2i sgl_Vec2i_Down;
 SGL_API extern const sgl_Vec2i sgl_Vec2i_Inf;
 SGL_API extern const sgl_Vec2i sgl_Vec2i_NegativeInf;
 
-SGL_API extern sgl_Vec2i sgl_Vec2i_New_Scalar(float scalar);
-SGL_API extern sgl_Vec2i sgl_Vec2i_New_ScalarXY(float x, float y);
+SGL_API extern sgl_Vec2i sgl_Vec2i_New_Scalar(int scalar);
+SGL_API extern sgl_Vec2i sgl_Vec2i_New_ScalarXY(int x, int y);
 
 SGL_API extern sgl_Vec2i sgl_Vec2i_Add_Vec2i(sgl_Vec2i a, sgl_Vec2i b);
 SGL_API extern sgl_Vec2i sgl_Vec2i_Sub_Vec2i(sgl_Vec2i a, sgl_Vec2i b);
 SGL_API extern sgl_Vec2i sgl_Vec2i_Mul_Vec2i(sgl_Vec2i a, sgl_Vec2i b);
 SGL_API extern sgl_Vec2i sgl_Vec2i_Div_Vec2i(sgl_Vec2i a, sgl_Vec2i b);
 
-SGL_API extern sgl_Vec2i sgl_Vec2i_Mul_Scalar(sgl_Vec2i v, float scalar);
-SGL_API extern sgl_Vec2i sgl_Vec2i_Div_Scalar(sgl_Vec2i v, float scalar);
+SGL_API extern sgl_Vec2i sgl_Vec2i_Mul_Scalar(sgl_Vec2i v, int scalar);
+SGL_API extern sgl_Vec2i sgl_Vec2i_Div_Scalar(sgl_Vec2i v, int scalar);
 
 SGL_API extern sgl_Vec2i sgl_Vec2i_Negate(sgl_Vec2i v);
 

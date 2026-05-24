@@ -34,6 +34,7 @@ SGL_END
 
 #ifdef __cplusplus
 #include <utility>
+#include <typeinfo>
 
 namespace sgl
 {

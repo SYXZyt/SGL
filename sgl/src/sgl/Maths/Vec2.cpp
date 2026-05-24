@@ -58,14 +58,14 @@ const sgl_Vec2i sgl_Vec2i_Left = { -1, 0 };
 const sgl_Vec2i sgl_Vec2i_Right = { 1, 0 };
 const sgl_Vec2i sgl_Vec2i_Up = { 0, 1 };
 const sgl_Vec2i sgl_Vec2i_Down = { 0, -1 };
-const sgl_Vec2i sgl_Vec2i_Inf = { sgl_Maths_INF, sgl_Maths_INF };
-const sgl_Vec2i sgl_Vec2i_NegativeInf = { sgl_Maths_NEG_INF, sgl_Maths_NEG_INF };
+const sgl_Vec2i sgl_Vec2i_Inf = { (int)sgl_Maths_INF, (int)sgl_Maths_INF };
+const sgl_Vec2i sgl_Vec2i_NegativeInf = { (int)sgl_Maths_NEG_INF, (int)sgl_Maths_NEG_INF };
 
-sgl_Vec2i sgl_Vec2i_New_Scalar(float scalar) {
+sgl_Vec2i sgl_Vec2i_New_Scalar(int scalar) {
     return { scalar, scalar };
 }
 
-sgl_Vec2i sgl_Vec2i_New_ScalarXY(float x, float y) {
+sgl_Vec2i sgl_Vec2i_New_ScalarXY(int x, int y) {
     return { x, y };
 }
 
@@ -85,11 +85,11 @@ sgl_Vec2i sgl_Vec2i_Div_Vec2i(sgl_Vec2i a, sgl_Vec2i b) {
     return { a.x / b.x, a.y / b.y };
 }
 
-sgl_Vec2i sgl_Vec2i_Mul_Scalar(sgl_Vec2i v, float scalar) {
+sgl_Vec2i sgl_Vec2i_Mul_Scalar(sgl_Vec2i v, int scalar) {
     return { v.x / scalar, v.y / scalar };
 }
 
-sgl_Vec2i sgl_Vec2i_Div_Scalar(sgl_Vec2i v, float scalar) {
+sgl_Vec2i sgl_Vec2i_Div_Scalar(sgl_Vec2i v, int scalar) {
     return { v.x / scalar, v.y / scalar };
 }
 

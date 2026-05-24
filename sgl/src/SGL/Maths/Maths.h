@@ -14,7 +14,7 @@ SGL_API extern const float sgl_Maths_TWO_PI;
 
 SGL_API extern const float sgl_Maths_EPS;
 SGL_API extern const float sgl_Maths_INF;
-#define sgl_Maths_NEG_INF -sgl_Maths_INF
+#define sgl_Maths_NEG_INF (-sgl_Maths_INF)
 SGL_API extern const float sgl_Maths_NAN;
 
 #define sgl_Maths_IsPowerOfTwo(x) ((x) > 0) && (((x) & ((x) - 1)) == 0)
@@ -25,22 +25,22 @@ SGL_API extern float sgl_Maths_Sqrt(float x);
 // Closest we got to constexpr
 #define sgl_Maths_IsMultiple(value, multiple) (int)(value) % (int)(multiple) == 0;
 
-#define sgl_Maths_Lerp(a, b, t) (a) * (1.f - (t)) + (b) * (t)
+#define sgl_Maths_Lerp(a, b, t) ((a) * (1.f - (t)) + (b) * (t))
 
-#define sgl_Maths_Min(a, b) (a) < (b) ? (a) : (b);
-#define sgl_Maths_Max(a, b) (a) > (b) ? (b) : (a);
-#define sgl_Maths_Clamp(value, min, max) sgl_Maths_Max((min), sgl_Maths_Min((max), (value)))
+#define sgl_Maths_Min(a, b) ((a) < (b) ? (a) : (b))
+#define sgl_Maths_Max(a, b) ((a) > (b) ? (b) : (a))
+#define sgl_Maths_Clamp(value, min, max) (sgl_Maths_Max((min), sgl_Maths_Min((max), (value))))
 
 #define sgl_Maths_Abs(f) (f) < 0 ? -(f) : (f)
 #define sgl_Maths_Copysign(f, sign) ((sign) < 0) ? -sgl_Maths_Abs((f)) : sgl_Maths_Abs((f))
 
-#define sgl_Maths_Trunc(f) (f) < 0 ? (float)(int)((f) + 1.f) : (float)(int)((f))
+#define sgl_Maths_Trunc(f) ((f) < 0 ? (float)(int)((f) + 1.f) : (float)(int)((f)))
 
-#define sgl_Maths_Rad(deg) (deg) * sgl_Maths_DEG2RAD
-#define sgl_Maths_Deg(rad) (deg) * sgl_Maths_RAD2DEG
+#define sgl_Maths_Rad(deg) ((deg) * sgl_Maths_DEG2RAD)
+#define sgl_Maths_Deg(rad) ((deg) * sgl_Maths_RAD2DEG)
 
 #define sgl_Maths_Normalise(f, min, max) ((f) - (min)) / ((max) - (min))
-#define sgl_Maths_IsNan(f) (f) != (f)
+#define sgl_Maths_IsNan(f) ((f) != (f))
 
 SGL_API extern float sgl_Maths_Sin(float f);
 SGL_API extern float sgl_Maths_SinRange(float f, float min, float max);
