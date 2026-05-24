@@ -5,7 +5,7 @@ SGL_BEGIN
 
 #pragma region Vec2
 
-typedef struct sgl_Vec2
+typedef struct sgl_Vec2 sgl_sealed
 {
     union
     {

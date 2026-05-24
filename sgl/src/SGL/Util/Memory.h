@@ -14,7 +14,7 @@
 
 SGL_BEGIN
 
-typedef struct sgl_MemoryTrack
+typedef struct sgl_MemoryTrack sgl_sealed
 {
     void* ptr;
     size_t size;
@@ -37,7 +37,7 @@ SGL_END
 
 namespace sgl
 {
-    struct Memory
+    struct Memory final
     {
         template<typename T, typename... Args>
         static T* New(Args&&... args)

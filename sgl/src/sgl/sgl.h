@@ -47,3 +47,9 @@ typedef int32 glint;
 #define SGL_ENUM_FLAG(i) = (1 << (i))
 
 #define sglFuncPtr(name, returnType, ...) returnType(*name)(__VA_ARGS__)
+
+#ifdef __cplusplus
+#define sgl_sealed final
+#else
+#define sgl_sealed
+#endif

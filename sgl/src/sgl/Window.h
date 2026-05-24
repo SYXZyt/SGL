@@ -3,7 +3,7 @@
 
 SGL_BEGIN
 
-typedef struct sgl_EngineConfig
+typedef struct sgl_EngineConfig sgl_sealed
 {
     const char* title;
     uint32 width;
