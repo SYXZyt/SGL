@@ -13,7 +13,7 @@ add_library(SGL SHARED
     src/SGL/Maths/Maths.cpp
     src/SGL/Util/Memory.h
     src/SGL/Util/Memory.cpp
- "src/SGL/Util/ANSI.h" "src/SGL/Util/String.h" "src/SGL/Util/String.cpp" "src/SGL/Util/ANSI.cpp")
+ "src/SGL/Util/ANSI.h" "src/SGL/Util/String.h" "src/SGL/Util/String.cpp" "src/SGL/Util/ANSI.cpp" "src/SGL/Util/Logger.h" "src/SGL/Util/Logger.cpp")
 
 include(CMake/Dependencies.cmake)
 
