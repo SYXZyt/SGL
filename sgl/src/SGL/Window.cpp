@@ -51,7 +51,7 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
 
 void sgl_Window_Destroy(sgl_Window* window)
 {
-    delete (std::vector<sgl_Window_Resize_Callback>*)window->callbacks;
+    sgl::Memory::Delete((std::vector<sgl_Window_Resize_Callback>*)window->callbacks);
 
     SDL_GL_DestroyContext(window->glContext);
     SDL_DestroyWindow(window->window);
@@ -122,4 +122,10 @@ void sgl_Window_DeregisterResize(sgl_Window* window, sgl_Window_Resize_Callback_
 
     if (it != callbacks.end())
         callbacks.erase(it);
+}
+
+void sgl_Window_SwapBuffer(sgl_Window* window)
+{
+    if (window->glContext)
+        SDL_GL_SwapWindow(window->window);
 }

@@ -52,7 +52,8 @@ namespace SGLNet.Interop
             Debug.WriteLine($"Loading native library: {path}");
 #endif
 
-            mHandle = NativeLibrary.Load(LibPath);
+            string fullPath = Path.Combine(AppContext.BaseDirectory, path);
+            mHandle = NativeLibrary.Load(fullPath);
         }
     }
 }

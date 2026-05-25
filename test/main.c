@@ -20,6 +20,7 @@ int main(int argc, char** argv)
     while (!window->wantsClose)
     {
         sgl_Window_PollEvents(window);
+        sgl_Window_SwapBuffer(window);
     }
 
     sgl_Window_DeregisterResize(window, &OnResize);

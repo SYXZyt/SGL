@@ -39,6 +39,11 @@ namespace SGLNet
         private delegate void sgl_Window_DeregisterResize_ptr(IntPtr window, sgl_Window_ResizeCallback_ptr callback);
         private static sgl_Window_DeregisterResize_ptr sgl_Window_DeregisterResize;
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_Window_SwapBuffer_ptr(IntPtr window);
+
+        private static sgl_Window_SwapBuffer_ptr sgl_Window_SwapBuffer;
+        
         public event Action<int, int> Resize;
 
         public bool WantClose =>
@@ -47,6 +52,9 @@ namespace SGLNet
         public void PollEvents() =>
             sgl_Window_PollEvents(mNativeHandle);
 
+        public void SwapBuffer() =>
+        sgl_Window_SwapBuffer(mNativeHandle);
+        
         public Window(EngineConfig cfg)
         {
             sgl_Window_Create ??= Native.GetFunction<sgl_Window_Create_ptr>(nameof(sgl_Window_Create));
@@ -55,6 +63,7 @@ namespace SGLNet
             sgl_Window_WantClose ??= Native.GetFunction<sgl_Window_WantClose_ptr>(nameof(sgl_Window_WantClose));
             sgl_Window_RegisterResize ??= Native.GetFunction<sgl_Window_RegisterResize_ptr>(nameof(sgl_Window_RegisterResize));
             sgl_Window_DeregisterResize ??= Native.GetFunction<sgl_Window_DeregisterResize_ptr>(nameof(sgl_Window_DeregisterResize));
+            sgl_Window_SwapBuffer ??= Native.GetFunction<sgl_Window_SwapBuffer_ptr>(nameof(sgl_Window_SwapBuffer));
 
             mConfig = cfg;
             mNativeHandle = sgl_Window_Create(cfg);
@@ -66,7 +75,7 @@ namespace SGLNet
                 OnResize,
                 GCHandle.ToIntPtr(mSelfHandle));
         }
-
+        
         private static void OnResize(IntPtr window, Vec2i size, IntPtr userdata)
         {
             GCHandle handle = GCHandle.FromIntPtr(userdata);

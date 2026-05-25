@@ -16,7 +16,10 @@ namespace SGLNet
                 window.Resize += (w, h) => { Console.WriteLine($"Resize: {w}x{h}"); };
 
                 while (!window.WantClose)
+                {
                     window.PollEvents();
+                    window.SwapBuffer();
+                }
             }
 
             Logger.Shutdown();

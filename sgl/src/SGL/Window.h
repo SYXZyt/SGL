@@ -49,4 +49,6 @@ SGL_API extern bool sgl_Window_WantClose(sgl_Window* window);
 SGL_API extern void sgl_Window_RegisterResize(sgl_Window* window, sgl_Window_Resize_Callback_ptr funcptr, void* userdata);
 SGL_API extern void sgl_Window_DeregisterResize(sgl_Window* window, sgl_Window_Resize_Callback_ptr funcptr);
 
+SGL_API extern void sgl_Window_SwapBuffer(sgl_Window* window);
+
 SGL_END
