@@ -15,6 +15,9 @@
   </PropertyGroup>
   
   <ItemGroup>
+    <None Update="SDL3.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="SGL-d.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
