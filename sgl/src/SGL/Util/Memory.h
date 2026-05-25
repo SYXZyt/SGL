@@ -1,5 +1,6 @@
 #pragma once
 #include <SGL/SGL.h>
+#include <stddef.h>
 
 #ifdef _DEBUG
 #define SGL_DISALLOW_UNOWNED_POINTERS

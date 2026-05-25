@@ -27,12 +27,12 @@ static std::mutex gMutex;
 static std::queue<Message> gMessages;
 static bool gIsRunning = false;
 
+#ifdef _WIN32
 static std::wstring ToWString(const std::string& str)
 {
     if (str.empty())
         return L"";
 
-#ifdef _WIN32
 
     int size = MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), nullptr, 0);
 
@@ -41,27 +41,8 @@ static std::wstring ToWString(const std::string& str)
     MultiByteToWideChar(CP_UTF8, 0, str.data(), (int)str.size(), result.data(), size);
 
     return result;
-
-#else
-
-    std::mbstate_t state{};
-    const char* src = str.data();
-
-    size_t size = mbsrtowcs(nullptr, &src, 0, &state);
-    if (size == (size_t)-1)
-        return {};
-
-    std::wstring result(size, 0);
-
-    state = std::mbstate_t{};
-    src = str.data();
-
-    mbsrtowcs(result.data(), &src, size, &state);
-
-    return result;
-
-#endif
 }
+#endif
 
 static const char* GetLogTypeString(LogType type)
 {
