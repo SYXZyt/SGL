@@ -7,3 +7,4 @@
 #define SGL_ENUM_FLAG(idx) (i << (idx))
 #define SGL_BEGIN extern "C" {
 #define SGL_BEGIN
+#define GetSelf sgl_GLDevice* self = (sgl_GLDevice*)dev

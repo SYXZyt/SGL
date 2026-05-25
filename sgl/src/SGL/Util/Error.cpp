@@ -83,6 +83,20 @@ static std::string ToString(const std::wstring& str)
 #endif
 }
 
+static void ReplaceAll(std::wstring& text, const std::wstring& from, const std::wstring& to)
+{
+    if (from.empty())
+        return;
+
+    size_t pos = 0;
+
+    while ((pos = text.find(from, pos)) != std::wstring::npos)
+    {
+        text.replace(pos, from.length(), to);
+        pos += to.length();
+    }
+}
+
 void sgl_ReportError(const char* message, const char* file, int line)
 {
     std::wstring wMsg = ToWString(message);
@@ -94,6 +108,7 @@ void sgl_ReportError(const char* message, const char* file, int line)
 #ifdef SGL_PATH
         {
             std::wstring projectPath = ToWString(SGL_PATH);
+            ReplaceAll(fname, L"\\", L"/");
 
             size_t pos = fname.find(projectPath);
             if (pos != std::wstring::npos)

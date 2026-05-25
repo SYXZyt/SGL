@@ -5,11 +5,12 @@
 
 SGL_BEGIN
 
-typedef enum sgl_Backend
+typedef uint8 sgl_Backend;
+enum
 {
     sgl_Backend_OPENGL,
     sgl_Backend_DIRECTX11,
-} sgl_Backend;
+};
 
 typedef struct sgl_EngineConfig sgl_sealed
 {
