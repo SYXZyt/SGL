@@ -11,6 +11,15 @@ namespace SGLNet
         private IntPtr mNativeHandle;
         private GCHandle mSelfHandle;
 
+        private Vec2i mScreenSize = Vec2i.Zero;
+        private Vec2i mHalfScreenSize = Vec2i.Zero;
+        
+        public Vec2i ScreenSize =>
+            mScreenSize;
+        
+        public Vec2i HalfScreenSize =>
+            mHalfScreenSize;
+        
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr sgl_Window_Create_ptr(EngineConfig config);
         private static sgl_Window_Create_ptr sgl_Window_Create;
@@ -68,6 +77,9 @@ namespace SGLNet
             mConfig = cfg;
             mNativeHandle = sgl_Window_Create(cfg);
 
+            mScreenSize = new((int)cfg.width, (int)cfg.height);
+            mHalfScreenSize = mScreenSize / 2;
+            
             mSelfHandle = GCHandle.Alloc(this);
 
             sgl_Window_RegisterResize(
@@ -77,12 +89,15 @@ namespace SGLNet
         }
         
         private static void OnResize(IntPtr window, Vec2i size, IntPtr userdata)
-        {
+        { 
             GCHandle handle = GCHandle.FromIntPtr(userdata);
 
             if (handle.Target is not Window windowInstance)
                 return;
 
+            windowInstance.mScreenSize = size;
+            windowInstance.mHalfScreenSize = size / 2;
+            
             windowInstance.Resize?.Invoke(size.X, size.Y);
         }
 
