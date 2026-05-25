@@ -5,6 +5,12 @@
 
 SGL_BEGIN
 
+typedef enum sgl_Backend
+{
+    sgl_Backend_OPENGL,
+    sgl_Backend_DIRECTX11,
+} sgl_Backend;
+
 typedef struct sgl_EngineConfig sgl_sealed
 {
     const char* title;
