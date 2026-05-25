@@ -14,6 +14,7 @@ typedef enum sgl_Backend
 typedef struct sgl_EngineConfig sgl_sealed
 {
     const char* title;
+    sgl_Backend backend;
     uint32 width;
     uint32 height;
     bool resizable;

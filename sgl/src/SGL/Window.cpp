@@ -3,6 +3,7 @@
 #include <SGL/Util/Error.h>
 #include <vector>
 #include <algorithm>
+#include <glad/glad.h>
 
 template <typename T>
 static std::vector<T>& Void2Vec(void* ptr) {
@@ -12,6 +13,7 @@ static std::vector<T>& Void2Vec(void* ptr) {
 const sgl_EngineConfig sgl_EngineConfig_Default =
 {
     .title = "SGL",
+    .backend = sgl_Backend_OPENGL,
     .width = 1280,
     .height = 720,
     .resizable = true,
@@ -43,8 +45,12 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
 
     window->window = SDL_CreateWindow(cfg.title, cfg.width, cfg.height, (cfg.resizable ? SDL_WINDOW_RESIZABLE : 0) | SDL_WINDOW_OPENGL);
 
-    window->glContext = SDL_GL_CreateContext(window->window);
-    SDL_GL_MakeCurrent(window->window, window->glContext);
+    if (cfg.backend == sgl_Backend_OPENGL)
+    {
+        window->glContext = SDL_GL_CreateContext(window->window);
+        SDL_GL_MakeCurrent(window->window, window->glContext);
+        gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+    }
 
     return window;
 }
@@ -53,7 +59,9 @@ void sgl_Window_Destroy(sgl_Window* window)
 {
     sgl::Memory::Delete((std::vector<sgl_Window_Resize_Callback>*)window->callbacks);
 
-    SDL_GL_DestroyContext(window->glContext);
+    if (window->cfg.backend == sgl_Backend_OPENGL)
+        SDL_GL_DestroyContext(window->glContext);
+
     SDL_DestroyWindow(window->window);
     SDL_Quit();
 

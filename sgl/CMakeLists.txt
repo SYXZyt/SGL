@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
 add_library(SGL SHARED
+    src/glad/glad.c
     src/osbridge.h
     src/osbridge.cpp
     src/SGL/SGL.h
@@ -23,7 +24,7 @@ add_library(SGL SHARED
     src/SGL/Runtime.cpp
     src/SGL/Util/Error.h
     src/SGL/Util/Error.cpp
-)
+ "src/SGL/Colour.h" "src/SGL/Colour.cpp")
 
 include(CMake/Dependencies.cmake)
 
