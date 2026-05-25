@@ -1,5 +1,5 @@
 #include "String.h"
-#include <string>
+#include <cstring>
 #include <SGL/Util/Memory.h>
 
 sgl_String sgl_MakeString(const char* str)

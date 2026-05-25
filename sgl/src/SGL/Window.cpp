@@ -2,6 +2,7 @@
 #include <SGL/Util/Memory.h>
 #include <SGL/Util/Error.h>
 #include <vector>
+#include <algorithm>
 
 template <typename T>
 static std::vector<T>& Void2Vec(void* ptr) {
@@ -33,14 +34,14 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
         return nullptr;
     }
 
-    window->screenSize = { (int)cfg.width, (int)cfg.height };
+    window->screenSize = {{{ (int)cfg.width, (int)cfg.height }}};
     window->halfScreenSize = sgl_Vec2i_Div_Scalar(window->screenSize, 2);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 6);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    window->window = SDL_CreateWindow(cfg.title, cfg.width, cfg.height, (cfg.resizable ? SDL_WINDOW_RESIZABLE : 0));
+    window->window = SDL_CreateWindow(cfg.title, cfg.width, cfg.height, (cfg.resizable ? SDL_WINDOW_RESIZABLE : 0) | SDL_WINDOW_OPENGL);
 
     window->glContext = SDL_GL_CreateContext(window->window);
     SDL_GL_MakeCurrent(window->window, window->glContext);

@@ -127,10 +127,10 @@ float sgl_Maths_AspectRatio(sgl_Vec2 v)
 
 sgl_Vec2 sgl_Maths_Floor_Vec2(sgl_Vec2 v)
 {
-    return {
+    return {{{
         sgl_Maths_Floor(v.x),
         sgl_Maths_Floor(v.y)
-    };
+    }}};
 }
 
 float sgl_Maths_Dist_i(sgl_Vec2i a, sgl_Vec2i b) {

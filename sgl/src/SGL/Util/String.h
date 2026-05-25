@@ -1,5 +1,6 @@
 #pragma once
 #include <SGL/SGL.h>
+#include <stddef.h>
 
 SGL_BEGIN
 

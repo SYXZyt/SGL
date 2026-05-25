@@ -15,6 +15,8 @@ typedef struct sgl_EngineConfig sgl_sealed
 
 SGL_API extern const sgl_EngineConfig sgl_EngineConfig_Default;
 
+struct sgl_Window;
+
 typedef sglFuncPtr(sgl_Window_Resize_Callback_ptr, void, struct sgl_Window*, sgl_Vec2i, void*);
 
 typedef struct sgl_Window_Resize_Callback sgl_sealed
