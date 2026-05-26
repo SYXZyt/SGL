@@ -18,11 +18,11 @@ enum
 struct sgl_GraphicsDevice;
 typedef struct sgl_GraphicsDeviceVTable sgl_sealed
 {
-    void (*setClearColour)(struct sgl_GraphicsDevice* self, sgl_Colour clearColour);
-    void (*resize)(struct sgl_GraphicsDevice* self, sgl_Vec2i newSize);
-    void (*clear)(struct sgl_GraphicsDevice* self, sgl_ClearFlags clearFlags);
-    void (*present)(struct sgl_GraphicsDevice* self);
-    void (*destroy)(struct sgl_GraphicsDevice* self);
+    void (*SetClearColour)(struct sgl_GraphicsDevice* self, sgl_Colour clearColour);
+    void (*Resize)(struct sgl_GraphicsDevice* self, sgl_Vec2i newSize);
+    void (*Clear)(struct sgl_GraphicsDevice* self, sgl_ClearFlags clearFlags);
+    void (*Present)(struct sgl_GraphicsDevice* self);
+    void (*Destroy)(struct sgl_GraphicsDevice* self);
 } sgl_GraphicsDeviceVTable;
 
 typedef struct sgl_GraphicsDevice sgl_sealed

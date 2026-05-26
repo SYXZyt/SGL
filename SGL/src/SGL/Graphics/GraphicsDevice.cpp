@@ -5,7 +5,7 @@
 static void OnResize(sgl_Window* window, sgl_Vec2i newSize, void* userdata)
 {
     sgl_GraphicsDevice* device = (sgl_GraphicsDevice*)userdata;
-    device->vtable->resize(device, newSize);
+    device->vtable->Resize(device, newSize);
 }
 
 sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
@@ -29,17 +29,17 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
 void sgl_GraphicsDevice_Destroy(sgl_GraphicsDevice* device)
 {
     sgl_Window_DeregisterResize(device->window, &OnResize);
-    device->vtable->destroy(device);
+    device->vtable->Destroy(device);
 }
 
 void sgl_GraphicsDevice_SetClearColour(sgl_GraphicsDevice* device, sgl_Colour colour) {
-    device->vtable->setClearColour(device, colour);
+    device->vtable->SetClearColour(device, colour);
 }
 
 void sgl_GraphicsDevice_Clear(sgl_GraphicsDevice* device, sgl_ClearFlags clearFlags) {
-    device->vtable->clear(device, clearFlags);
+    device->vtable->Clear(device, clearFlags);
 }
 
 void sgl_GraphicsDevice_Present(sgl_GraphicsDevice* device) {
-    device->vtable->present(device);
+    device->vtable->Present(device);
 }

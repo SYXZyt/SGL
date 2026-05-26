@@ -34,11 +34,11 @@ static void GLDevice_Destroy(sgl_GraphicsDevice* dev)
 
 static const sgl_GraphicsDeviceVTable gGlVTable =
 {
-    .setClearColour = &GLDevice_SetClearColour,
-    .resize = &GLDevice_Resize,
-    .clear = &GLDevice_Clear,
-    .present = &GLDevice_Present,
-    .destroy = &GLDevice_Destroy,
+    .SetClearColour = &GLDevice_SetClearColour,
+    .Resize = &GLDevice_Resize,
+    .Clear = &GLDevice_Clear,
+    .Present = &GLDevice_Present,
+    .Destroy = &GLDevice_Destroy,
 };
 
 sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
