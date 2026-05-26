@@ -1,6 +1,8 @@
 #include "GLDevice.h"
 #include <SGL/Util/Memory.h>
 #include <glad/glad.h>
+#include <sstream>
+#include <SGL/Util/Logger.h>
 
 #define GetSelf sgl_GLDevice* self = (sgl_GLDevice*)dev
 
@@ -49,6 +51,27 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     device->base.width = window->screenSize.width;
     device->base.height = window->screenSize.height;
     device->base.vtable = &gGlVTable;
+
+    std::stringstream ss;
+
+    ss << "SDL Version: " << SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MINOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MICRO(SDL_VERSION);
+    sgl_Log(ss.str().c_str());
+    ss.str("");
+
+    ss << "OpenGL Version: " << (const char*)glGetString(GL_VERSION);
+    sgl_Log(ss.str().c_str());
+    ss.str("");
+
+    ss << "GLSL Version: " << (const char*)glGetString(GL_SHADING_LANGUAGE_VERSION);
+    sgl_Log(ss.str().c_str());
+    ss.str("");
+
+    ss << "Vendor: " << (const char*)glGetString(GL_VENDOR);
+    sgl_Log(ss.str().c_str());
+    ss.str("");
+
+    ss << "Renderer: " << (const char*)glGetString(GL_RENDERER);
+    sgl_Log(ss.str().c_str());
 
     return device;
 }
