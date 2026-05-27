@@ -28,7 +28,7 @@ sgl_VertexLayout* sgl_VertexLayout_New(sgl_GraphicsDevice* gpu)
 void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElement element)
 {
     EnsureCapacity(layout);
-    layout->elements[++layout->elementCount] = element;
+    layout->elements[layout->elementCount++] = element;
 }
 
 void sgl_VertexLayout_Destroy(sgl_VertexLayout* layout)
