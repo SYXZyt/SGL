@@ -13,7 +13,10 @@ namespace SGLNet
 
         private Vec2i mScreenSize = Vec2i.Zero;
         private Vec2i mHalfScreenSize = Vec2i.Zero;
-        
+
+        internal IntPtr Handle =>
+            mNativeHandle;
+
         public Vec2i ScreenSize =>
             mScreenSize;
         
