@@ -2,11 +2,11 @@
 #include <SGL/Maths/Maths.h>
 
 const sgl_Vec2 sgl_Vec2_Zero = {{{ 0.0f, 0.0f }}};
-const sgl_Vec2 sgl_Vec2_One = {{{ 1, 1 }}};
-const sgl_Vec2 sgl_Vec2_Left = {{{ -1, 0 }}};
-const sgl_Vec2 sgl_Vec2_Right = {{{ 1, 0 }}};
-const sgl_Vec2 sgl_Vec2_Up = {{{ 0, 1 }}};
-const sgl_Vec2 sgl_Vec2_Down = {{{ 0, -1 }}};
+const sgl_Vec2 sgl_Vec2_One = {{{ 1.f, 1.f }}};
+const sgl_Vec2 sgl_Vec2_Left = {{{ -1, 0.f }}};
+const sgl_Vec2 sgl_Vec2_Right = {{{ 1.f, 0.f }}};
+const sgl_Vec2 sgl_Vec2_Up = {{{ 0.f, 1.f }}};
+const sgl_Vec2 sgl_Vec2_Down = {{{ 0.f, -1.f }}};
 const sgl_Vec2 sgl_Vec2_Inf = {{{ sgl_Maths_INF, sgl_Maths_INF }}};
 const sgl_Vec2 sgl_Vec2_NegativeInf = {{{ sgl_Maths_NEG_INF, sgl_Maths_NEG_INF }}};
 
@@ -35,7 +35,7 @@ sgl_Vec2 sgl_Vec2_Div_Vec2(sgl_Vec2 a, sgl_Vec2 b) {
 }
 
 sgl_Vec2 sgl_Vec2_Mul_Scalar(sgl_Vec2 v, float scalar) {
-    return {{{ v.x / scalar, v.y / scalar }}};
+    return {{{ v.x * scalar, v.y * scalar }}};
 }
 
 sgl_Vec2 sgl_Vec2_Div_Scalar(sgl_Vec2 v, float scalar) {
@@ -86,7 +86,7 @@ sgl_Vec2i sgl_Vec2i_Div_Vec2i(sgl_Vec2i a, sgl_Vec2i b) {
 }
 
 sgl_Vec2i sgl_Vec2i_Mul_Scalar(sgl_Vec2i v, int scalar) {
-    return {{{ v.x / scalar, v.y / scalar }}};
+    return {{{ v.x * scalar, v.y * scalar }}};
 }
 
 sgl_Vec2i sgl_Vec2i_Div_Scalar(sgl_Vec2i v, int scalar) {

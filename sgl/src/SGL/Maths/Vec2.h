@@ -82,3 +82,81 @@ SGL_API extern bool sgl_Vec2i_Compare(sgl_Vec2i a, sgl_Vec2i b);
 #pragma endregion
 
 SGL_END
+
+// If using C++, it is nice to have some operators
+#ifdef __cplusplus
+
+inline sgl_Vec2 operator+(sgl_Vec2 a, sgl_Vec2 b) {
+    return sgl_Vec2_Add_Vec2(a, b);
+}
+
+inline sgl_Vec2 operator-(sgl_Vec2 a, sgl_Vec2 b) {
+    return sgl_Vec2_Sub_Vec2(a, b);
+}
+
+inline sgl_Vec2 operator*(sgl_Vec2 a, sgl_Vec2 b) {
+    return sgl_Vec2_Mul_Vec2(a, b);
+}
+
+inline sgl_Vec2 operator/(sgl_Vec2 a, sgl_Vec2 b) {
+    return sgl_Vec2_Div_Vec2(a, b);
+}
+
+inline sgl_Vec2 operator*(sgl_Vec2 a, float b) {
+    return sgl_Vec2_Mul_Scalar(a, b);
+}
+
+inline sgl_Vec2 operator/(sgl_Vec2 a, float b) {
+    return sgl_Vec2_Div_Scalar(a, b);
+}
+
+inline sgl_Vec2 operator-(sgl_Vec2 v) {
+    return sgl_Vec2_Negate(v);
+}
+
+inline bool operator==(sgl_Vec2 a, sgl_Vec2 b) {
+    return sgl_Vec2_Compare(a, b);
+}
+
+inline bool operator!=(sgl_Vec2 a, sgl_Vec2 b) {
+    return !(a == b);
+}
+
+
+inline sgl_Vec2i operator+(sgl_Vec2i a, sgl_Vec2i b) {
+    return sgl_Vec2i_Add_Vec2i(a, b);
+}
+
+inline sgl_Vec2i operator-(sgl_Vec2i a, sgl_Vec2i b) {
+    return sgl_Vec2i_Sub_Vec2i(a, b);
+}
+
+inline sgl_Vec2i operator*(sgl_Vec2i a, sgl_Vec2i b) {
+    return sgl_Vec2i_Mul_Vec2i(a, b);
+}
+
+inline sgl_Vec2i operator/(sgl_Vec2i a, sgl_Vec2i b) {
+    return sgl_Vec2i_Div_Vec2i(a, b);
+}
+
+inline sgl_Vec2i operator*(sgl_Vec2i a, int b) {
+    return sgl_Vec2i_Mul_Scalar(a, b);
+}
+
+inline sgl_Vec2i operator/(sgl_Vec2i a, int b) {
+    return sgl_Vec2i_Div_Scalar(a, b);
+}
+
+inline sgl_Vec2i operator-(sgl_Vec2i v) {
+    return sgl_Vec2i_Negate(v);
+}
+
+inline bool operator==(sgl_Vec2i a, sgl_Vec2i b) {
+    return sgl_Vec2i_Compare(a, b);
+}
+
+inline bool operator!=(sgl_Vec2i a, sgl_Vec2i b) {
+    return !(a == b);
+}
+
+#endif
