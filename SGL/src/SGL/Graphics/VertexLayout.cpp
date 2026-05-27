@@ -1,73 +1,41 @@
 #include "VertexLayout.h"
 #include <SGL/Util/Error.h>
-#include <SGL/Graphics/Backends/OpenGL/GLVertexLayout.h>
+#include <SGL/Util/Memory.h>
+
+static void EnsureCapacity(sgl_VertexLayout* layout)
+{
+    if (layout->elementCount < layout->elementCapacity)
+        return;
+
+    uint32 newCap = layout->elementCapacity == 0 ? 4 : layout->elementCapacity * 2;
+
+    layout->elements = (sgl_VertexElement*)sgl_Realloc(layout->elements, newCap * sizeof(sgl_VertexElement));
+    layout->elementCapacity = newCap;
+}
 
 sgl_VertexLayout* sgl_VertexLayout_New(sgl_GraphicsDevice* gpu)
 {
-    sgl_VertexLayout* layout = nullptr;
-
-    if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
-        layout = (sgl_VertexLayout*)sgl_GLVertexLayout_Create();
-    else
-    {
-        SGL_REPORT_ERROR("Unsupported backend");
-        return nullptr;
-    }
-
+    sgl_VertexLayout* layout = sgl::Memory::New<sgl_VertexLayout>();
+    
+    layout->elements = nullptr;
+    layout->elementCount = 0;
+    layout->elementCapacity = 0;
     layout->gpu = gpu;
+
     return layout;
 }
 
-void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElementType type) {
-    layout->vtable->Add(layout, type);
-}
-
-void sgl_VertexLayout_Destroy(sgl_VertexLayout* layout) {
-    layout->vtable->Destroy(layout);
-}
-
-void sgl_VertexLayout_Bind(sgl_VertexLayout* layout) {
-    layout->vtable->Bind(layout);
-}
-
-uint32 sgl_VertexLayout_GetTypeSize(sgl_VertexElementType type)
+void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElement element)
 {
-    switch (type)
-    {
-        case sgl_VertexElementType_FLOAT:
-        case sgl_VertexElementType_FLOAT2:
-        case sgl_VertexElementType_FLOAT3:
-        case sgl_VertexElementType_FLOAT4:
-        case sgl_VertexElementType_UINT:
-        case sgl_VertexElementType_UINT2:
-        case sgl_VertexElementType_UINT3:
-        case sgl_VertexElementType_UINT4:
-            return 4;
-    }
-
-    return 0;
+    EnsureCapacity(layout);
+    layout->elements[++layout->elementCount] = element;
 }
 
-uint32 sgl_VertexLayout_GetComponentCount(sgl_VertexElementType type)
+void sgl_VertexLayout_Destroy(sgl_VertexLayout* layout)
 {
-    switch (type)
-    {
-        case sgl_VertexElementType_FLOAT:
-        case sgl_VertexElementType_UINT:
-            return 1;
+    for (uint32 i = 0; i < layout->elementCount; ++i)
+        sgl_FreeString(layout->elements[i].semantic);
 
-        case sgl_VertexElementType_FLOAT2:
-        case sgl_VertexElementType_UINT2:
-            return 2;
-
-        case sgl_VertexElementType_FLOAT3:
-        case sgl_VertexElementType_UINT3:
-            return 3;
-
-        case sgl_VertexElementType_FLOAT4:
-        case sgl_VertexElementType_UINT4:
-            return 4;
-    }
-
-    return 0;
+    sgl_Free(layout->elements);
+    sgl::Memory::Delete(layout);
 }

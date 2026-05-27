@@ -12,6 +12,6 @@ typedef struct sgl_GLVertexArray sgl_sealed
 
 } sgl_GLVertexArray;
 
-SGL_API extern sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize);
+SGL_API extern sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout);
 
 SGL_END

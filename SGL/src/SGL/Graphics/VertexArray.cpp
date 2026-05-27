@@ -42,19 +42,19 @@ sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, void* br, void*
     return result;
 }
 
-sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize)
+sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize, sgl_VertexLayout* layout)
 {
     sgl_VertexArray* va = nullptr;
 
     if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
-        va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize);
+        va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize, layout);
     else
     {
         SGL_REPORT_ERROR("Unsupported backend");
         return nullptr;
     }
 
-    va->layout = sgl_VertexLayout_New(gpu);
+    va->layout = layout;
     va->gpu = gpu;
     return va;
 }
@@ -67,17 +67,15 @@ void sgl_VertexArray_Destroy(sgl_VertexArray* va) {
     va->vtable->Destroy(va);
 }
 
-void sgl_VertexArray_CreateLayout(sgl_VertexArray* va) {
-    va->vtable->CreateLayout(va);
-}
-
 void sgl_VertexArray_Set(sgl_VertexArray* va, byte* vertices, uint32 vertexCount)
 {
     va->vertexCount = vertexCount;
     va->vertexCapacity = vertexCount;
 
-    sgl_Realloc(va->vertexData, (size_t)vertexCount * va->vertexSize);
+    va->vertexData = (byte*)sgl_Realloc(va->vertexData, (size_t)vertexCount * va->vertexSize);
     std::memcpy(va->vertexData, vertices, (size_t)va->vertexCount * va->vertexSize);
+
+    va->needsVertexUpload = true;
 }
 
 void sgl_VertexArray_AddVertex(sgl_VertexArray* va, void* vertex) {

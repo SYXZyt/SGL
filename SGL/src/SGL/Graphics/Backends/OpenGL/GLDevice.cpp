@@ -23,11 +23,22 @@ static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 {
     dev->width = newSize.width;
     dev->height = newSize.height;
+    glViewport(0, 0, dev->width, dev->height);
 }
 
 static void GLDevice_Clear(sgl_GraphicsDevice* dev, sgl_ClearFlags clearFlags)
 {
     GetSelf;
+
+    GLbitfield mask = 0;
+
+    if (clearFlags & sgl_ClearFlag_COLOUR)
+        mask |= GL_COLOR_BUFFER_BIT;
+
+    if (clearFlags & sgl_ClearFlag_DEPTH)
+        mask |= GL_DEPTH_BUFFER_BIT;
+
+    glClear(mask);
 }
 
 static void GLDevice_Present(sgl_GraphicsDevice* dev) {
@@ -69,6 +80,9 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     device->base.width = window->screenSize.width;
     device->base.height = window->screenSize.height;
     device->base.vtable = &gGlVTable;
+
+    GLDevice_SetClearColour(&device->base, device->base.clearColour);
+    glViewport(0, 0, device->base.width, device->base.height);
 
     std::stringstream ss;
 

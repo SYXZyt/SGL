@@ -10,7 +10,6 @@ typedef struct sgl_VertexArrayVTable sgl_sealed
 {
     void (*Destroy)(struct sgl_VertexArray* self);
     void (*Bind)(struct sgl_VertexArray* self);
-    void (*CreateLayout)(struct sgl_VertexArray* self);
 } sgl_VertexArrayVTable;
 
 typedef struct sgl_VertexArray sgl_sealed
@@ -53,10 +52,9 @@ typedef struct sgl_VertexArray_Triangulated sgl_sealed
 
 SGL_API extern sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, void* br, void* bl);
 
-SGL_API extern sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize);
+SGL_API extern sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize, sgl_VertexLayout* layout);
 SGL_API extern void sgl_VertexArray_Bind(sgl_VertexArray* va);
 SGL_API extern void sgl_VertexArray_Destroy(sgl_VertexArray* va);
-SGL_API extern void sgl_VertexArray_CreateLayout(sgl_VertexArray* va);
 
 SGL_API extern void sgl_VertexArray_Set(sgl_VertexArray* va, byte* vertices, uint32 vertexCount);
 

@@ -11,12 +11,12 @@ sgl_PackedColour sgl_Colour_Pack(sgl_Colour colour)
 
 sgl_Colour sgl_Colour_Unpack(sgl_PackedColour colour)
 {
-	return sgl_Colour(
-		(float)((colour >> 24) & 0xFF),
-		(float)((colour >> 16) & 0xFF),
-		(float)((colour >> 8) & 0xFF),
-		(float)(colour & 0xFF)
-	);
+	int r = (colour >> 24) & 0xff;
+	int g = (colour >> 16) & 0xff;
+	int b = (colour >>  8) & 0xff;
+	int a = colour & 0xff;
+		
+	return sgl_Colour_ByteA(r, g, b, a);
 }
 
 sgl_Colour sgl_Colour_Float(float r, float g, float b) {

@@ -41,8 +41,19 @@ int main(int argc, char** argv)
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
     
-    sgl_VertexArray* va = sgl_VertexArray_Create(gpu, sizeof(Vertex));
-    sgl_VertexLayout_Add(va->layout, sgl_VertexElementType_FLOAT3);
+    sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
+    {
+        sgl_VertexElement pos =
+        {
+            .semantic = sgl_MakeString("POSITION"),
+            .offset = 0,
+            .type = sgl_VertexElementType_VEC3,
+            .perInstance = false,
+        };
+
+        sgl_VertexLayout_Add(layout, pos);
+    }
+    sgl_VertexArray* va = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
     
     const float x = 0.1333f;
     const float y = 0.2370f;
@@ -54,7 +65,6 @@ int main(int argc, char** argv)
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
     sgl_VertexArray_AddQuad(va, q);
-    va->vtable->CreateLayout(va);
 
     sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSource, FragmentShaderSource);
 
@@ -69,6 +79,7 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Present(gpu);
     }
 
+    sgl_VertexArray_Destroy(va);
     sgl_Shader_Destroy(shr);
     sgl_GraphicsDevice_Destroy(gpu);
     sgl_Window_Destroy(window);
