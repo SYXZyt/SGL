@@ -32,7 +32,7 @@ if (WIN32)
     target_link_libraries(SGL PRIVATE d3d11.lib d3dcompiler.lib)
 endif ()
 
-target_link_libraries(SGL PUBLIC SDL3::SDL3)
+target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm)
 
 target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
 target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
