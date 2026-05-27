@@ -52,6 +52,10 @@ static void GLInitialise(sgl_Shader* shr)
     self->shaderId = glCreateProgram();
     glAttachShader(self->shaderId, vertex);
     glAttachShader(self->shaderId, fragment);
+
+    glLinkProgram(self->shaderId);
+    glValidateProgram(self->shaderId);
+
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 

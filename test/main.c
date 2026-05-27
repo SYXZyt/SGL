@@ -1,11 +1,12 @@
 #include <SGL/Window.h>
-#include <SGL/Maths/Vec2.h>
+#include <SGL/Maths/Vec3.h>
 #include <SGL/Util/ANSI.h>
 #include <stdio.h>
 #include <SGL/Util/Logger.h>
 #include <SGL/Graphics/GraphicsDevice.h>
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/VertexLayout.h>
+#include <SGL/Graphics/VertexArray.h>
 
 const char* VertexShaderSource =
 "#version 330 core\n"
@@ -27,6 +28,11 @@ const char* FragmentShaderSource =
 "    FragColor = vec4(1.0, 0.2, 0.4, 1.0);\n"
 "}\n";
 
+typedef struct Vertex
+{
+    sgl_Vec3 vertex;
+} Vertex;
+
 int main(int argc, char** argv)
 {
     sgl_Logger_Init();
@@ -34,10 +40,21 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
-    sgl_VertexLayout* vertexLayout = sgl_VertexLayout_New(gpu);
-    sgl_VertexLayout_Add(vertexLayout, sgl_VertexElementType_FLOAT3);
-    sgl_VertexLayout_Bind(vertexLayout);
+    
+    sgl_VertexArray* va = sgl_VertexArray_Create(gpu, sizeof(Vertex));
+    sgl_VertexLayout_Add(va->layout, sgl_VertexElementType_FLOAT3);
+    
+    const float x = 0.1333f;
+    const float y = 0.2370f;
 
+    sgl_Vec3 tl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
+    sgl_Vec3 tr = sgl_Vec3_New_ScalarXYZ( x, -y, 0);
+    sgl_Vec3 br = sgl_Vec3_New_ScalarXYZ( x,  y, 0);
+    sgl_Vec3 bl = sgl_Vec3_New_ScalarXYZ(-x,  y, 0);
+
+    sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
+    sgl_VertexArray_AddQuad(va, q);
+    va->vtable->CreateLayout(va);
 
     sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSource, FragmentShaderSource);
 
@@ -46,7 +63,9 @@ int main(int argc, char** argv)
         sgl_Window_PollEvents(window);
 
         sgl_GraphicsDevice_Clear(gpu, sgl_ClearFlag_COLOUR | sgl_ClearFlag_DEPTH);
-        sgl_Shader_Bind(shr);
+
+        sgl_GraphicsDevice_Draw(gpu, va, shr);
+
         sgl_GraphicsDevice_Present(gpu);
     }
 

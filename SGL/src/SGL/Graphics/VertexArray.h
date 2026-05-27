@@ -10,7 +10,7 @@ typedef struct sgl_VertexArrayVTable sgl_sealed
 {
     void (*Destroy)(struct sgl_VertexArray* self);
     void (*Bind)(struct sgl_VertexArray* self);
-    void (*Upload)(struct sgl_VertexArray* self);
+    void (*CreateLayout)(struct sgl_VertexArray* self);
 } sgl_VertexArrayVTable;
 
 typedef struct sgl_VertexArray sgl_sealed
@@ -19,23 +19,14 @@ typedef struct sgl_VertexArray sgl_sealed
     
     sgl_GraphicsDevice* gpu;
 
-    sgl_VertexLayout layout;
+    sgl_VertexLayout* layout;
 
     byte* vertexData;
-    word* indexData;
-
     uint32 vertexCount;
-    uint32 indexCount;
-
     uint32 vertexCapacity;
-    uint32 indexCapacity;
-
     uint32 vertexSize;
 
-    bool isIndexed;
-
     bool needsVertexUpload;
-    bool needsIndexUpload;
     bool layoutDirty;
 } sgl_VertexArray;
 
@@ -64,12 +55,10 @@ SGL_API extern sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, 
 
 SGL_API extern sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize);
 SGL_API extern void sgl_VertexArray_Bind(sgl_VertexArray* va);
-SGL_API extern void sgl_VertexArray_Upload(sgl_VertexArray* va);
 SGL_API extern void sgl_VertexArray_Destroy(sgl_VertexArray* va);
+SGL_API extern void sgl_VertexArray_CreateLayout(sgl_VertexArray* va);
 
-SGL_API extern void sgl_VertexArray_SetLayout(sgl_VertexArray* va);
-
-SGL_API extern void sgl_VertexArray_Set(sgl_VertexArray* va, byte* vertices, word* indices, uint32 vertexCount, uint32 indexCount);
+SGL_API extern void sgl_VertexArray_Set(sgl_VertexArray* va, byte* vertices, uint32 vertexCount);
 
 SGL_API extern void sgl_VertexArray_AddVertex(sgl_VertexArray* va, void* vertex);
 SGL_API extern void sgl_VertexArray_AddQuad(sgl_VertexArray* va, sgl_VertexArray_Quad quad);

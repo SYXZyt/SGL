@@ -1,6 +1,8 @@
 #include "VertexArray.h"
 #include <SGL/Util/Memory.h>
 #include <cstring>
+#include <SGL/Graphics/Backends/OpenGL/GLVertexArray.h>
+#include <SGL/Util/Error.h>
 
 static void EnsureVertexCapacity(sgl_VertexArray* va, uint32 required)
 {
@@ -13,19 +15,6 @@ static void EnsureVertexCapacity(sgl_VertexArray* va, uint32 required)
 
     va->vertexData = (byte*)sgl_Realloc(va->vertexData, (size_t)newCap * va->vertexSize);
     va->vertexCapacity = newCap;
-}
-
-static void EnsureIndexCapacity(sgl_VertexArray* va, uint32 required)
-{
-    if (required <= va->indexCapacity)
-        return;
-
-    uint32 newCap = va->indexCapacity == 0 ? 16 : va->indexCapacity * 2;
-    while (newCap < required)
-        newCap *= 2;
-
-    va->indexData = (word*)sgl_Realloc(va->indexData, (size_t)newCap * sizeof(word));
-    va->indexCapacity = newCap;
 }
 
 static void AddRawVertex(sgl_VertexArray* va, const void* v)
@@ -47,52 +36,70 @@ sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, void* br, void*
     result.t0.v2 = br;
 
     result.t1.v0 = tl;
-    result.t1.v0 = br;
-    result.t1.v0 = bl;
+    result.t1.v1 = br;
+    result.t1.v2 = bl;
 
     return result;
 }
 
 sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize)
 {
-    return nullptr;
+    sgl_VertexArray* va = nullptr;
+
+    if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
+        va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize);
+    else
+    {
+        SGL_REPORT_ERROR("Unsupported backend");
+        return nullptr;
+    }
+
+    va->layout = sgl_VertexLayout_New(gpu);
+    va->gpu = gpu;
+    return va;
 }
 
 void sgl_VertexArray_Bind(sgl_VertexArray* va) {
     va->vtable->Bind(va);
 }
 
-void sgl_VertexArray_Upload(sgl_VertexArray* va) {
-    va->vtable->Upload(va);
-}
-
 void sgl_VertexArray_Destroy(sgl_VertexArray* va) {
     va->vtable->Destroy(va);
 }
 
-void sgl_VertexArray_Set(sgl_VertexArray* va, byte* vertices, word* indices, uint32 vertexCount, uint32 indexCount)
-{
-    va->vertexCount = vertexCount;
-    va->indexCount = indexCount;
-
-    sgl_Realloc(va->vertexData, (size_t)vertexCount * va->vertexSize);
-    sgl_Realloc(va->indexData, (size_t)indexCount * sizeof(word));
-
-    va->vertexCapacity = vertexCount;
-    va->indexCapacity = indexCount;
-
-    std::memcpy(va->vertexData, vertices, (size_t)va->vertexCount * va->vertexSize);
-    std::memcpy(va->indexData, indices, (size_t)indexCount * sizeof(word));
+void sgl_VertexArray_CreateLayout(sgl_VertexArray* va) {
+    va->vtable->CreateLayout(va);
 }
 
-void sgl_VertexArray_AddVertex(sgl_VertexArray* va, void* vertex)
+void sgl_VertexArray_Set(sgl_VertexArray* va, byte* vertices, uint32 vertexCount)
 {
+    va->vertexCount = vertexCount;
+    va->vertexCapacity = vertexCount;
+
+    sgl_Realloc(va->vertexData, (size_t)vertexCount * va->vertexSize);
+    std::memcpy(va->vertexData, vertices, (size_t)va->vertexCount * va->vertexSize);
+}
+
+void sgl_VertexArray_AddVertex(sgl_VertexArray* va, void* vertex) {
+    AddRawVertex(va, vertex);
 }
 
 void sgl_VertexArray_AddQuad(sgl_VertexArray* va, sgl_VertexArray_Quad quad)
 {
+    auto tri = sgl_Triangulate(quad.tl, quad.tr, quad.br, quad.bl);
+
+    AddRawVertex(va, tri.t0.v0);
+    AddRawVertex(va, tri.t0.v1);
+    AddRawVertex(va, tri.t0.v2);
+
+    AddRawVertex(va, tri.t1.v0);
+    AddRawVertex(va, tri.t1.v1);
+    AddRawVertex(va, tri.t1.v2);
 }
 
 void sgl_VertexArray_AddTri(sgl_VertexArray* va, sgl_VertexArray_Tri tri)
 {
+    AddRawVertex(va, tri.v0);
+    AddRawVertex(va, tri.v1);
+    AddRawVertex(va, tri.v2);
 }
