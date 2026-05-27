@@ -26,6 +26,12 @@
 #include <Windows.h>
 #endif
 
+#ifdef _MSC_VER
+#define sgl_alignas(alignment) __declspec(align(alignment))
+#else
+#define sgl_alignas(alignment) __attribute__((aligned(alignment)))
+#endif
+
 typedef uint8_t uint8;
 typedef uint16_t uint16;
 typedef uint32_t uint32;

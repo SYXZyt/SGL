@@ -10,27 +10,30 @@
 
 const char* VertexShaderSource =
 "#version 330 core\n"
-"\n"
 "layout(location = 0) in vec3 aPos;\n"
-"\n"
+"layout(location = 1) in vec3 aCol;\n"
+"out vec3 oCol;\n"
 "void main()\n"
 "{\n"
-"    gl_Position = vec4(aPos, 1.0);\n"
+"   gl_Position = vec4(aPos, 1.0);\n"
+"   oCol = aCol;\n"
 "}\n";
 
 const char* FragmentShaderSource =
 "#version 330 core\n"
 "\n"
 "out vec4 FragColor;\n"
+"in vec3 oCol;\n"
 "\n"
 "void main()\n"
 "{\n"
-"    FragColor = vec4(1.0, 0.2, 0.4, 1.0);\n"
+"    FragColor = vec4(oCol, 1.0);\n"
 "}\n";
 
-typedef struct Vertex
+typedef struct sgl_alignas(16) Vertex
 {
     sgl_Vec3 vertex;
+    sgl_Vec3 colour;
 } Vertex;
 
 int main(int argc, char** argv)
@@ -51,17 +54,43 @@ int main(int argc, char** argv)
             .perInstance = false,
         };
 
+        sgl_VertexElement col =
+        {
+            .semantic = sgl_MakeString("COLOR"),
+            .offset = 16,
+            .type = sgl_VertexElementType_VEC3,
+            .perInstance = false,
+        };
+
         sgl_VertexLayout_Add(layout, pos);
+        sgl_VertexLayout_Add(layout, col);
     }
     sgl_VertexArray* va = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
     
-    const float x = 0.1333f;
-    const float y = 0.2370f;
+    const float scale = 2.8f;
 
-    sgl_Vec3 tl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
-    sgl_Vec3 tr = sgl_Vec3_New_ScalarXYZ( x, -y, 0);
-    sgl_Vec3 br = sgl_Vec3_New_ScalarXYZ( x,  y, 0);
-    sgl_Vec3 bl = sgl_Vec3_New_ScalarXYZ(-x,  y, 0);
+    const float x = 0.1333f * scale;
+    const float y = 0.2370f * scale;
+
+    sgl_Vec3 ptl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
+    sgl_Vec3 ptr = sgl_Vec3_New_ScalarXYZ( x, -y, 0);
+    sgl_Vec3 pbr = sgl_Vec3_New_ScalarXYZ( x,  y, 0);
+    sgl_Vec3 pbl = sgl_Vec3_New_ScalarXYZ(-x,  y, 0);
+
+    Vertex tl;
+    Vertex tr;
+    Vertex bl;
+    Vertex br;
+
+    tl.vertex = ptl;
+    tr.vertex = ptr;
+    bl.vertex = pbl;
+    br.vertex = pbr;
+
+    tl.colour = sgl_Colour_ToVec3(sgl_Col_Red);
+    tr.colour = sgl_Colour_ToVec3(sgl_Col_Green);
+    bl.colour = sgl_Colour_ToVec3(sgl_Col_Blue);
+    br.colour = sgl_Colour_ToVec3(sgl_Col_Yellow);
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
     sgl_VertexArray_AddQuad(va, q);

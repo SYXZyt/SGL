@@ -1,5 +1,7 @@
 #pragma once
 #include <SGL/SGL.h>
+#include <SGL/Maths/Vec3.h>
+#include <SGL/Maths/Vec4.h>
 
 #define SGL_DEF_COLOUR(name) SGL_API extern const sgl_Colour sgl_Col_##name
 
@@ -11,6 +13,9 @@ typedef struct sgl_Colour sgl_sealed
 {
     float r, g, b, a;
 } sgl_Colour;
+
+SGL_API extern sgl_Vec3 sgl_Colour_ToVec3(sgl_Colour c);
+SGL_API extern sgl_Vec4 sgl_Colour_ToVec4(sgl_Colour c);
 
 SGL_API extern sgl_PackedColour sgl_Colour_Pack(sgl_Colour colour);
 SGL_API extern sgl_Colour sgl_Colour_Unpack(sgl_PackedColour colour);

@@ -1,5 +1,13 @@
 #include "Colour.h"
 
+sgl_Vec3 sgl_Colour_ToVec3(sgl_Colour c) {
+	return { {{ c.r, c.g, c.b }} };
+}
+
+sgl_Vec4 sgl_Colour_ToVec4(sgl_Colour c) {
+	return { {{ c.r, c.g, c.b, c.a }} };
+}
+
 sgl_PackedColour sgl_Colour_Pack(sgl_Colour colour)
 {
 	return
