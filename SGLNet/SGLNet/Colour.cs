@@ -1,4 +1,6 @@
-﻿namespace SGLNet
+﻿using System.Runtime.InteropServices;
+
+namespace SGLNet
 {
     public class PackedColour : CustomValueType<PackedColour, uint>
     {
@@ -9,6 +11,7 @@
         public static implicit operator int(PackedColour custom) { return (int)custom._value; }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
     public struct Colour
     {
         private float r;
