@@ -5,6 +5,7 @@
 #include <SGL/Util/Logger.h>
 #include <SGL/Graphics/GraphicsDevice.h>
 #include <SGL/Graphics/Shader.h>
+#include <SGL/Graphics/VertexLayout.h>
 
 const char* VertexShaderSource =
 "#version 330 core\n"
@@ -33,6 +34,11 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
+    sgl_VertexLayout* vertexLayout = sgl_VertexLayout_New(gpu);
+    sgl_VertexLayout_Add(vertexLayout, sgl_VertexElementType_FLOAT3);
+    sgl_VertexLayout_Bind(vertexLayout);
+
+
     sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSource, FragmentShaderSource);
 
     while (!window->wantsClose)

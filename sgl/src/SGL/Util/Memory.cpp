@@ -64,7 +64,7 @@ void* sgl_Malloc(size_t size)
 void* sgl_Realloc(void* ptr, size_t newSize)
 {
     if (!ptr)
-        return nullptr;
+        return sgl_Malloc(newSize);
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
     {
