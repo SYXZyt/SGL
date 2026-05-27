@@ -2,6 +2,10 @@
 #include <numbers>
 #include <limits>
 #include <cmath>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/euler_angles.hpp>
 
 const float sgl_Maths_PI = std::numbers::pi_v<float>;
 const float sgl_Maths_HALF_PI = sgl_Maths_PI / 2.f;
@@ -127,10 +131,10 @@ float sgl_Maths_Vec2_AspectRatio(sgl_Vec2 v)
 
 sgl_Vec2 sgl_Maths_Vec2_Floor(sgl_Vec2 v)
 {
-    return {{{
+    return { {{
         sgl_Maths_Floor(v.x),
         sgl_Maths_Floor(v.y)
-    }}};
+    }} };
 }
 
 float sgl_Maths_Vec2i_Dist(sgl_Vec2i a, sgl_Vec2i b) {
@@ -175,4 +179,69 @@ float sgl_Maths_Vec2i_AspectRatio(sgl_Vec2i v)
         return sgl_Maths_INF;
 
     return (float)v.width / v.height;
+}
+
+static sgl_Mat4 FromGLM(const glm::mat4& glmMat) {
+    return sgl_Mat4_New_Floats(glm::value_ptr(glmMat));
+}
+
+static glm::mat4 ToGLM(const sgl_Mat4& mat) {
+    return glm::make_mat4(mat.values);
+}
+
+sgl_Mat4 sgl_Maths_Mat4_Orthographic(sgl_Vec2i screenSize, float zoom)
+{
+    float halfWidth = screenSize.width / 2.f * zoom;
+    float halfHeight = screenSize.height / 2.f * zoom;
+
+    glm::mat4 ortho = glm::ortho(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.f, 1.f);
+    return FromGLM(ortho);
+}
+
+sgl_Mat4 sgl_Maths_Mat4_OrthographicGL(sgl_Vec2i screenSize, float zoom)
+{
+    float halfWidth = screenSize.width / 2.f * zoom;
+    float halfHeight = screenSize.height / 2.f * zoom;
+
+    glm::mat4 ortho = glm::ortho(-halfWidth, halfWidth, halfHeight, -halfHeight, -1.f, 1.f);
+    return FromGLM(ortho);
+}
+
+sgl_Mat4 sgl_Maths_Mat4_View(sgl_Vec2 position, float angle)
+{
+    glm::mat4 translation = glm::translate(glm::mat4(1.f), glm::vec3(-position.x, -position.y, 0.f));
+
+    float c = sgl_Maths_Cos(-angle);
+    float s = sgl_Maths_Sin(-angle);
+
+    glm::mat4 rotation =
+    {
+        { c, -s, 0, 0 },
+        { s,  c, 0, 0 },
+        { 0,  0, 1, 0 },
+        { 0,  0, 0, 1 }
+    };
+
+    glm::mat4 view = rotation * translation;
+    return FromGLM(view);
+}
+
+sgl_Mat4 sgl_Maths_Mat4_Inverse(sgl_Mat4 mat) {
+    return FromGLM(glm::inverse(ToGLM(mat)));
+}
+
+sgl_Mat4 sgl_Maths_Mat4_Transpose(sgl_Mat4 mat) {
+    return FromGLM(glm::transpose(ToGLM(mat)));
+}
+
+sgl_Mat4 sgl_Maths_Mat4_Translation(sgl_Vec3 translation)
+{
+    glm::vec3 glmTranslation(translation.x, translation.y, translation.z);
+    return FromGLM(glm::translate(glm::mat4(1.f), glmTranslation));
+}
+
+sgl_Mat4 sgl_Maths_Mat4_Rotation(float angle, sgl_Vec3 axis)
+{
+    glm::vec3 glmAxis(axis.x, axis.y, axis.z);
+    return FromGLM(glm::rotate(glm::mat4(1.f), angle, glmAxis));
 }

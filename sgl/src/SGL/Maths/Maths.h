@@ -1,6 +1,9 @@
 #pragma once
 #include <SGL/SGL.h>
 #include <SGL/Maths/Vec2.h>
+#include <SGL/Maths/Vec3.h>
+#include <SGL/Maths/Vec4.h>
+#include <SGL/Maths/Mat4.h>
 
 SGL_BEGIN
 
@@ -66,6 +69,7 @@ SGL_API extern float sgl_Maths_Pow(float base, float exponent);
 SGL_API extern float sgl_Maths_LerpDT(float a, float b, float t, float dt);
 
 
+#pragma region Vec2
 SGL_API extern float sgl_Maths_Vec2_Dist(sgl_Vec2 a, sgl_Vec2 b);
 SGL_API extern float sgl_Maths_Vec2_Dist2(sgl_Vec2 a, sgl_Vec2 b);
 
@@ -81,8 +85,9 @@ SGL_API extern float sgl_Maths_Vec2_Dot(sgl_Vec2 a, sgl_Vec2 b);
 SGL_API extern float sgl_Maths_Vec2_AspectRatio(sgl_Vec2 v);
 
 SGL_API extern sgl_Vec2 sgl_Maths_Vec2_Floor(sgl_Vec2 v);
+#pragma endregion
 
-
+#pragma region Vec2i
 SGL_API extern float sgl_Maths_Vec2i_Dist(sgl_Vec2i a, sgl_Vec2i b);
 SGL_API extern float sgl_Maths_Vec2i_Dist2(sgl_Vec2i a, sgl_Vec2i b);
 
@@ -96,5 +101,19 @@ SGL_API extern float sgl_Maths_Vec2i_Length2(sgl_Vec2i v);
 SGL_API extern float sgl_Maths_Vec2i_Dot(sgl_Vec2i a, sgl_Vec2i b);
 
 SGL_API extern float sgl_Maths_Vec2i_AspectRatio(sgl_Vec2i v);
+#pragma endregion
+
+#pragma region Mat4
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Orthographic(sgl_Vec2i screenSize, float zoom);
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_OrthographicGL(sgl_Vec2i screenSize, float zoom);
+
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_View(sgl_Vec2 position, float angle);
+
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Inverse(sgl_Mat4 mat);
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Transpose(sgl_Mat4 mat);
+
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Translation(sgl_Vec3 translation);
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Rotation(float angle, sgl_Vec3 axis);
+#pragma endregion
 
 SGL_END
