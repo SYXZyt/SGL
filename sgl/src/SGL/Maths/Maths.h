@@ -66,35 +66,35 @@ SGL_API extern float sgl_Maths_Pow(float base, float exponent);
 SGL_API extern float sgl_Maths_LerpDT(float a, float b, float t, float dt);
 
 
-SGL_API extern float sgl_Maths_Dist(sgl_Vec2 a, sgl_Vec2 b);
-SGL_API extern float sgl_Maths_Dist2(sgl_Vec2 a, sgl_Vec2 b);
+SGL_API extern float sgl_Maths_Vec2_Dist(sgl_Vec2 a, sgl_Vec2 b);
+SGL_API extern float sgl_Maths_Vec2_Dist2(sgl_Vec2 a, sgl_Vec2 b);
 
-SGL_API extern float sgl_Maths_Angle(sgl_Vec2 a, sgl_Vec2 b);
+SGL_API extern float sgl_Maths_Vec2_Angle(sgl_Vec2 a, sgl_Vec2 b);
 
-SGL_API extern float sgl_Maths_Direction(sgl_Vec2 v);
+SGL_API extern float sgl_Maths_Vec2_Direction(sgl_Vec2 v);
 
-SGL_API extern float sgl_Maths_Length(sgl_Vec2 v);
-SGL_API extern float sgl_Maths_Length2(sgl_Vec2 v);
+SGL_API extern float sgl_Maths_Vec2_Length(sgl_Vec2 v);
+SGL_API extern float sgl_Maths_Vec2_Length2(sgl_Vec2 v);
 
-SGL_API extern float sgl_Maths_Dot(sgl_Vec2 a, sgl_Vec2 b);
+SGL_API extern float sgl_Maths_Vec2_Dot(sgl_Vec2 a, sgl_Vec2 b);
 
-SGL_API extern float sgl_Maths_AspectRatio(sgl_Vec2 v);
+SGL_API extern float sgl_Maths_Vec2_AspectRatio(sgl_Vec2 v);
 
-SGL_API extern sgl_Vec2 sgl_Maths_Floor_Vec2(sgl_Vec2 v);
+SGL_API extern sgl_Vec2 sgl_Maths_Vec2_Floor(sgl_Vec2 v);
 
 
-SGL_API extern float sgl_Maths_Dist_i(sgl_Vec2i a, sgl_Vec2i b);
-SGL_API extern float sgl_Maths_Dist2_i(sgl_Vec2i a, sgl_Vec2i b);
+SGL_API extern float sgl_Maths_Vec2i_Dist(sgl_Vec2i a, sgl_Vec2i b);
+SGL_API extern float sgl_Maths_Vec2i_Dist2(sgl_Vec2i a, sgl_Vec2i b);
 
-SGL_API extern float sgl_Maths_Angle_i(sgl_Vec2i a, sgl_Vec2i b);
+SGL_API extern float sgl_Maths_Vec2i_Angle(sgl_Vec2i a, sgl_Vec2i b);
 
-SGL_API extern float sgl_Maths_Direction_i(sgl_Vec2i v);
+SGL_API extern float sgl_Maths_Vec2i_Direction(sgl_Vec2i v);
 
-SGL_API extern float sgl_Maths_Length_i(sgl_Vec2i v);
-SGL_API extern float sgl_Maths_Length2_i(sgl_Vec2i v);
+SGL_API extern float sgl_Maths_Vec2i_Length(sgl_Vec2i v);
+SGL_API extern float sgl_Maths_Vec2i_Length2(sgl_Vec2i v);
 
-SGL_API extern float sgl_Maths_Dot_i(sgl_Vec2i a, sgl_Vec2i b);
+SGL_API extern float sgl_Maths_Vec2i_Dot(sgl_Vec2i a, sgl_Vec2i b);
 
-SGL_API extern float sgl_Maths_AspectRatio_i(sgl_Vec2i v);
+SGL_API extern float sgl_Maths_Vec2i_AspectRatio(sgl_Vec2i v);
 
 SGL_END

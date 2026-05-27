@@ -81,11 +81,11 @@ float sgl_Maths_LerpDT(float a, float b, float t, float dt) {
     return sgl_Maths_Lerp(a, b, 1 - sgl_Maths_Pow(t, dt));
 }
 
-float sgl_Maths_Dist(sgl_Vec2 a, sgl_Vec2 b) {
-    return sgl_Maths_Sqrt(sgl_Maths_Dist2(a, b));
+float sgl_Maths_Vec2_Dist(sgl_Vec2 a, sgl_Vec2 b) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec2_Dist2(a, b));
 }
 
-float sgl_Maths_Dist2(sgl_Vec2 a, sgl_Vec2 b)
+float sgl_Maths_Vec2_Dist2(sgl_Vec2 a, sgl_Vec2 b)
 {
     const float dx = b.x - a.x;
     const float dy = b.y - a.y;
@@ -93,31 +93,31 @@ float sgl_Maths_Dist2(sgl_Vec2 a, sgl_Vec2 b)
     return sgl_Maths_Sq(dx) + sgl_Maths_Sq(dy);
 }
 
-float sgl_Maths_Angle(sgl_Vec2 a, sgl_Vec2 b)
+float sgl_Maths_Vec2_Angle(sgl_Vec2 a, sgl_Vec2 b)
 {
-    const float dot = sgl_Maths_Dot(a, b);
-    const float lengths = sgl_Maths_Length(a) * sgl_Maths_Length(b);
+    const float dot = sgl_Maths_Vec2_Dot(a, b);
+    const float lengths = sgl_Maths_Vec2_Length(a) * sgl_Maths_Vec2_Length(b);
 
     return sgl_Maths_ACos(dot / lengths);
 }
 
-float sgl_Maths_Direction(sgl_Vec2 v) {
+float sgl_Maths_Vec2_Direction(sgl_Vec2 v) {
     return sgl_Maths_ATan2(v.y, v.x);
 }
 
-float sgl_Maths_Length(sgl_Vec2 v) {
-    return sgl_Maths_Sqrt(sgl_Maths_Length2(v));
+float sgl_Maths_Vec2_Length(sgl_Vec2 v) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec2_Length2(v));
 }
 
-float sgl_Maths_Length2(sgl_Vec2 v) {
+float sgl_Maths_Vec2_Length2(sgl_Vec2 v) {
     return sgl_Maths_Sq(v.x) + sgl_Maths_Sq(v.y);
 }
 
-float sgl_Maths_Dot(sgl_Vec2 a, sgl_Vec2 b) {
+float sgl_Maths_Vec2_Dot(sgl_Vec2 a, sgl_Vec2 b) {
     return a.x * b.x + a.y * b.y;
 }
 
-float sgl_Maths_AspectRatio(sgl_Vec2 v)
+float sgl_Maths_Vec2_AspectRatio(sgl_Vec2 v)
 {
     if (v.y == 0.f)
         return sgl_Maths_INF;
@@ -125,7 +125,7 @@ float sgl_Maths_AspectRatio(sgl_Vec2 v)
     return v.width / v.height;
 }
 
-sgl_Vec2 sgl_Maths_Floor_Vec2(sgl_Vec2 v)
+sgl_Vec2 sgl_Maths_Vec2_Floor(sgl_Vec2 v)
 {
     return {{{
         sgl_Maths_Floor(v.x),
@@ -133,11 +133,11 @@ sgl_Vec2 sgl_Maths_Floor_Vec2(sgl_Vec2 v)
     }}};
 }
 
-float sgl_Maths_Dist_i(sgl_Vec2i a, sgl_Vec2i b) {
-    return sgl_Maths_Sqrt(sgl_Maths_Dist2_i(a, b));
+float sgl_Maths_Vec2i_Dist(sgl_Vec2i a, sgl_Vec2i b) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec2i_Dist2(a, b));
 }
 
-float sgl_Maths_Dist2_i(sgl_Vec2i a, sgl_Vec2i b)
+float sgl_Maths_Vec2i_Dist2(sgl_Vec2i a, sgl_Vec2i b)
 {
     const int dx = b.x - a.x;
     const int dy = b.y - a.y;
@@ -145,31 +145,31 @@ float sgl_Maths_Dist2_i(sgl_Vec2i a, sgl_Vec2i b)
     return (float)(sgl_Maths_Sq(dx) + sgl_Maths_Sq(dy));
 }
 
-float sgl_Maths_Angle_i(sgl_Vec2i a, sgl_Vec2i b)
+float sgl_Maths_Vec2i_Angle(sgl_Vec2i a, sgl_Vec2i b)
 {
-    const float dot = sgl_Maths_Dot_i(a, b);
-    const float lengths = sgl_Maths_Length_i(a) * sgl_Maths_Length_i(b);
+    const float dot = sgl_Maths_Vec2i_Dot(a, b);
+    const float lengths = sgl_Maths_Vec2i_Length(a) * sgl_Maths_Vec2i_Length(b);
 
     return sgl_Maths_ACos(dot / lengths);
 }
 
-float sgl_Maths_Direction_i(sgl_Vec2i v) {
+float sgl_Maths_Vec2i_Direction(sgl_Vec2i v) {
     return sgl_Maths_ATan2((float)v.y, (float)v.x);
 }
 
-float sgl_Maths_Length_i(sgl_Vec2i v) {
-    return sgl_Maths_Sqrt(sgl_Maths_Length2_i(v));
+float sgl_Maths_Vec2i_Length(sgl_Vec2i v) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec2i_Length2(v));
 }
 
-float sgl_Maths_Length2_i(sgl_Vec2i v) {
+float sgl_Maths_Vec2i_Length2(sgl_Vec2i v) {
     return (float)(sgl_Maths_Sq(v.x) + sgl_Maths_Sq(v.y));
 }
 
-float sgl_Maths_Dot_i(sgl_Vec2i a, sgl_Vec2i b) {
+float sgl_Maths_Vec2i_Dot(sgl_Vec2i a, sgl_Vec2i b) {
     return (float)a.x * b.x + a.y * b.y;
 }
 
-float sgl_Maths_AspectRatio_i(sgl_Vec2i v)
+float sgl_Maths_Vec2i_AspectRatio(sgl_Vec2i v)
 {
     if (v.y == 0.f)
         return sgl_Maths_INF;
