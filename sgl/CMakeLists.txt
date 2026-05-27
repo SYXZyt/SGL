@@ -24,7 +24,7 @@ add_library(SGL SHARED
     src/SGL/Runtime.cpp
     src/SGL/Util/Error.h
     src/SGL/Util/Error.cpp
- "src/SGL/Colour.h" "src/SGL/Colour.cpp" "src/SGL/Graphics/GraphicsDevice.h" "src/SGL/Graphics/Backends/OpenGL/GLDevice.h" "src/SGL/Graphics/Backends/OpenGL/GLDevice.cpp" "src/SGL/Graphics/GraphicsDevice.cpp" "src/SGL/Graphics/Shader.h" "src/SGL/Graphics/Backends/OpenGL/GLShader.h" "src/SGL/Graphics/Backends/OpenGL/GLShader.cpp" "src/SGL/Graphics/Shader.cpp" "src/SGL/IResource.h" "src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h" "src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.cpp" "src/SGL/Maths/Vec3.h" "src/SGL/Maths/Vec3.cpp" "src/SGL/Maths/Vec4.h" "src/SGL/Maths/Vec4.cpp")
+ "src/SGL/Colour.h" "src/SGL/Colour.cpp" "src/SGL/Graphics/GraphicsDevice.h" "src/SGL/Graphics/Backends/OpenGL/GLDevice.h" "src/SGL/Graphics/Backends/OpenGL/GLDevice.cpp" "src/SGL/Graphics/GraphicsDevice.cpp" "src/SGL/Graphics/Shader.h" "src/SGL/Graphics/Backends/OpenGL/GLShader.h" "src/SGL/Graphics/Backends/OpenGL/GLShader.cpp" "src/SGL/Graphics/Shader.cpp" "src/SGL/IResource.h" "src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h" "src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.cpp" "src/SGL/Maths/Vec3.h" "src/SGL/Maths/Vec3.cpp" "src/SGL/Maths/Vec4.h" "src/SGL/Maths/Vec4.cpp" "src/SGL/Maths/Mat4.h" "src/SGL/Maths/Mat4.cpp")
 
 include(CMake/Dependencies.cmake)
 
