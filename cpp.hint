@@ -8,3 +8,4 @@
 #define SGL_BEGIN extern "C" {
 #define SGL_BEGIN
 #define GetSelf sgl_GLDevice* self = (sgl_GLDevice*)dev
+#define sglFuncPtr(name, returnType, ...) returnType(*name)(__VA_ARGS__)

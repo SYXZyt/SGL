@@ -35,7 +35,7 @@ typedef struct sgl_VertexLayoutVTable sgl_sealed
     void (*Bind)(struct sgl_VertexLayout* self);
 } sgl_VertexLayoutVTable;
 
-typedef struct sgl_VertexLayout
+typedef struct sgl_VertexLayout sgl_sealed
 {
     const sgl_VertexLayoutVTable* vtable;
 

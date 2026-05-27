@@ -66,6 +66,12 @@ void* sgl_Realloc(void* ptr, size_t newSize)
     if (!ptr)
         return sgl_Malloc(newSize);
 
+    if (newSize == 0)
+    {
+        sgl_Free(ptr);
+        return nullptr;
+    }
+
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
     {
         auto it = gOwnedPointers.find(ptr);
