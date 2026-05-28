@@ -6,7 +6,7 @@ namespace SGLNet.Util
     public sealed class String
     {
         [StructLayout(LayoutKind.Sequential)]
-        private struct NativeString
+        public struct NativeString
         {
             public IntPtr str;
             public nuint len;
@@ -22,6 +22,9 @@ namespace SGLNet.Util
         private static sgl_FreeString_ptr sgl_FreeString;
 
         private NativeString mNative;
+
+        public NativeString Handle =>
+            mNative;
 
         public void Free() =>
             sgl_FreeString(mNative);

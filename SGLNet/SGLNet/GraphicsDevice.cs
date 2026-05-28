@@ -1,11 +1,15 @@
-﻿using SGLNet.Interop;
+﻿using SGLNet.Graphics;
+using SGLNet.Interop;
 using System.Runtime.InteropServices;
 
 namespace SGLNet
 {
     public sealed class GraphicsDevice : IDisposable
     {
-        private readonly IntPtr mHandle;
+        private IntPtr mHandle;
+
+        internal IntPtr Handle =>
+            mHandle;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr sgl_GraphicsDevice_Create_ptr(IntPtr window);
@@ -41,6 +45,11 @@ namespace SGLNet
         public void Present() =>
             sgl_GraphicsDevice_Present(mHandle);
 
+        public void Draw(VertexArray va)
+        {
+
+        }
+
         public GraphicsDevice(Window window)
         {
             sgl_GraphicsDevice_Create ??= Native.GetFunction<sgl_GraphicsDevice_Create_ptr>(nameof(sgl_GraphicsDevice_Create));
@@ -55,6 +64,7 @@ namespace SGLNet
         public void Dispose()
         {
             sgl_GraphicsDevice_Destroy(mHandle);
+            mHandle = IntPtr.Zero;
 
             GC.SuppressFinalize(this);
         }
