@@ -3,6 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace SGLNet.Util
 {
+    /// <summary>
+    /// This string class requires explicit freeing. Only use where absolute necessary
+    /// </summary>
     public sealed class String
     {
         [StructLayout(LayoutKind.Sequential)]
