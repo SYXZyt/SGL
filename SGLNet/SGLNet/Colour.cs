@@ -52,14 +52,19 @@ namespace SGLNet
                 byte bb = (byte)(b * 255f);
                 byte ab = (byte)(a * 255f);
 
-                return rb << 24 | gb << 16 | bb << 8 | ab;
+                return (uint)((ab << 24) | (rb << 16) | (gb << 8) | bb);
             }
             set
             {
-                r = ((value >> 24) & 0xff) / 255f;
-                g = ((value >> 16) & 0xff) / 255f;
-                b = ((value >> 8) & 0xff) / 255f;
-                a = (value & 0xff) / 255f;
+                byte a8 = (byte)((value >> 24) & 0xFF);
+                byte r8 = (byte)((value >> 16) & 0xFF);
+                byte g8 = (byte)((value >> 8) & 0xFF);
+                byte b8 = (byte)(value & 0xFF);
+
+                r = r8 / 255f;
+                g = g8 / 255f;
+                b = b8 / 255f;
+                a = a8 / 255f;
             }
         }
 
