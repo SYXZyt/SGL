@@ -59,4 +59,8 @@ SGL_API extern void sgl_Window_DeregisterResize(sgl_Window* window, sgl_Window_R
 
 SGL_API extern void sgl_Window_SwapBuffer(sgl_Window* window);
 
+#ifdef _WIN32
+SGL_API extern HWND sgl_Window_GetWin32Window(sgl_Window* window);
+#endif
+
 SGL_END

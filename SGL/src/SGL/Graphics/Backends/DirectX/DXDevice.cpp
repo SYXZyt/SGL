@@ -150,7 +150,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     swapDesc.BufferDesc.Height = device->base.height;
     swapDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapDesc.OutputWindow = NULL; /// @todo sgl_Window_Native(window);
+    swapDesc.OutputWindow = sgl_Window_GetWin32Window(window);
     swapDesc.SampleDesc.Count = 1;
     swapDesc.Windowed = TRUE;
 

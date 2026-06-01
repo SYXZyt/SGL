@@ -137,3 +137,9 @@ void sgl_Window_SwapBuffer(sgl_Window* window)
     if (window->glContext)
         SDL_GL_SwapWindow(window->window);
 }
+
+#ifdef _WIN32
+HWND sgl_Window_GetWin32Window(sgl_Window* window) {
+    return (HWND)SDL_GetPointerProperty(SDL_GetWindowProperties(window->window), SDL_PROP_WINDOW_WIN32_HWND_POINTER, nullptr);
+}
+#endif
