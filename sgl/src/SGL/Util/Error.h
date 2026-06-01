@@ -11,4 +11,8 @@ SGL_BEGIN
 
 SGL_API extern void sgl_ReportError(const char* message, const char* file, int line);
 
+#ifdef _WIN32
+SGL_API extern const char* sgl_HResultToString(HRESULT hr);
+#endif
+
 SGL_END

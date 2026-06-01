@@ -1,6 +1,7 @@
 #include "GraphicsDevice.h"
 #include <SGL/Util/Error.h>
 #include <SGL/Graphics/Backends/OpenGL/GLDevice.h>
+#include <SGL/Graphics/Backends/DirectX/DXDevice.h>
 
 static void OnResize(sgl_Window* window, sgl_Vec2i newSize, void* userdata)
 {
@@ -15,6 +16,15 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
     if (window->cfg.backend == sgl_Backend_OPENGL)
     {
         device = (sgl_GraphicsDevice*)sgl_GLDevice_Create(window);
+    }
+    else if (window->cfg.backend == sgl_Backend_DIRECTX11)
+    {
+#ifdef SGL_DIRECTX
+        device = (sgl_GraphicsDevice*)sgl_DXDevice_Create(window);
+#else
+        SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        return nullptr;
+#endif
     }
     else
     {
