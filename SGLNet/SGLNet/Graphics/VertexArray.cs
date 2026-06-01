@@ -9,6 +9,8 @@ namespace SGLNet.Graphics
         private IntPtr mHandle;
         private readonly GraphicsDevice mGraphics;
 
+        private VertexLayout mVertexLayout;
+
         internal IntPtr Handle =>
             mHandle;
 
@@ -60,6 +62,9 @@ namespace SGLNet.Graphics
 
         public void Dispose()
         {
+            // The native object for this is destroy by the vertex array so we don't want to do it in C#
+            mVertexLayout.Leak();
+
             sgl_VertexArray_Destroy(mHandle);
             mHandle = IntPtr.Zero;
 
@@ -73,6 +78,8 @@ namespace SGLNet.Graphics
             sgl_VertexArray_Destroy ??= Native.GetFunction<sgl_VertexArray_Destroy_ptr>(nameof(sgl_VertexArray_Destroy));
             sgl_VertexArray_Set ??= Native.GetFunction<sgl_VertexArray_Set_ptr>(nameof(sgl_VertexArray_Set));
             sgl_VertexArray_AddVertex ??= Native.GetFunction<sgl_VertexArray_AddVertex_ptr>(nameof(sgl_VertexArray_AddVertex));
+
+            mVertexLayout = layout;
 
             mGraphics = graphics;
             mHandle = sgl_VertexArray_Create(graphics.Handle, vertexSize, layout.Handle);

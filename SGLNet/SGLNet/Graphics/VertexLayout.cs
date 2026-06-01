@@ -45,15 +45,21 @@ namespace SGLNet.Graphics
 
         private IntPtr mHandle;
 
-        private readonly GraphicsDevice mGraphics;
-
         public IntPtr Handle =>
             mHandle;
 
+        internal void Leak()
+        {
+            mHandle = IntPtr.Zero;
+        }
+
         public void Dispose()
         {
-            sgl_VertexLayout_Destroy(mHandle);
-            mHandle = IntPtr.Zero;
+            if (mHandle != IntPtr.Zero)
+            {
+                sgl_VertexLayout_Destroy(mHandle);
+                mHandle = IntPtr.Zero;
+            }
 
             GC.SuppressFinalize(this);
         }
@@ -76,8 +82,6 @@ namespace SGLNet.Graphics
             sgl_VertexLayout_New ??= Native.GetFunction<sgl_VertexLayout_New_ptr>(nameof(sgl_VertexLayout_New));
             sgl_VertexLayout_Add ??= Native.GetFunction<sgl_VertexLayout_Add_ptr>(nameof(sgl_VertexLayout_Add));
             sgl_VertexLayout_Destroy ??= Native.GetFunction<sgl_VertexLayout_Destroy_ptr>(nameof(sgl_VertexLayout_Destroy));
-
-            mGraphics = graphics;
 
             mHandle = sgl_VertexLayout_New(graphics.Handle);
         }
