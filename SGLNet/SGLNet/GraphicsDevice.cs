@@ -33,6 +33,7 @@ namespace SGLNet
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr);
+        private static sgl_GraphicsDevice_Draw_ptr sgl_GraphicsDevice_Draw;
 
         public Colour ClearColour
         {
@@ -45,10 +46,8 @@ namespace SGLNet
         public void Present() =>
             sgl_GraphicsDevice_Present(mHandle);
 
-        public void Draw(VertexArray va)
-        {
-
-        }
+        public void Draw(VertexArray va, Shader shader) =>
+            sgl_GraphicsDevice_Draw(mHandle, va.Handle, shader.Handle);
 
         public GraphicsDevice(Window window)
         {
@@ -57,6 +56,7 @@ namespace SGLNet
             sgl_GraphicsDevice_SetClearColour ??= Native.GetFunction<sgl_GraphicsDevice_SetClearColour_ptr>(nameof(sgl_GraphicsDevice_SetClearColour));
             sgl_GraphicsDevice_Clear ??= Native.GetFunction<sgl_GraphicsDevice_Clear_ptr>(nameof(sgl_GraphicsDevice_Clear));
             sgl_GraphicsDevice_Present ??= Native.GetFunction<sgl_GraphicsDevice_Present_ptr>(nameof(sgl_GraphicsDevice_Present));
+            sgl_GraphicsDevice_Draw ??= Native.GetFunction<sgl_GraphicsDevice_Draw_ptr>(nameof(sgl_GraphicsDevice_Draw));
 
             mHandle = sgl_GraphicsDevice_Create(window.Handle);
         }

@@ -51,42 +51,6 @@ namespace SGLNet.Maths
             set => z = value;
         }
 
-        public float U
-        {
-            readonly get => x;
-            set => x = value;
-        }
-
-        public float V
-        {
-            readonly get => y;
-            set => y = value;
-        }
-
-        public float W
-        {
-            readonly get => z;
-            set => z = value;
-        }
-
-        public float Width
-        {
-            readonly get => x;
-            set => x = value;
-        }
-
-        public float Height
-        {
-            readonly get => y;
-            set => y = value;
-        }
-
-        public float Depth
-        {
-            readonly get => z;
-            set => z = value;
-        }
-
         public static Vec3 operator +(Vec3 left, Vec3 right) =>
             new(left.x + right.x, left.y + right.y, left.z + right.z);
 

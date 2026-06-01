@@ -1,4 +1,5 @@
-﻿using System.Runtime.InteropServices;
+﻿using SGLNet.Maths;
+using System.Runtime.InteropServices;
 
 namespace SGLNet
 {
@@ -67,6 +68,24 @@ namespace SGLNet
                 a = a8 / 255f;
             }
         }
+
+        public static implicit operator Vec3(in Colour c) =>
+            c.ToVec3();
+
+        public static implicit operator Vec4(in Colour c) =>
+            c.ToVec4();
+
+        public static implicit operator Colour(in Vec3 v) =>
+            new(v.X, v.Y, v.Z);
+
+        public static implicit operator Colour(in Vec4 v) =>
+            new(v.X, v.Y, v.Z, v.W);
+
+        public readonly Vec3 ToVec3() =>
+            new(r, g, b);
+
+        public readonly Vec4 ToVec4() =>
+            new(r, g, b, a);
 
         public Colour()
         {

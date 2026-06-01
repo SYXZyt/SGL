@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace SGLNet.Util
 {
     /// <summary>
-    /// This string class requires explicit freeing. Only use where absolute necessary
+    /// This string class requires explicit freeing. Only use where absolute necessary. This class should not be reused. Once passed to a vertex array, never use this again
     /// </summary>
     public sealed class String
     {

@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 
         sgl_VertexElement col =
         {
-            .semantic = sgl_MakeString("COLOR"),
+            .semantic = sgl_MakeString("COLOR0"),
             .offset = 16,
             .type = sgl_VertexElementType_VEC3,
             .perInstance = false,
