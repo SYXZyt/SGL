@@ -49,7 +49,7 @@ int main(int argc, char** argv)
         sgl_VertexElement pos =
         {
             .semantic = sgl_MakeString("POSITION"),
-            .offset = 0,
+            .offset = offsetof(Vertex, vertex),
             .type = sgl_VertexElementType_VEC3,
             .perInstance = false,
         };
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
         sgl_VertexElement col =
         {
             .semantic = sgl_MakeString("COLOR0"),
-            .offset = 16,
+            .offset = offsetof(Vertex, colour),
             .type = sgl_VertexElementType_VEC3,
             .perInstance = false,
         };
@@ -72,10 +72,10 @@ int main(int argc, char** argv)
     const float x = 0.1333f * scale;
     const float y = 0.2370f * scale;
 
-    sgl_Vec3 ptl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
-    sgl_Vec3 ptr = sgl_Vec3_New_ScalarXYZ( x, -y, 0);
-    sgl_Vec3 pbr = sgl_Vec3_New_ScalarXYZ( x,  y, 0);
-    sgl_Vec3 pbl = sgl_Vec3_New_ScalarXYZ(-x,  y, 0);
+    sgl_Vec3 ptl = sgl_Vec3_New_ScalarXYZ(-x * 1.25,  y, 0);
+    sgl_Vec3 ptr = sgl_Vec3_New_ScalarXYZ( x,  y, 0);
+    sgl_Vec3 pbr = sgl_Vec3_New_ScalarXYZ( x, -y, 0);
+    sgl_Vec3 pbl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
 
     Vertex tl;
     Vertex tr;
@@ -101,7 +101,7 @@ int main(int argc, char** argv)
     {
         sgl_Window_PollEvents(window);
 
-        sgl_GraphicsDevice_Clear(gpu, sgl_ClearFlag_COLOUR | sgl_ClearFlag_DEPTH);
+        sgl_GraphicsDevice_Clear(gpu);
 
         sgl_GraphicsDevice_Draw(gpu, va, shr);
 

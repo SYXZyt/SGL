@@ -36,8 +36,8 @@ void sgl_GraphicsDevice_SetClearColour(sgl_GraphicsDevice* device, sgl_Colour co
     device->vtable->SetClearColour(device, colour);
 }
 
-void sgl_GraphicsDevice_Clear(sgl_GraphicsDevice* device, sgl_ClearFlags clearFlags) {
-    device->vtable->Clear(device, clearFlags);
+void sgl_GraphicsDevice_Clear(sgl_GraphicsDevice* device) {
+    device->vtable->Clear(device);
 }
 
 void sgl_GraphicsDevice_Present(sgl_GraphicsDevice* device) {

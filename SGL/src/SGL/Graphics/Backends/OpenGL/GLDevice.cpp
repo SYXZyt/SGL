@@ -26,19 +26,9 @@ static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     glViewport(0, 0, dev->width, dev->height);
 }
 
-static void GLDevice_Clear(sgl_GraphicsDevice* dev, sgl_ClearFlags clearFlags)
+static void GLDevice_Clear(sgl_GraphicsDevice* dev)
 {
-    GetSelf;
-
-    GLbitfield mask = 0;
-
-    if (clearFlags & sgl_ClearFlag_COLOUR)
-        mask |= GL_COLOR_BUFFER_BIT;
-
-    if (clearFlags & sgl_ClearFlag_DEPTH)
-        mask |= GL_DEPTH_BUFFER_BIT;
-
-    glClear(mask);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 static void GLDevice_Present(sgl_GraphicsDevice* dev) {
