@@ -8,7 +8,7 @@
 #include <SGL/Graphics/VertexLayout.h>
 #include <SGL/Graphics/VertexArray.h>
 
-const char* VertexShaderSource =
+const char* VertexShaderSourceGL =
 "#version 330 core\n"
 "layout(location = 0) in vec3 aPos;\n"
 "layout(location = 1) in vec3 aCol;\n"
@@ -19,7 +19,7 @@ const char* VertexShaderSource =
 "   oCol = aCol;\n"
 "}\n";
 
-const char* FragmentShaderSource =
+const char* FragmentShaderSourceGL =
 "#version 330 core\n"
 "\n"
 "out vec4 FragColor;\n"
@@ -28,6 +28,39 @@ const char* FragmentShaderSource =
 "void main()\n"
 "{\n"
 "    FragColor = vec4(oCol, 1.0);\n"
+"}\n";
+
+const char* VertexShaderSourceDX =
+"struct VSInput\n"
+"{\n"
+"    float3 pos : POSITION;\n"
+"    float3 col : COLOR;\n"
+"};\n"
+"\n"
+"struct VSOutput\n"
+"{\n"
+"    float4 pos : SV_POSITION;\n"
+"    float3 col : COLOR;\n"
+"};\n"
+"\n"
+"VSOutput main(VSInput input)\n"
+"{\n"
+"    VSOutput output;\n"
+"    output.pos = float4(input.pos, 1.0f);\n"
+"    output.col = input.col;\n"
+"    return output;\n"
+"}\n";
+
+const char* PixelShaderSourceDX =
+"struct PSInput\n"
+"{\n"
+"    float4 pos : SV_POSITION;\n"
+"    float3 col : COLOR;\n"
+"};\n"
+"\n"
+"float4 main(PSInput input) : SV_TARGET\n"
+"{\n"
+"    return float4(input.col, 1.0f);\n"
 "}\n";
 
 typedef struct sgl_alignas(16) Vertex
@@ -41,6 +74,8 @@ int main(int argc, char** argv)
     sgl_Logger_Init();
 
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
+    cfg.backend = sgl_Backend_DIRECTX11;
+
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
     
@@ -72,7 +107,7 @@ int main(int argc, char** argv)
     const float x = 0.1333f * scale;
     const float y = 0.2370f * scale;
 
-    sgl_Vec3 ptl = sgl_Vec3_New_ScalarXYZ(-x * 1.25,  y, 0);
+    sgl_Vec3 ptl = sgl_Vec3_New_ScalarXYZ(-x * 1.25f,  y, 0);
     sgl_Vec3 ptr = sgl_Vec3_New_ScalarXYZ( x,  y, 0);
     sgl_Vec3 pbr = sgl_Vec3_New_ScalarXYZ( x, -y, 0);
     sgl_Vec3 pbl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
@@ -95,7 +130,7 @@ int main(int argc, char** argv)
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
     sgl_VertexArray_AddQuad(va, q);
 
-    sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSource, FragmentShaderSource);
+    sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSourceGL, FragmentShaderSourceGL);
 
     while (!window->wantsClose)
     {
