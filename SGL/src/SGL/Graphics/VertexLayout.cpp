@@ -25,6 +25,28 @@ sgl_VertexLayout* sgl_VertexLayout_New(sgl_GraphicsDevice* gpu)
     return layout;
 }
 
+sgl_VertexLayout* sgl_VertexLayout_DeepCopy(sgl_VertexLayout* layout)
+{
+    sgl_VertexLayout* newLayout = sgl::Memory::New<sgl_VertexLayout>();
+
+    newLayout->elementCapacity = layout->elementCapacity;
+    newLayout->elementCount = layout->elementCount;
+    newLayout->elements = (sgl_VertexElement*)sgl_Malloc(newLayout->elementCapacity * sizeof(sgl_VertexElement));
+
+    for (uint32 i = 0; i < newLayout->elementCount; ++i)
+    {
+        sgl_VertexElement& src = layout->elements[i];
+        sgl_VertexElement& dst = newLayout->elements[i];
+
+        dst.semantic = sgl_MakeString(src.semantic.str);
+        dst.type = src.type;
+        dst.offset = src.offset;
+        dst.perInstance = src.perInstance;
+    }
+
+    return newLayout;
+}
+
 void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElement element)
 {
     EnsureCapacity(layout);

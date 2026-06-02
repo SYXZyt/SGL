@@ -45,16 +45,17 @@ sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, void* br, void*
 sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize, sgl_VertexLayout* layout)
 {
     sgl_VertexArray* va = nullptr;
+    sgl_VertexLayout* ourLayout = sgl_VertexLayout_DeepCopy(layout);
 
     if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
-        va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize, layout);
+        va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize, ourLayout);
     else
     {
         SGL_REPORT_ERROR("Unsupported backend");
         return nullptr;
     }
 
-    va->layout = layout;
+    va->layout = ourLayout;
     va->gpu = gpu;
     return va;
 }

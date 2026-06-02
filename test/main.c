@@ -82,7 +82,7 @@ int main(int argc, char** argv)
     sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
     {
         sgl_VertexElement pos =
-        {
+        { 
             .semantic = sgl_MakeString("POSITION"),
             .offset = offsetof(Vertex, vertex),
             .type = sgl_VertexElementType_VEC3,
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 
         sgl_VertexElement col =
         {
-            .semantic = sgl_MakeString("COLOR0"),
+            .semantic = sgl_MakeString("COLOR"),
             .offset = offsetof(Vertex, colour),
             .type = sgl_VertexElementType_VEC3,
             .perInstance = false,
@@ -128,9 +128,9 @@ int main(int argc, char** argv)
     br.colour = sgl_Colour_ToVec3(sgl_Col_Yellow);
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
-    sgl_VertexArray_AddQuad(va, q);
+    //sgl_VertexArray_AddQuad(va, q);
 
-    sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSourceGL, FragmentShaderSourceGL);
+    sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSourceDX, PixelShaderSourceDX, layout);
 
     while (!window->wantsClose)
     {
@@ -143,6 +143,7 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Present(gpu);
     }
 
+    sgl_VertexLayout_Destroy(layout);
     sgl_VertexArray_Destroy(va);
     sgl_Shader_Destroy(shr);
     sgl_GraphicsDevice_Destroy(gpu);

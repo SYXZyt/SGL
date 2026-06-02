@@ -5,6 +5,7 @@
 
 SGL_BEGIN
 
+struct sgl_VertexLayout;
 struct sgl_GraphicsDevice;
 struct sgl_Shader;
 typedef struct sgl_ShaderVTable sgl_sealed
@@ -21,10 +22,11 @@ typedef struct sgl_Shader sgl_sealed
     sgl_String data_vcode;
     sgl_String data_fcode;
     struct sgl_GraphicsDevice* gpu;
+    struct sgl_VertexLayout* layout;
 } sgl_Shader;
 
-SGL_API extern sgl_Shader* sgl_Shader_Create_Source(struct sgl_GraphicsDevice* gpu, const char* vSrc, const char* fSrc);
-SGL_API extern sgl_Shader* sgl_Shader_Create_Filename(struct sgl_GraphicsDevice* gpu, const char* vFile, const char* fFile);
+SGL_API extern sgl_Shader* sgl_Shader_Create_Source(struct sgl_GraphicsDevice* gpu, const char* vSrc, const char* fSrc, struct sgl_VertexLayout* layout);
+SGL_API extern sgl_Shader* sgl_Shader_Create_Filename(struct sgl_GraphicsDevice* gpu, const char* vFile, const char* fFile, struct sgl_VertexLayout* layout);
 
 SGL_API extern void sgl_Shader_Destroy(sgl_Shader* shader);
 

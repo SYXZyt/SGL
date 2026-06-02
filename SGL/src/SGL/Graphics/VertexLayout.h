@@ -28,7 +28,7 @@ typedef struct sgl_VertexElement sgl_sealed
     sgl_String semantic;
     size_t offset;
     sgl_VertexElementType type;
-    bool perInstance; // Unused for now
+    bool perInstance; // Unused for now    
 } sgl_VertexElement;
 
 typedef struct sgl_VertexLayout sgl_sealed
@@ -41,6 +41,7 @@ typedef struct sgl_VertexLayout sgl_sealed
 } sgl_VertexLayout;
 
 SGL_API extern sgl_VertexLayout* sgl_VertexLayout_New(sgl_GraphicsDevice* gpu);
+SGL_API extern sgl_VertexLayout* sgl_VertexLayout_DeepCopy(sgl_VertexLayout* layout);
 SGL_API extern void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElement element);
 SGL_API extern void sgl_VertexLayout_Destroy(sgl_VertexLayout* layout);
 
