@@ -12,10 +12,12 @@ namespace SGLNet.Graphics
 
         private readonly GraphicsDevice mGraphics;
 
+        private readonly VertexLayout mLayout;
+
         private bool mHasLoaded = false;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate IntPtr sgl_Shader_Create_Source_ptr(IntPtr graphics, [MarshalAs(UnmanagedType.LPUTF8Str)] string vSrc, [MarshalAs(UnmanagedType.LPUTF8Str)] string fSrc);
+        private delegate IntPtr sgl_Shader_Create_Source_ptr(IntPtr graphics, [MarshalAs(UnmanagedType.LPUTF8Str)] string vSrc, [MarshalAs(UnmanagedType.LPUTF8Str)] string fSrc, IntPtr layout);
         private static sgl_Shader_Create_Source_ptr sgl_Shader_Create_Source;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -39,7 +41,7 @@ namespace SGLNet.Graphics
 
         public void LoadFromSource(string vertexSource, string fragmentSource)
         {
-            mHandle = sgl_Shader_Create_Source(mGraphics.Handle, vertexSource, fragmentSource);
+            mHandle = sgl_Shader_Create_Source(mGraphics.Handle, vertexSource, fragmentSource, mLayout.Handle);
 
             mHasLoaded = true;
         }
@@ -62,17 +64,19 @@ namespace SGLNet.Graphics
         {
             sgl_Shader_Destroy(mHandle);
             mHandle = IntPtr.Zero;
+            mLayout.Dispose();
 
             GC.SuppressFinalize(this);
         }
 
-        public Shader(GraphicsDevice graphicsDevice)
+        public Shader(GraphicsDevice graphicsDevice, VertexLayout layout)
         {
             mGraphics = graphicsDevice;
 
             sgl_Shader_Create_Source ??= Native.GetFunction<sgl_Shader_Create_Source_ptr>(nameof(sgl_Shader_Create_Source));
             sgl_Shader_Destroy ??= Native.GetFunction<sgl_Shader_Destroy_ptr>(nameof(sgl_Shader_Destroy));
             sgl_Shader_Bind ??= Native.GetFunction<sgl_Shader_Bind_ptr>(nameof(sgl_Shader_Bind));
+            mLayout = layout.Clone() as VertexLayout;
         }
 
         ~Shader() =>
