@@ -2,6 +2,7 @@
 #include <SGL/Util/Memory.h>
 #include <cstring>
 #include <SGL/Graphics/Backends/OpenGL/GLVertexArray.h>
+#include <SGL/Graphics/Backends/DirectX/DXVertexArray.h>
 #include <SGL/Util/Error.h>
 
 static void EnsureVertexCapacity(sgl_VertexArray* va, uint32 required)
@@ -48,7 +49,18 @@ sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSi
     sgl_VertexLayout* ourLayout = sgl_VertexLayout_DeepCopy(layout);
 
     if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
+    {
         va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize, ourLayout);
+    }
+    else if (gpu->window->cfg.backend == sgl_Backend_DIRECTX11)
+    {
+#ifdef SGL_DIRECTX
+        va = (sgl_VertexArray*)sgl_DXVertexArray_New(vertexSize, ourLayout);
+#else
+        SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        return nullptr;
+#endif
+    }
     else
     {
         SGL_REPORT_ERROR("Unsupported backend");

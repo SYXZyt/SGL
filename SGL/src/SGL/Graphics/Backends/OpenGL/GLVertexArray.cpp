@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <SGL/Util/Memory.h>
 
-#define GetSelf sgl_GLVertexArray* self = (sgl_GLVertexArray*)va;
+#define GetSelf sgl_GLVertexArray* self = (sgl_GLVertexArray*)va
 
 static void GLDestroy(sgl_VertexArray* va)
 {

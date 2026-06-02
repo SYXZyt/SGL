@@ -83,7 +83,7 @@ int main(int argc, char** argv)
     {
         sgl_VertexElement pos =
         { 
-            .semantic = sgl_MakeString("POSITION"),
+            .semantic = sgl_POSITION,
             .offset = offsetof(Vertex, vertex),
             .type = sgl_VertexElementType_VEC3,
             .perInstance = false,
@@ -91,7 +91,7 @@ int main(int argc, char** argv)
 
         sgl_VertexElement col =
         {
-            .semantic = sgl_MakeString("COLOR"),
+            .semantic = sgl_COLOUR,
             .offset = offsetof(Vertex, colour),
             .type = sgl_VertexElementType_VEC3,
             .perInstance = false,
@@ -128,9 +128,14 @@ int main(int argc, char** argv)
     br.colour = sgl_Colour_ToVec3(sgl_Col_Yellow);
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
-    //sgl_VertexArray_AddQuad(va, q);
+    sgl_VertexArray_AddQuad(va, q);
 
-    sgl_Shader* shr = sgl_Shader_Create_Source(gpu, VertexShaderSourceDX, PixelShaderSourceDX, layout);
+    sgl_Shader* shr;
+    
+    if (cfg.backend == sgl_Backend_DIRECTX11)
+        shr = sgl_Shader_Create_Source(gpu, VertexShaderSourceDX, PixelShaderSourceDX, layout);
+    else
+        shr = sgl_Shader_Create_Source(gpu, VertexShaderSourceGL, FragmentShaderSourceGL, layout);
 
     while (!window->wantsClose)
     {

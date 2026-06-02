@@ -38,7 +38,7 @@ sgl_VertexLayout* sgl_VertexLayout_DeepCopy(sgl_VertexLayout* layout)
         sgl_VertexElement& src = layout->elements[i];
         sgl_VertexElement& dst = newLayout->elements[i];
 
-        dst.semantic = sgl_MakeString(src.semantic.str);
+        dst.semantic = src.semantic;
         dst.type = src.type;
         dst.offset = src.offset;
         dst.perInstance = src.perInstance;
@@ -55,9 +55,6 @@ void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElement element)
 
 void sgl_VertexLayout_Destroy(sgl_VertexLayout* layout)
 {
-    for (uint32 i = 0; i < layout->elementCount; ++i)
-        sgl_FreeString(layout->elements[i].semantic);
-
     sgl_Free(layout->elements);
     sgl::Memory::Delete(layout);
 }

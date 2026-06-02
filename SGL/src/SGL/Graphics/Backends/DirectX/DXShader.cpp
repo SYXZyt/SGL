@@ -46,6 +46,23 @@ static DXGI_FORMAT ToDXGIFormat(sgl_VertexElementType type)
     }
 }
 
+static const char* ToSemanticName(sgl_VertexElementSemantic semantic)
+{
+    switch (semantic)
+    {
+        case sgl_POSITION:
+            return "POSITION";
+
+        case sgl_COLOUR:
+            return "COLOR";
+
+        case sgl_TEXCOORD:
+            return "TEXCOORD";
+    }
+
+    return "";
+}
+
 static void DXInitialise(sgl_Shader* shr)
 {
     GetSelf;
@@ -129,7 +146,7 @@ static void DXInitialise(sgl_Shader* shr)
         D3D11_INPUT_ELEMENT_DESC& element = elements[i];
         sgl_VertexElement& src = shr->layout->elements[i];
 
-        element.SemanticName = src.semantic.str;
+        element.SemanticName = ToSemanticName(src.semantic);
         element.SemanticIndex = 0;
         element.Format = ToDXGIFormat(src.type);
         element.InputSlot = 0;

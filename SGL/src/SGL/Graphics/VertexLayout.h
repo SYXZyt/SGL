@@ -23,9 +23,17 @@ enum
     sgl_VertexElementType_VEC4,
 };
 
+typedef uint8 sgl_VertexElementSemantic;
+enum
+{
+    sgl_POSITION,
+    sgl_COLOUR,
+    sgl_TEXCOORD,
+};
+
 typedef struct sgl_VertexElement sgl_sealed
 {
-    sgl_String semantic;
+    sgl_VertexElementSemantic semantic;
     size_t offset;
     sgl_VertexElementType type;
     bool perInstance; // Unused for now    
