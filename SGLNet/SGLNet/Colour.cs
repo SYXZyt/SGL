@@ -69,6 +69,34 @@ namespace SGLNet
             }
         }
 
+        public static Colour FromHSV(in Colour colour) =>
+            FromHSV(colour.r, colour.g, colour.b, colour.a);
+
+        public static Colour FromHSV(float h, float s, float v, float a = 1)
+        {
+            float r, g, b;
+
+            int i = (int)Mathf.Floor(h * 6f);
+            float f = h * 6 - i;
+            float p = v * (1 - s);
+            float q = v * (1 - f * s);
+            float t = v * (1 - (1 - f) * s);
+
+            (float r, float g, float b)[] table =
+            [
+                (v, t, p),
+                (q, v, p),
+                (p, v, t),
+                (p, q, v),
+                (t, p, v),
+                (v, p, q)
+            ];
+
+            (r, g, b) = table[i % 6];
+
+            return new(r, g, b, a);
+        }
+
         public static implicit operator Vec3(in Colour c) =>
             c.ToVec3();
 
