@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
 add_library(SGL SHARED
+    src/imgui/backends/imgui_impl_dx11.cpp
+    src/imgui/backends/imgui_impl_opengl3.cpp
+    src/imgui/backends/imgui_impl_sdl3.cpp
+    src/imgui/imgui.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_tables.cpp
+    src/imgui/imgui_widgets.cpp
+
     src/glad/glad.c
     src/osbridge.h
     src/osbridge.cpp
@@ -24,7 +33,46 @@ add_library(SGL SHARED
     src/SGL/Runtime.cpp
     src/SGL/Util/Error.h
     src/SGL/Util/Error.cpp
- "src/SGL/Colour.h" "src/SGL/Colour.cpp" "src/SGL/Graphics/GraphicsDevice.h" "src/SGL/Graphics/Backends/OpenGL/GLDevice.h" "src/SGL/Graphics/Backends/OpenGL/GLDevice.cpp" "src/SGL/Graphics/GraphicsDevice.cpp" "src/SGL/Graphics/Shader.h" "src/SGL/Graphics/Backends/OpenGL/GLShader.h" "src/SGL/Graphics/Backends/OpenGL/GLShader.cpp" "src/SGL/Graphics/Shader.cpp" "src/SGL/IResource.h" "src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h" "src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.cpp" "src/SGL/Maths/Vec3.h" "src/SGL/Maths/Vec3.cpp" "src/SGL/Maths/Vec4.h" "src/SGL/Maths/Vec4.cpp" "src/SGL/Maths/Mat4.h" "src/SGL/Maths/Mat4.cpp" "src/SGL/Graphics/VertexLayout.h"   "src/SGL/Graphics/VertexLayout.cpp" "src/SGL/Graphics/VertexArray.h" "src/SGL/Graphics/VertexArray.cpp" "src/SGL/Graphics/Backends/OpenGL/GLVertexArray.h" "src/SGL/Graphics/Backends/OpenGL/GLVertexArray.cpp" "src/SGL/Graphics/Backends/DirectX/DXDevice.h" "src/SGL/Graphics/Backends/DirectX/DXDevice.cpp" "src/SGL/Graphics/Backends/DirectX/DXShader.h" "src/SGL/Graphics/Backends/DirectX/DXShader.cpp" "src/SGL/Graphics/Backends/DirectX/DXVertexArray.h" "src/SGL/Graphics/Backends/DirectX/DXVertexArray.cpp" "src/SGL/Graphics/UniformBuffer.h" "src/SGL/Graphics/UniformBuffer.cpp" "src/SGL/Graphics/Backends/DirectX/DXUniformBuffer.h" "src/SGL/Graphics/Backends/DirectX/DXUniformBuffer.cpp" "src/SGL/Graphics/Backends/OpenGL/GLUniformBuffer.h" "src/SGL/Graphics/Backends/OpenGL/GLuniformBuffer.cpp" "src/SGL/Version.h" "src/SGL/Version.cpp")
+    src/SGL/Colour.h
+    src/SGL/Colour.cpp
+    src/SGL/Graphics/GraphicsDevice.h
+    src/SGL/Graphics/Backends/OpenGL/GLDevice.h
+    src/SGL/Graphics/Backends/OpenGL/GLDevice.cpp
+    src/SGL/Graphics/GraphicsDevice.cpp
+    src/SGL/Graphics/Shader.h
+    src/SGL/Graphics/Backends/OpenGL/GLShader.h
+    src/SGL/Graphics/Backends/OpenGL/GLShader.cpp
+    src/SGL/Graphics/Shader.cpp
+    src/SGL/IResource.h
+    src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h
+    src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.cpp
+    src/SGL/Maths/Vec3.h
+    src/SGL/Maths/Vec3.cpp
+    src/SGL/Maths/Vec4.h
+    src/SGL/Maths/Vec4.cpp
+    src/SGL/Maths/Mat4.h
+    src/SGL/Maths/Mat4.cpp
+    src/SGL/Graphics/VertexLayout.h
+    src/SGL/Graphics/VertexLayout.cpp
+    src/SGL/Graphics/VertexArray.h
+    src/SGL/Graphics/VertexArray.cpp
+    src/SGL/Graphics/Backends/OpenGL/GLVertexArray.h
+    src/SGL/Graphics/Backends/OpenGL/GLVertexArray.cpp
+    src/SGL/Graphics/Backends/DirectX/DXDevice.h
+    src/SGL/Graphics/Backends/DirectX/DXDevice.cpp
+    src/SGL/Graphics/Backends/DirectX/DXShader.h
+    src/SGL/Graphics/Backends/DirectX/DXShader.cpp
+    src/SGL/Graphics/Backends/DirectX/DXVertexArray.h
+    src/SGL/Graphics/Backends/DirectX/DXVertexArray.cpp
+    src/SGL/Graphics/UniformBuffer.h
+    src/SGL/Graphics/UniformBuffer.cpp
+    src/SGL/Graphics/Backends/DirectX/DXUniformBuffer.h
+    src/SGL/Graphics/Backends/DirectX/DXUniformBuffer.cpp
+    src/SGL/Graphics/Backends/OpenGL/GLUniformBuffer.h
+    src/SGL/Graphics/Backends/OpenGL/GLuniformBuffer.cpp
+    src/SGL/Version.h
+    src/SGL/Version.cpp
+)
 
 include(CMake/Dependencies.cmake)
 
@@ -37,7 +85,10 @@ target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm)
 target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
 target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
 
-target_include_directories(SGL PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(SGL PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/src/imgui
+)
 
 target_compile_definitions(SGL PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
 
