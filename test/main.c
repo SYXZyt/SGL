@@ -100,14 +100,14 @@ int main(int argc, char** argv)
     sgl_Logger_Init();
 
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
-    //cfg.backend = sgl_Backend_DIRECTX11;
+    cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
 
     sgl_GraphicsDevice_ImGui_Init(gpu);
 
-    sgl_Keyboard* kb = sgl_Keyboard_New();
+    sgl_Keyboard* kb = sgl_Keyboard_New(window);
 
     sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
 
@@ -195,8 +195,6 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Draw(gpu, va, shader, &ub, 1);
 
         sgl_GraphicsDevice_ImGui_NewFrame(gpu);
-
-        sgl_TextUnformatted("Hello, World!");
 
         sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
 

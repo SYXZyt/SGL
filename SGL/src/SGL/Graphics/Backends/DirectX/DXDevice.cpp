@@ -160,31 +160,43 @@ static void DXDevice_ImGui_Init(sgl_GraphicsDevice* dev)
 {
     GetSelf;
 
-    IMGUI_CHECKVERSION();
-    ImGui::CreateContext();
+    if (dev->window->cfg.enableImGui)
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
 
-    ImGui_ImplSDL3_InitForD3D(dev->window->window);
-    ImGui_ImplDX11_Init(self->device, self->ctx);
+        ImGui_ImplSDL3_InitForD3D(dev->window->window);
+        ImGui_ImplDX11_Init(self->device, self->ctx);
+    }
 }
 
-static void DXDevice_ImGui_Shutdown(sgl_GraphicsDevice*)
+static void DXDevice_ImGui_Shutdown(sgl_GraphicsDevice* dev)
 {
-    ImGui_ImplDX11_Shutdown();
-    ImGui_ImplSDL3_Shutdown();
-    ImGui::DestroyContext();
+    if (dev->window->cfg.enableImGui)
+    {
+        ImGui_ImplDX11_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
+    }
 }
 
-static void DXDevice_ImGui_NewFrame(sgl_GraphicsDevice*)
+static void DXDevice_ImGui_NewFrame(sgl_GraphicsDevice* dev)
 {
-    ImGui_ImplDX11_NewFrame();
-    ImGui_ImplSDL3_NewFrame();
-    ImGui::NewFrame();
+    if (dev->window->cfg.enableImGui)
+    {
+        ImGui_ImplDX11_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+    }
 }
 
-static void DXDevice_ImGui_RenderDrawData(sgl_GraphicsDevice*)
+static void DXDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* dev)
 {
-    ImGui::Render();
-    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    if (dev->window->cfg.enableImGui)
+    {
+        ImGui::Render();
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    }
 }
 
 static const sgl_GraphicsDeviceVTable gDxVTable =
