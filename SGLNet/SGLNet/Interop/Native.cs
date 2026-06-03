@@ -50,9 +50,7 @@ namespace SGLNet.Interop
             const string suffix = "_ptr";
 
             if (name.EndsWith(suffix))
-            {
                 name = name[..^suffix.Length];
-            }
 
             return GetFunction<FPtr>(name);
         }
@@ -82,6 +80,7 @@ namespace SGLNet.Interop
             Logger.Init_FuncPtr();
             Util.String.Init_FuncPtr();
             Mathf.Init_FuncPtr();
+            ImGuiNative.Init_FuncPtr();
         }
     }
 }

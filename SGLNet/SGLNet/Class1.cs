@@ -157,16 +157,23 @@ float4 main(PSInput input) : SV_TARGET
 
                 ub.Upload();
 
+                device.ImGui_Init();
+
                 while (!window.WantClose)
                 {
                     window.PollEvents();
 
-                    device.Clear();
+                    device.ImGui_NewFrame();
 
+                    device.Clear();
                     device.Draw(va, shader, ub);
+
+                    device.ImGui_RenderDrawData();
 
                     device.Present();
                 }
+
+                device.ImGui_Shutdown();
             }
 
             Logger.Shutdown();

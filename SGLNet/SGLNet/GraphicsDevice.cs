@@ -35,6 +35,22 @@ namespace SGLNet
         private unsafe delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr, IntPtr* buffers, nuint bufferCount);
         private static sgl_GraphicsDevice_Draw_ptr sgl_GraphicsDevice_Draw;
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_GraphicsDevice_ImGui_Init_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_ImGui_Init_ptr sgl_GraphicsDevice_ImGui_Init;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_GraphicsDevice_ImGui_Shutdown_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_ImGui_Shutdown_ptr sgl_GraphicsDevice_ImGui_Shutdown;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_GraphicsDevice_ImGui_NewFrame_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_ImGui_NewFrame_ptr sgl_GraphicsDevice_ImGui_NewFrame;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_GraphicsDevice_ImGui_RenderDrawData_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_ImGui_RenderDrawData_ptr sgl_GraphicsDevice_ImGui_RenderDrawData;
+
         public Colour ClearColour
         {
             set => sgl_GraphicsDevice_SetClearColour(mHandle, value);
@@ -61,6 +77,18 @@ namespace SGLNet
             }
         }
 
+        public void ImGui_Init() =>
+            sgl_GraphicsDevice_ImGui_Init(mHandle);
+
+        public void ImGui_Shutdown() =>
+            sgl_GraphicsDevice_ImGui_Shutdown(mHandle);
+
+        public void ImGui_NewFrame() =>
+            sgl_GraphicsDevice_ImGui_NewFrame(mHandle);
+
+        public void ImGui_RenderDrawData() =>
+            sgl_GraphicsDevice_ImGui_RenderDrawData(mHandle);
+
         internal static void Init_FuncPtr()
         {
             sgl_GraphicsDevice_Create ??= Native.GetFunction<sgl_GraphicsDevice_Create_ptr>(nameof(sgl_GraphicsDevice_Create));
@@ -69,6 +97,11 @@ namespace SGLNet
             sgl_GraphicsDevice_Clear ??= Native.GetFunction<sgl_GraphicsDevice_Clear_ptr>(nameof(sgl_GraphicsDevice_Clear));
             sgl_GraphicsDevice_Present ??= Native.GetFunction<sgl_GraphicsDevice_Present_ptr>(nameof(sgl_GraphicsDevice_Present));
             sgl_GraphicsDevice_Draw ??= Native.GetFunction<sgl_GraphicsDevice_Draw_ptr>(nameof(sgl_GraphicsDevice_Draw));
+
+            sgl_GraphicsDevice_ImGui_Init ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_Init_ptr>();
+            sgl_GraphicsDevice_ImGui_Shutdown ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_Shutdown_ptr>();
+            sgl_GraphicsDevice_ImGui_NewFrame ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_NewFrame_ptr>();
+            sgl_GraphicsDevice_ImGui_RenderDrawData ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_RenderDrawData_ptr>();
         }
 
         public GraphicsDevice(Window window)

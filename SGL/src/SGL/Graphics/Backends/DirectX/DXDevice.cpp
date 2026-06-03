@@ -171,7 +171,6 @@ static void DXDevice_ImGui_Shutdown(sgl_GraphicsDevice*)
 {
     ImGui_ImplDX11_Shutdown();
     ImGui_ImplSDL3_Shutdown();
-
     ImGui::DestroyContext();
 }
 
@@ -188,10 +187,6 @@ static void DXDevice_ImGui_RenderDrawData(sgl_GraphicsDevice*)
     ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
 }
 
-static void* DXDevice_ImGui_GetContext(sgl_GraphicsDevice*) {
-    return ImGui::GetCurrentContext();
-}
-
 static const sgl_GraphicsDeviceVTable gDxVTable =
 {
     .SetClearColour = &sgl_GraphicsDevice_SetClearColour,
@@ -205,7 +200,6 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
     .ImGui_NewFrame = &DXDevice_ImGui_NewFrame,
     .ImGui_RenderDrawData = &DXDevice_ImGui_RenderDrawData,
-    .ImGui_GetContext = &DXDevice_ImGui_GetContext,
 };
 
 #endif

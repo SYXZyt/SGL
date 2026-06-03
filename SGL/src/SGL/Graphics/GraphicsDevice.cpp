@@ -73,7 +73,3 @@ void sgl_GraphicsDevice_ImGui_NewFrame(sgl_GraphicsDevice* device) {
 void sgl_GraphicsDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* device) {
     device->vtable->ImGui_RenderDrawData(device);
 }
-
-void* sgl_GraphicsDevice_ImGui_GetContext(sgl_GraphicsDevice* device) {
-    return device->vtable->ImGui_GetContext(device);
-}

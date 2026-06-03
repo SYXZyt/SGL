@@ -21,7 +21,6 @@ typedef struct sgl_GraphicsDeviceVTable sgl_sealed
     void (*ImGui_Shutdown)(struct sgl_GraphicsDevice* self);
     void (*ImGui_NewFrame)(struct sgl_GraphicsDevice* self);
     void (*ImGui_RenderDrawData)(struct sgl_GraphicsDevice* self);
-    void* (*ImGui_GetContext)(struct sgl_GraphicsDevice* self);
 } sgl_GraphicsDeviceVTable;
 
 typedef struct sgl_GraphicsDevice sgl_sealed
@@ -45,8 +44,6 @@ SGL_API extern void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_ImGui_Shutdown(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_ImGui_NewFrame(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* device);
-
-SGL_API extern void* sgl_GraphicsDevice_ImGui_GetContext(sgl_GraphicsDevice* device);
 
 SGL_END
 
