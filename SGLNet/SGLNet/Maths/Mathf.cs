@@ -222,65 +222,55 @@ namespace SGLNet.Maths
         private static sgl_Maths_Mat4_Orthographic_ptr sgl_Maths_Mat4_Orthographic;
         private static sgl_Maths_Mat4_Orthographic_ptr sgl_Maths_Mat4_OrthographicGL;
 
-        public static Mat4 OrthographicGL(in Vec2i screenSize, float zoom)
-        {
-            sgl_Maths_Mat4_OrthographicGL ??= Native.GetFunction<sgl_Maths_Mat4_Orthographic_ptr>(nameof(sgl_Maths_Mat4_OrthographicGL));
-            return sgl_Maths_Mat4_OrthographicGL(screenSize, zoom);
-        }
+        public static Mat4 OrthographicGL(in Vec2i screenSize, float zoom) =>
+            sgl_Maths_Mat4_OrthographicGL(screenSize, zoom);
 
-        public static Mat4 Orthographic(in Vec2i screenSize, float zoom)
-        {
-            sgl_Maths_Mat4_Orthographic ??= Native.GetFunction<sgl_Maths_Mat4_Orthographic_ptr>(nameof(sgl_Maths_Mat4_Orthographic));
-            return sgl_Maths_Mat4_Orthographic(screenSize, zoom);
-        }
+        public static Mat4 Orthographic(in Vec2i screenSize, float zoom) =>
+            sgl_Maths_Mat4_Orthographic(screenSize, zoom);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate Mat4 sgl_Maths_Mat4_View_ptr(Vec2 position, float angle);
         private static sgl_Maths_Mat4_View_ptr sgl_Maths_Mat4_View;
 
-        public static Mat4 View(in Vec2 position, float angle)
-        {
-            sgl_Maths_Mat4_View ??= Native.GetFunction<sgl_Maths_Mat4_View_ptr>(nameof(sgl_Maths_Mat4_View));
-            return sgl_Maths_Mat4_View(position, angle);
-        }
+        public static Mat4 View(in Vec2 position, float angle) =>
+            sgl_Maths_Mat4_View(position, angle);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate Mat4 Transpose_Inverse_ptr(Mat4 mat);
         private static Transpose_Inverse_ptr sgl_Maths_Mat4_Inverse;
         private static Transpose_Inverse_ptr sgl_Maths_Mat4_Transpose;
 
-        public static Mat4 Inverse(in Mat4 mat)
-        {
-            sgl_Maths_Mat4_Inverse ??= Native.GetFunction<Transpose_Inverse_ptr>(nameof(sgl_Maths_Mat4_Inverse));
-            return sgl_Maths_Mat4_Inverse(mat);
-        }
+        public static Mat4 Inverse(in Mat4 mat) =>
+            sgl_Maths_Mat4_Inverse(mat);
 
-        public static Mat4 Transpose(in Mat4 mat)
-        {
-            sgl_Maths_Mat4_Transpose ??= Native.GetFunction<Transpose_Inverse_ptr>(nameof(sgl_Maths_Mat4_Transpose));
-            return sgl_Maths_Mat4_Transpose(mat);
-        }
+        public static Mat4 Transpose(in Mat4 mat) =>
+            sgl_Maths_Mat4_Transpose(mat);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate Mat4 sgl_Maths_Mat4_Translation_ptr(Vec3 translation);
         private static sgl_Maths_Mat4_Translation_ptr sgl_Maths_Mat4_Translation;
 
-        public static Mat4 Translation(in Vec3 translation)
-        {
-            sgl_Maths_Mat4_Translation ??= Native.GetFunction<sgl_Maths_Mat4_Translation_ptr>(nameof(sgl_Maths_Mat4_Translation));
-            return sgl_Maths_Mat4_Translation(translation);
-        }
+        public static Mat4 Translation(in Vec3 translation) =>
+            sgl_Maths_Mat4_Translation(translation);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate Mat4 sgl_Maths_Mat4_Rotation_ptr(float angle, Vec3 axis);
         private static sgl_Maths_Mat4_Rotation_ptr sgl_Maths_Mat4_Rotation;
         
-        public static Mat4 Rotation(float angle, in Vec3 axis)
-        {
-            sgl_Maths_Mat4_Rotation ??= Native.GetFunction<sgl_Maths_Mat4_Rotation_ptr>(nameof(sgl_Maths_Mat4_Rotation));
-            return sgl_Maths_Mat4_Rotation(angle, axis);
-        }
+        public static Mat4 Rotation(float angle, in Vec3 axis) =>
+            sgl_Maths_Mat4_Rotation(angle, axis);
 
         #endregion
+
+        internal static void Init_FuncPtr()
+        {
+            sgl_Maths_Mat4_OrthographicGL ??= Native.GetFunction<sgl_Maths_Mat4_Orthographic_ptr>(nameof(sgl_Maths_Mat4_OrthographicGL));
+            sgl_Maths_Mat4_Orthographic ??= Native.GetFunction<sgl_Maths_Mat4_Orthographic_ptr>(nameof(sgl_Maths_Mat4_Orthographic));
+            sgl_Maths_Mat4_View ??= Native.GetFunction<sgl_Maths_Mat4_View_ptr>(nameof(sgl_Maths_Mat4_View));
+            sgl_Maths_Mat4_Inverse ??= Native.GetFunction<Transpose_Inverse_ptr>(nameof(sgl_Maths_Mat4_Inverse));
+            sgl_Maths_Mat4_Transpose ??= Native.GetFunction<Transpose_Inverse_ptr>(nameof(sgl_Maths_Mat4_Transpose));
+            sgl_Maths_Mat4_Translation ??= Native.GetFunction<sgl_Maths_Mat4_Translation_ptr>(nameof(sgl_Maths_Mat4_Translation));
+            sgl_Maths_Mat4_Rotation ??= Native.GetFunction<sgl_Maths_Mat4_Rotation_ptr>(nameof(sgl_Maths_Mat4_Rotation));
+        }
     }
 }

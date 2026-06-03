@@ -1,4 +1,5 @@
 ﻿using SGLNet.Graphics;
+using SGLNet.Maths;
 using SGLNet.Util;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -80,6 +81,7 @@ namespace SGLNet.Interop
             VertexLayout.Init_FuncPtr();
             Logger.Init_FuncPtr();
             Util.String.Init_FuncPtr();
+            Mathf.Init_FuncPtr();
         }
     }
 }
