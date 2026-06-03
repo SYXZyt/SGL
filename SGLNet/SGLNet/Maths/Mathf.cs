@@ -175,6 +175,15 @@ namespace SGLNet.Maths
         public static Vec2 LerpDt(in Vec2 a, in Vec2 b, float t, float dt) =>
             new(LerpDt(a.X, b.X, t, dt), LerpDt(a.Y, b.Y, t, dt));
 
+        public static Vec2 Normalise(in Vec2 v)
+        {
+            float len = Length(v);
+            if (len == 0f)
+                return Vec2.Zero;
+
+            return new(v.X / len, v.Y / len);
+        }
+
         #endregion
 
         #region Vec2i

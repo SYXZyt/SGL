@@ -1,4 +1,5 @@
 ﻿using SGLNet.Graphics;
+using SGLNet.Input;
 using SGLNet.Maths;
 using SGLNet.Util;
 using System.Diagnostics;
@@ -81,6 +82,7 @@ namespace SGLNet.Interop
             Util.String.Init_FuncPtr();
             Mathf.Init_FuncPtr();
             ImGuiNative.Init_FuncPtr();
+            Keyboard.Init_FuncPtr();
         }
     }
 }

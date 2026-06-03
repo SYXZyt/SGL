@@ -1,4 +1,5 @@
 ﻿using SGLNet.Graphics;
+using SGLNet.Input;
 using SGLNet.Interop;
 using SGLNet.Maths;
 using SGLNet.Util;
@@ -111,6 +112,8 @@ float4 main(PSInput input) : SV_TARGET
             Runtime.Init();
             Logger.Init();
 
+            Keyboard.Init();
+
             using (Window window = new(cfg))
             {
                 using GraphicsDevice device = new(window);
@@ -152,16 +155,42 @@ float4 main(PSInput input) : SV_TARGET
                 window.Resize += (w, h) => { Console.WriteLine($"Resize: {w}x{h}"); };
                 
                 using UniformBuffer<UB> ub = new(device);
-                ub.Data.View = Mathf.View(Vec2.One * 256f, 0f);
+                ub.Data.View = Mathf.View(Vec2.One, 0f);
                 ub.Data.Proj = Mathf.OrthographicGL(window.ScreenSize, 1f);
 
                 ub.Upload();
 
                 device.ImGui_Init();
 
+                Vec2 position = Vec2.Zero;
+
                 while (!window.WantClose)
                 {
+                    {
+                        Vec2 movement = Vec2.Zero;
+
+                        if (Keyboard.IsDown(Key.A))
+                            movement.X -= 0.1f;
+                        if (Keyboard.IsDown(Key.D))
+                            movement.X += 0.1f;
+
+                        if (Keyboard.IsDown(Key.W))
+                            movement.Y -= 0.1f;
+                        if (Keyboard.IsDown(Key.S))
+                            movement.Y += 0.1f;
+
+                        if (Mathf.Length(movement) > 0)
+                        {
+                            movement = Mathf.Normalise(movement);
+
+                            position += movement;
+                            ub.Data.View = Mathf.View(position, 0f);
+                            ub.Upload();
+                        }
+                    }
+
                     window.PollEvents();
+                    Keyboard.Update();
 
                     device.ImGui_NewFrame();
 
@@ -175,6 +204,8 @@ float4 main(PSInput input) : SV_TARGET
 
                 device.ImGui_Shutdown();
             }
+
+            Keyboard.Shutdown();
 
             Logger.Shutdown();
             Runtime.Shutdown();
