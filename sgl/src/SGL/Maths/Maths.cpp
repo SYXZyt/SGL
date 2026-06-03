@@ -137,6 +137,15 @@ sgl_Vec2 sgl_Maths_Vec2_Floor(sgl_Vec2 v)
     }} };
 }
 
+sgl_Vec2 sgl_Maths_Vec2_Normalise(sgl_Vec2 v)
+{
+    float length = sgl_Maths_Vec2_Length(v);
+    if (length == 0)
+        return sgl_Vec2_Zero;
+
+    return sgl_Vec2_New_ScalarXY(v.x / length, v.y / length);
+}
+
 float sgl_Maths_Vec2i_Dist(sgl_Vec2i a, sgl_Vec2i b) {
     return sgl_Maths_Sqrt(sgl_Maths_Vec2i_Dist2(a, b));
 }

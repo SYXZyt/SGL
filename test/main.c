@@ -11,6 +11,7 @@
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/UniformBuffer.h>
 #include <SGL/ImGui/ImGui.h>
+#include <SGL/Input/Keyboard.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
@@ -99,12 +100,14 @@ int main(int argc, char** argv)
     sgl_Logger_Init();
 
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
-    //cfg.backend = sgl_Backend_DIRECTX11;
+    cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
 
     sgl_GraphicsDevice_ImGui_Init(gpu);
+
+    sgl_Keyboard* kb = sgl_Keyboard_New();
 
     sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
 
@@ -152,15 +155,40 @@ int main(int argc, char** argv)
 
     UB ubData;
 
-    ubData.view = sgl_Maths_Mat4_View(sgl_Vec2_Mul_Scalar(sgl_Vec2_One, 256.0f), 0.0f);
+    ubData.view = sgl_Maths_Mat4_View(sgl_Vec2_One, 0.0f);
     ubData.proj = sgl_Maths_Mat4_OrthographicGL(window->screenSize, 1.0f);
 
     sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
     sgl_UniformBuffer_Upload(ub, &ubData);
 
+    sgl_Vec2 position = sgl_Vec2_Zero;
     while (!window->wantsClose)
     {
+        {
+            sgl_Vec2 movement = sgl_Vec2_Zero;
+
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_A))
+                movement.x -= .01f;
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_D))
+                movement.x += .01f;
+
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_W))
+                movement.y -= .01f;
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_S))
+                movement.y += .01f;
+
+            if (sgl_Maths_Vec2_Length2(movement) > 0.f)
+            {
+                movement = sgl_Maths_Vec2_Normalise(movement);
+                position = sgl_Vec2_Add_Vec2(position, movement);
+
+                ubData.view = sgl_Maths_Mat4_View(position, 0.0f);
+                sgl_UniformBuffer_Upload(ub, &ubData);
+            }
+        }
+
         sgl_Window_PollEvents(window);
+        sgl_Keyboard_Update(kb);
 
         sgl_GraphicsDevice_Clear(gpu);
 
@@ -175,6 +203,7 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Present(gpu);
     }
 
+    sgl_Keyboard_Destroy(kb);
     sgl_GraphicsDevice_ImGui_Shutdown(gpu);
     sgl_UniformBuffer_Destroy(ub);
     sgl_Shader_Destroy(shader);

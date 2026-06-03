@@ -85,6 +85,8 @@ SGL_API extern float sgl_Maths_Vec2_Dot(sgl_Vec2 a, sgl_Vec2 b);
 SGL_API extern float sgl_Maths_Vec2_AspectRatio(sgl_Vec2 v);
 
 SGL_API extern sgl_Vec2 sgl_Maths_Vec2_Floor(sgl_Vec2 v);
+
+SGL_API extern sgl_Vec2 sgl_Maths_Vec2_Normalise(sgl_Vec2 v);
 #pragma endregion
 
 #pragma region Vec2i
