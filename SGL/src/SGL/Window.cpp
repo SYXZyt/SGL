@@ -18,6 +18,7 @@ const sgl_EngineConfig sgl_EngineConfig_Default =
     .width = 1280,
     .height = 720,
     .resizable = true,
+    .enableImGui = false,
 };
 
 sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
@@ -51,6 +52,8 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
         window->glContext = SDL_GL_CreateContext(window->window);
         SDL_GL_MakeCurrent(window->window, window->glContext);
         gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
+
+        SDL_GL_SetSwapInterval(1);
     }
 
     return window;
@@ -74,7 +77,8 @@ void sgl_Window_PollEvents(sgl_Window* window)
     static SDL_Event event;
     while (SDL_PollEvent(&event))
     {
-        ImGui_ImplSDL3_ProcessEvent(&event);
+        if (window->cfg.enableImGui)
+            ImGui_ImplSDL3_ProcessEvent(&event);
 
         switch (event.type)
         {

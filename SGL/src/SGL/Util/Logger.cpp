@@ -87,10 +87,10 @@ static const char* ResetColour() {
 
 static void LogMessage()
 {
+    std::lock_guard lock(gMutex);
+    
     if (gMessages.empty())
         return;
-
-    std::lock_guard lock(gMutex);
 
     const auto& [message, type] = gMessages.front();
     const char* typeStr = GetLogTypeString(type);

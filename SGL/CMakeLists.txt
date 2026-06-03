@@ -96,8 +96,13 @@ target_include_directories(SGL PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/imgui)
 target_compile_definitions(SGL PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
 
 target_compile_options(SGL PRIVATE
-    $<$<CXX_COMPILER_ID:MSVC>:/W3 /WX /MP>
-    $<$<CXX_COMPILER_ID:Clang,GNU>:-Wall -Werror>
+        $<$<CXX_COMPILER_ID:MSVC>:/W3 /WX /MP>
+        $<$<CXX_COMPILER_ID:Clang,GNU>:
+        -Wall
+        -Werror
+        -Wno-unused-variable
+        -Wno-unused-function
+        >
 )
 
 target_compile_definitions(SGL PRIVATE $<$<PLATFORM_ID:Windows>:SGL_DIRECTX>)

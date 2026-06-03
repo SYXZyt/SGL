@@ -19,6 +19,7 @@ typedef struct sgl_EngineConfig sgl_sealed
     uint32 width;
     uint32 height;
     bool resizable;
+    bool enableImGui;
 } sgl_EngineConfig;
 
 SGL_API extern const sgl_EngineConfig sgl_EngineConfig_Default;

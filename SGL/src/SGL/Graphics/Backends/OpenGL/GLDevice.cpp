@@ -59,6 +59,9 @@ static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
 
 static void GLDevice_ImGui_Init(sgl_GraphicsDevice* dev)
 {
+    if (!dev->window->cfg.enableImGui)
+        return;
+
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
 
@@ -66,21 +69,31 @@ static void GLDevice_ImGui_Init(sgl_GraphicsDevice* dev)
     ImGui_ImplOpenGL3_Init("#version 460 core");
 }
 
-static void GLDevice_ImGui_Shutdown(sgl_GraphicsDevice*)
+static void GLDevice_ImGui_Shutdown(sgl_GraphicsDevice* dev)
 {
+    if (!dev->window->cfg.enableImGui)
+            return;
+
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplSDL3_Shutdown();
+    ImGui::DestroyContext();
 }
 
-static void GLDevice_ImGui_NewFrame(sgl_GraphicsDevice*)
+static void GLDevice_ImGui_NewFrame(sgl_GraphicsDevice* dev)
 {
+    if (!dev->window->cfg.enableImGui)
+        return;
+
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplSDL3_NewFrame();
     ImGui::NewFrame();
 }
 
-static void GLDevice_ImGui_RenderDrawData(sgl_GraphicsDevice*)
+static void GLDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* dev)
 {
+    if (!dev->window->cfg.enableImGui)
+            return;
+
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }

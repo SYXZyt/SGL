@@ -4,9 +4,10 @@
 #include <cstring>
 #include <imgui.h>
 
-sgl_Keyboard* sgl_Keyboard_New()
+sgl_Keyboard* sgl_Keyboard_New(sgl_Window* window)
 {
     sgl_Keyboard* kb = sgl::Memory::New<sgl_Keyboard>();
+    kb->window = window;
 
     std::memset(kb->thisFrame, 0, sgl_Key_COUNT);
     std::memset(kb->lastFrame, 0, sgl_Key_COUNT);
@@ -28,7 +29,7 @@ void sgl_Keyboard_Update(sgl_Keyboard* kb)
 
 bool sgl_Keyboard_IsKeyDown(sgl_Keyboard* kb, sgl_Key key)
 {
-    if (ImGui::GetIO().WantCaptureKeyboard)
+    if (kb->window->cfg.enableImGui && ImGui::GetIO().WantCaptureKeyboard)
         return false;
 
     return kb->thisFrame[key];
@@ -36,7 +37,7 @@ bool sgl_Keyboard_IsKeyDown(sgl_Keyboard* kb, sgl_Key key)
 
 bool sgl_Keyboard_IsKeyUp(sgl_Keyboard* kb, sgl_Key key)
 {
-    if (ImGui::GetIO().WantCaptureKeyboard)
+    if (kb->window->cfg.enableImGui && ImGui::GetIO().WantCaptureKeyboard)
         return true;
 
     return !kb->thisFrame[key];
@@ -44,7 +45,7 @@ bool sgl_Keyboard_IsKeyUp(sgl_Keyboard* kb, sgl_Key key)
 
 bool sgl_Keyboard_IsKeyPressed(sgl_Keyboard* kb, sgl_Key key)
 {
-    if (ImGui::GetIO().WantCaptureKeyboard)
+    if (kb->window->cfg.enableImGui && ImGui::GetIO().WantCaptureKeyboard)
         return false;
 
     return kb->thisFrame[key] && !kb->lastFrame[key];
