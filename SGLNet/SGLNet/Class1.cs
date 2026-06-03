@@ -1,4 +1,5 @@
 ﻿using SGLNet.Graphics;
+using SGLNet.Interop;
 using SGLNet.Maths;
 using SGLNet.Util;
 using System.Runtime.InteropServices;
@@ -56,6 +57,7 @@ struct VSOutput
 VSOutput main(VSInput input)
 {
     VSOutput output;
+
     output.pos = float4(input.pos, 1.0f);
     output.col = input.col;
     return output;
@@ -102,6 +104,9 @@ float4 main(PSInput input) : SV_TARGET
 
         private static void Main(string[] _)
         {
+            Native.LoadNative();
+            Memory.StackTraceEnableIfDebug();
+
             EngineConfig cfg = new();
             cfg.backend = Backend.DIRECTX11;
             cfg.backend = Backend.OPENGL;

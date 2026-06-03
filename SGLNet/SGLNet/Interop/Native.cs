@@ -33,7 +33,7 @@ namespace SGLNet.Interop
             }
         }
 
-        private static readonly IntPtr mHandle;
+        private static IntPtr mHandle;
 
         public static IntPtr LibHandle =>
             mHandle;
@@ -54,7 +54,7 @@ namespace SGLNet.Interop
             return GetFunction<FPtr>(name);
         }
 
-        static Native()
+        public static void LoadNative()
         {
             if (!OperatingSystem.IsWindows() && !OperatingSystem.IsLinux())
                 throw new PlatformNotSupportedException();
@@ -67,6 +67,8 @@ namespace SGLNet.Interop
 
             string fullPath = Path.Combine(AppContext.BaseDirectory, path);
             mHandle = NativeLibrary.Load(fullPath);
+
+            Memory.Init_FuncPtr();
         }
     }
 }
