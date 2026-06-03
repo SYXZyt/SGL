@@ -10,7 +10,7 @@
 #include <SGL/Graphics/UniformBuffer.h>
 
 const char* VertexShaderSourceGL =
-"#version 330 core\n"
+"#version 460 core\n"
 "layout(location = 0) in vec3 aPos;\n"
 "layout(location = 1) in vec3 aCol;\n"
 "out vec3 oCol;\n"
@@ -21,14 +21,17 @@ const char* VertexShaderSourceGL =
 "}\n";
 
 const char* FragmentShaderSourceGL =
-"#version 330 core\n"
+"#version 460 core\n"
 "\n"
 "out vec4 FragColor;\n"
 "in vec3 oCol;\n"
 "\n"
+"layout(std140, binding=0) uniform ColourBuffer {"
+"   vec3 c;"
+"};"
 "void main()\n"
 "{\n"
-"    FragColor = vec4(oCol, 1.0);\n"
+"    FragColor = vec4(c, 1.0);\n"
 "}\n";
 
 const char* VertexShaderSourceDX =
@@ -82,7 +85,7 @@ int main(int argc, char** argv)
     sgl_Logger_Init();
 
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
-    cfg.backend = sgl_Backend_DIRECTX11;
+    cfg.backend = sgl_Backend_OPENGL;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);

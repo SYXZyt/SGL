@@ -1,5 +1,6 @@
 #include "UniformBuffer.h"
 #include <SGL/Util/Error.h>
+#include <SGL/Graphics/Backends/OpenGL/GLUniformBuffer.h>
 #include <SGL/Graphics/Backends/DirectX/DXUniformBuffer.h>
 
 sgl_UniformBuffer* sgl_UniformBuffer_Create(sgl_GraphicsDevice* gpu, size_t size)
@@ -8,7 +9,7 @@ sgl_UniformBuffer* sgl_UniformBuffer_Create(sgl_GraphicsDevice* gpu, size_t size
 
     if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
     {
-        return nullptr;
+        buffer = (sgl_UniformBuffer*)sgl_GLUniformBuffer_New(gpu, size);
     }
     else if (gpu->window->cfg.backend == sgl_Backend_DIRECTX11)
     {
