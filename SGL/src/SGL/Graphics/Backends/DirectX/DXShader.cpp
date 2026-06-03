@@ -162,6 +162,9 @@ static void DXInitialise(sgl_Shader* shr)
         return;
     }
 
+    sgl_FreeString(shr->data_vcode);
+    sgl_FreeString(shr->data_fcode);
+
     shr->resource.isInitialised = true;
 }
 

@@ -76,7 +76,9 @@ void sgl_VertexArray_Bind(sgl_VertexArray* va) {
     va->vtable->Bind(va);
 }
 
-void sgl_VertexArray_Destroy(sgl_VertexArray* va) {
+void sgl_VertexArray_Destroy(sgl_VertexArray* va)
+{
+    sgl_Free(va->vertexData);
     va->vtable->Destroy(va);
 }
 

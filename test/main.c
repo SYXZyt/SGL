@@ -8,6 +8,8 @@
 #include <SGL/Graphics/VertexLayout.h>
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/UniformBuffer.h>
+#include <SGL/Util/Memory.h>
+#include <SGL/Runtime.h>
 
 const char* VertexShaderSourceGL =
 "#version 460 core\n"
@@ -82,10 +84,13 @@ typedef struct sgl_alignas(16) UB
 
 int main(int argc, char** argv)
 {
+    sgl_Runtime_Init();
+    sgl_Memory_StackTrace(true);
+
     sgl_Logger_Init();
 
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
-    cfg.backend = sgl_Backend_OPENGL;
+    cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
@@ -170,12 +175,15 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Present(gpu);
     }
 
+    sgl_UniformBuffer_Destroy(ub);
     sgl_VertexLayout_Destroy(layout);
     sgl_VertexArray_Destroy(va);
     sgl_Shader_Destroy(shr);
     sgl_GraphicsDevice_Destroy(gpu);
     sgl_Window_Destroy(window);
     sgl_Logger_Shutdown();
+    sgl_Runtime_Shutdown();
+    sgl_Memory_ReportLeaks();
 
     return 0;
 }

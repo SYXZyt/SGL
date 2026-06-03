@@ -13,6 +13,8 @@
 #define SGL_ALLOCATOR_FRIEND
 #endif
 
+#define SGL_MEMORY_MAX_STACKFRAMES 16
+
 SGL_BEGIN
 
 typedef struct sgl_MemoryTrack sgl_sealed
@@ -20,8 +22,12 @@ typedef struct sgl_MemoryTrack sgl_sealed
     void* ptr;
     size_t size;
     const char* T;
+
+    void* stack[SGL_MEMORY_MAX_STACKFRAMES];
+    size_t stackSize;
 } sgl_MemoryTrack;
 
+SGL_API extern void sgl_Memory_StackTrace(bool enable);
 SGL_API extern size_t sgl_Memory_GetTotalAllocated();
 SGL_API extern void sgl_Memory_ReportLeaks();
 SGL_API extern void sgl_Memory_AddTrack(void* ptr, size_t size, const char* T);
@@ -30,6 +36,7 @@ SGL_API extern void sgl_Memory_PopTrack();
 SGL_API extern void* sgl_Malloc(size_t size);
 SGL_API extern void sgl_Free(void* ptr);
 SGL_API extern void* sgl_Realloc(void* ptr, size_t newSize);
+
 
 SGL_END
 

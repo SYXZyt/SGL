@@ -3,12 +3,14 @@
 
 #ifdef _WIN32
 #include <Windows.h>
+#include <DbgHelp.h>
 #endif
 
 void sgl_Runtime_Init()
 {
 #ifdef _WIN32
     SetConsoleOutputCP(CP_UTF8);
+    SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 #endif
 }
 
