@@ -10,6 +10,7 @@
 #include <SGL/Graphics/VertexLayout.h>
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/UniformBuffer.h>
+#include <imgui.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
@@ -166,6 +167,9 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Draw(gpu, va, shader, &ub, 1);
 
         sgl_GraphicsDevice_ImGui_NewFrame(gpu);
+
+        ImGui::Text("Hello, World!");
+
         sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
 
         sgl_GraphicsDevice_Present(gpu);
