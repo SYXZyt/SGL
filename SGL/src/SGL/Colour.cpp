@@ -1,4 +1,5 @@
 #include "Colour.h"
+#include <SGL/Maths/Maths.h>
 
 sgl_Vec3 sgl_Colour_ToVec3(sgl_Colour c) {
 	return { {{ c.r, c.g, c.b }} };
@@ -41,6 +42,34 @@ sgl_Colour sgl_Colour_Byte(uint8 r, uint8 g, uint8 b) {
 
 sgl_Colour sgl_Colour_ByteA(uint8 r, uint8 g, uint8 b, uint8 a) {
 	return { r / 255.f, g / 255.f, b / 255.f, a / 255.f };
+}
+
+/// @see https://github.com/Inseckto/HSV-to-RGB/blob/master/HSV2RGB.c 
+sgl_Colour sgl_Colour_FromHSV(sgl_Colour hsvColour)
+{
+	float r, g, b;
+
+	float h = hsvColour.r;
+	float s = hsvColour.g;
+	float v = hsvColour.b;
+
+	int i = (int)sgl_Maths_Floor(h * 6);
+	float f = h * 6 - i;
+	float p = v * (1 - s);
+	float q = v * (1 - f * s);
+	float t = v * (1 - (1 - f) * s);
+
+	switch (i % 6)
+	{
+		case 0: r = v, g = t, b = p; break;
+		case 1: r = q, g = v, b = p; break;
+		case 2: r = p, g = v, b = t; break;
+		case 3: r = p, g = q, b = v; break;
+		case 4: r = t, g = p, b = v; break;
+		case 5: r = v, g = p, b = q; break;
+	}
+
+	return sgl_Colour_FloatA(r, g, b, hsvColour.a);
 }
 
 #define SGL_INIT_COLOUR(name, hex) const sgl_Colour sgl_Col_##name = sgl_Colour_Unpack(0x##hex##FF)

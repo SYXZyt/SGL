@@ -25,6 +25,8 @@ SGL_API extern sgl_Colour sgl_Colour_FloatA(float r, float g, float b, float a);
 SGL_API extern sgl_Colour sgl_Colour_Byte(uint8 r, uint8 g, uint8 b); // Assumes a = 255
 SGL_API extern sgl_Colour sgl_Colour_ByteA(uint8 r, uint8 g, uint8 b, uint8 a);
 
+SGL_API extern sgl_Colour sgl_Colour_FromHSV(sgl_Colour hsvColour);
+
 // Colours taken from https://www.w3.org/TR/css-color-4/#named-colors
 SGL_DEF_COLOUR(AliceBlue);
 SGL_DEF_COLOUR(AntiqueWhite);

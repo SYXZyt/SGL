@@ -3,6 +3,7 @@
 #include <SGL/Util/Memory.h>
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/Shader.h>
+#include <SGL/Graphics/UniformBuffer.h>
 #include <SGL/Util/Logger.h>
 #include <SGL/Util/Error.h>
 #include <sstream>
@@ -84,7 +85,10 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     self->ctx->OMSetRenderTargets(0, nullptr, nullptr);
 
-    HRESULT hr = self->swapchain->ResizeBuffers(0, dev->width, dev->height, DXGI_FORMAT_UNKNOWN, 0);
+    if (self->backBufferRtv)
+        self->backBufferRtv->Release();
+
+    HRESULT hr = self->swapchain->ResizeBuffers(0, dev->width, dev->height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
     if (FAILED(hr))
     {
         ReportHRError("Failed to resize swapchain", hr);
@@ -135,12 +139,15 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     sgl::Memory::Delete(self);
 }
 
-static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr)
+static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, struct sgl_UniformBuffer** buffers, size_t count)
 {
     GetSelf;
 
     sgl_Shader_Bind(shr);
     sgl_VertexArray_Bind(va);
+
+    for (size_t i = 0; i < count; ++i)
+        sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
 
     self->ctx->Draw(va->vertexCount, 0);
 }

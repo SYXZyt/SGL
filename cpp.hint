@@ -10,3 +10,5 @@
 #define GetSelf sgl_GLDevice* self = (sgl_GLDevice*)dev
 #define sglFuncPtr(name, returnType, ...) returnType(*name)(__VA_ARGS__)#define sgl_alignas(alignment) __declspec(align(alignment))
 #define sgl_alignas(alignment) __attribute__((aligned(alignment)))
+#define SGL_END }
+#define SGL_END

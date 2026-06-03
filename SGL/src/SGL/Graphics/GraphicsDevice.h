@@ -15,7 +15,7 @@ typedef struct sgl_GraphicsDeviceVTable sgl_sealed
     void (*Clear)(struct sgl_GraphicsDevice* self);
     void (*Present)(struct sgl_GraphicsDevice* self);
     void (*Destroy)(struct sgl_GraphicsDevice* self);
-    void (*Draw)(struct sgl_GraphicsDevice* self, struct sgl_VertexArray* va, struct sgl_Shader* shader);
+    void (*Draw)(struct sgl_GraphicsDevice* self, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_UniformBuffer** buffers, size_t count);
 } sgl_GraphicsDeviceVTable;
 
 typedef struct sgl_GraphicsDevice sgl_sealed
@@ -33,7 +33,7 @@ SGL_API extern void sgl_GraphicsDevice_Destroy(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_SetClearColour(sgl_GraphicsDevice* device, sgl_Colour colour);
 SGL_API extern void sgl_GraphicsDevice_Clear(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_Present(sgl_GraphicsDevice* device);
-SGL_API extern void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader);
+SGL_API extern void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_UniformBuffer** buffers, size_t count);
 
 SGL_END
 

@@ -7,6 +7,7 @@
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/VertexLayout.h>
 #include <SGL/Graphics/VertexArray.h>
+#include <SGL/Graphics/UniformBuffer.h>
 
 const char* VertexShaderSourceGL =
 "#version 330 core\n"
@@ -58,9 +59,11 @@ const char* PixelShaderSourceDX =
 "    float3 col : COLOR;\n"
 "};\n"
 "\n"
+"cbuffer ColourBuffer : register(b0) {"
+"   float3 c; };"
 "float4 main(PSInput input) : SV_TARGET\n"
 "{\n"
-"    return float4(input.col, 1.0f);\n"
+"    return float4(c, 1.0f);\n"
 "}\n";
 
 typedef struct sgl_alignas(16) Vertex
@@ -68,6 +71,11 @@ typedef struct sgl_alignas(16) Vertex
     sgl_Vec3 vertex;
     sgl_Vec3 colour;
 } Vertex;
+
+typedef struct sgl_alignas(16) UB
+{
+    sgl_Vec3 colour;
+} UB;
 
 int main(int argc, char** argv)
 {
@@ -137,13 +145,24 @@ int main(int argc, char** argv)
     else
         shr = sgl_Shader_Create_Source(gpu, VertexShaderSourceGL, FragmentShaderSourceGL, layout);
 
+    UB uniform;
+    uniform.colour = sgl_Colour_ToVec3(sgl_Col_Red);
+
+    sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
+
+    float h = 0.f;
+
     while (!window->wantsClose)
     {
+        uniform.colour = sgl_Colour_ToVec3(sgl_Colour_FromHSV(sgl_Colour_Float(h, 1, 1)));
+        sgl_UniformBuffer_Upload(ub, &uniform);
+        h += 0.001f;
+
         sgl_Window_PollEvents(window);
 
         sgl_GraphicsDevice_Clear(gpu);
 
-        sgl_GraphicsDevice_Draw(gpu, va, shr);
+        sgl_GraphicsDevice_Draw(gpu, va, shr, &ub, 1);
 
         sgl_GraphicsDevice_Present(gpu);
     }
