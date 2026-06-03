@@ -72,7 +72,7 @@ namespace SGLNet.Graphics
 
         public VertexArray(GraphicsDevice graphics, uint vertexSize, VertexLayout layout)
         {
-            sgl_VertexArray_Create ??= Native.GetFunction<sgl_VertexArray_Create_ptr>(nameof(sgl_VertexArray_Create));
+            sgl_VertexArray_Create ??= Native.GetFunction<sgl_VertexArray_Create_ptr>();
             sgl_VertexArray_Bind ??= Native.GetFunction<sgl_VertexArray_Bind_ptr>(nameof(sgl_VertexArray_Bind));
             sgl_VertexArray_Destroy ??= Native.GetFunction<sgl_VertexArray_Destroy_ptr>(nameof(sgl_VertexArray_Destroy));
             sgl_VertexArray_Set ??= Native.GetFunction<sgl_VertexArray_Set_ptr>(nameof(sgl_VertexArray_Set));

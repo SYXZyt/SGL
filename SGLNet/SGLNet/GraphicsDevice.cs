@@ -32,7 +32,7 @@ namespace SGLNet
         private static sgl_GraphicsDevice_Present_ptr sgl_GraphicsDevice_Present;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr);
+        private unsafe delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr, IntPtr* buffers, nuint bufferCount);
         private static sgl_GraphicsDevice_Draw_ptr sgl_GraphicsDevice_Draw;
 
         public Colour ClearColour
@@ -46,8 +46,20 @@ namespace SGLNet
         public void Present() =>
             sgl_GraphicsDevice_Present(mHandle);
 
-        public void Draw(VertexArray va, Shader shader) =>
-            sgl_GraphicsDevice_Draw(mHandle, va.Handle, shader.Handle);
+        public void Draw(VertexArray va, Shader shader, params IUniformBuffer[] uniformBuffers)
+        {
+            unsafe
+            {
+                int count = uniformBuffers?.Length ?? 0;
+
+                IntPtr* bufferPtrs = stackalloc IntPtr[count];
+
+                for (int i = 0; i < count; ++i)
+                    bufferPtrs[i] = uniformBuffers[i].Handle;
+
+                sgl_GraphicsDevice_Draw(mHandle, va.Handle, shader.Handle, bufferPtrs, (nuint)count);
+            }
+        }
 
         public GraphicsDevice(Window window)
         {

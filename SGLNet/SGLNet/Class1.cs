@@ -7,8 +7,8 @@ namespace SGLNet
 {
     internal class Class1
     {
-        private static string VertexShaderSourceGL = @"
-#version 330
+        private static readonly string VertexShaderSourceGL = @"
+#version 460 core
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aCol;
 
@@ -21,18 +21,26 @@ void main()
 }
 ";
 
-        private static string FragmentShaderSourceGL = @"
-#version 330
+        private static readonly string FragmentShaderSourceGL = @"
+#version 460 core
 in vec3 oCol;
 out vec4 FragCol;
 
+layout(std140, binding = 0) uniform ColourBuffer {
+    vec3 c;
+};
+
 void main()
 {
-    FragCol = vec4(oCol, 1.0);
+    vec3 a = oCol;
+    vec3 b = c;
+    vec3 c = mix(a, b, 0.5);
+
+    FragCol = vec4(c, 1.0);
 }
 ";
 
-        private static string VertexShaderSourceDX = @"
+        private static readonly string VertexShaderSourceDX = @"
 struct VSInput
 {
     float3 pos : POSITION;
@@ -54,16 +62,24 @@ VSOutput main(VSInput input)
 }
 ";
 
-        private static string PixelShaderSourceDX = @"
+        private static readonly string PixelShaderSourceDX = @"
 struct PSInput
 {
     float4 pos : SV_POSITION;
     float3 col : COLOR;
 };
 
+cbuffer ColourBuffer : register(b0) {
+    float3 c;
+};
+
 float4 main(PSInput input) : SV_TARGET
 {
-    return float4(input.col, 1.0f);
+    float3 a = input.col;
+    float3 b = c;
+    float3 c = lerp(a, b, 0.5);
+
+    return float4(c, 1.0f);
 }
 
 ";
@@ -77,10 +93,18 @@ float4 main(PSInput input) : SV_TARGET
             public Vec3 col;
         }
 
+        [StructLayout(LayoutKind.Sequential, Pack = 16)]
+        private struct UB
+        {
+            public Vec3 colour;
+            private float p;
+        }
+
         private static void Main(string[] _)
         {
             EngineConfig cfg = new();
             cfg.backend = Backend.DIRECTX11;
+            cfg.backend = Backend.OPENGL;
 
             Runtime.Init();
             Logger.Init();
@@ -107,9 +131,9 @@ float4 main(PSInput input) : SV_TARGET
                 Vertex br = new();
 
                 tl.pos = new(-x * 1.5f, y, 0);
-                tr.pos = new( x, y, 0);
-                br.pos = new( x,  -y, 0);
-                bl.pos = new(-x,  -y, 0);
+                tr.pos = new(x, y, 0);
+                br.pos = new(x, -y, 0);
+                bl.pos = new(-x, -y, 0);
 
                 tl.col = Colour.Red;
                 tr.col = Colour.Green;
@@ -125,15 +149,23 @@ float4 main(PSInput input) : SV_TARGET
                 else
                     shader.LoadFromSource(VertexShaderSourceDX, PixelShaderSourceDX);
 
-                    window.Resize += (w, h) => { Console.WriteLine($"Resize: {w}x{h}"); };
+                window.Resize += (w, h) => { Console.WriteLine($"Resize: {w}x{h}"); };
+
+                using UniformBuffer<UB> ub = new(device);
+
+                float h = 0f;
 
                 while (!window.WantClose)
                 {
+                    ub.Data.colour = Colour.FromHSV(h, 1, 1);
+                    ub.Upload();
+                    h += 0.001f;
+
                     window.PollEvents();
 
                     device.Clear();
 
-                    device.Draw(va, shader);
+                    device.Draw(va, shader, ub);
 
                     device.Present();
                 }

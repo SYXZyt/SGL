@@ -38,8 +38,21 @@ namespace SGLNet.Interop
         public static IntPtr LibHandle =>
             mHandle;
 
-        public static FPtr GetFunction<FPtr>(string name) =>
+        public static FPtr GetFunction<FPtr>(string name) where FPtr : Delegate =>
             Marshal.GetDelegateForFunctionPointer<FPtr>(NativeLibrary.GetExport(LibHandle, name));
+
+        public static FPtr GetFunction<FPtr>() where FPtr : Delegate
+        {
+            string name = typeof(FPtr).Name;
+            const string suffix = "_ptr";
+
+            if (name.EndsWith(suffix))
+            {
+                name = name[..^suffix.Length];
+            }
+
+            return GetFunction<FPtr>(name);
+        }
 
         static Native()
         {
