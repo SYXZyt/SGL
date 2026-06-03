@@ -2,6 +2,15 @@ cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
 add_library(SGL SHARED
+    src/imgui/backends/imgui_impl_dx11.cpp
+    src/imgui/backends/imgui_impl_opengl3.cpp
+    src/imgui/backends/imgui_impl_sdl3.cpp
+    src/imgui/imgui.cpp
+    src/imgui/imgui_demo.cpp
+    src/imgui/imgui_draw.cpp
+    src/imgui/imgui_tables.cpp
+    src/imgui/imgui_widgets.cpp
+
     src/glad/glad.c
     src/osbridge.h
     src/osbridge.cpp
@@ -76,7 +85,10 @@ target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm)
 target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
 target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
 
-target_include_directories(SGL PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(SGL PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/src
+    ${CMAKE_CURRENT_LIST_DIR}/src/imgui
+)
 
 target_compile_definitions(SGL PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
 

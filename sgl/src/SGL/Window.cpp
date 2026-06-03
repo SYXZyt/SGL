@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <glad/glad.h>
+#include <backends/imgui_impl_sdl3.h>
 
 template <typename T>
 static std::vector<T>& Void2Vec(void* ptr) {
@@ -70,9 +71,11 @@ void sgl_Window_Destroy(sgl_Window* window)
 
 void sgl_Window_PollEvents(sgl_Window* window)
 {
-    SDL_Event event;
+    static SDL_Event event;
     while (SDL_PollEvent(&event))
     {
+        ImGui_ImplSDL3_ProcessEvent(&event);
+
         switch (event.type)
         {
             case SDL_EVENT_WINDOW_RESIZED:

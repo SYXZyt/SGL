@@ -10,6 +10,9 @@
 #include <sstream>
 #include <wrl/client.h>
 #include <dxgi.h>
+#include <imgui.h>
+#include <backends/imgui_impl_dx11.h>
+#include <backends/imgui_impl_sdl3.h>
 
 #define GetSelf sgl_DXDevice* self = (sgl_DXDevice*)dev
 
@@ -153,6 +156,42 @@ static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
     self->ctx->Draw(va->vertexCount, 0);
 }
 
+static void DXDevice_ImGui_Init(sgl_GraphicsDevice* dev)
+{
+    GetSelf;
+
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    ImGui_ImplSDL3_InitForD3D(dev->window->window);
+    ImGui_ImplDX11_Init(self->device, self->ctx);
+}
+
+static void DXDevice_ImGui_Shutdown(sgl_GraphicsDevice*)
+{
+    ImGui_ImplDX11_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+
+    ImGui::DestroyContext();
+}
+
+static void DXDevice_ImGui_NewFrame(sgl_GraphicsDevice*)
+{
+    ImGui_ImplDX11_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+}
+
+static void DXDevice_ImGui_RenderDrawData(sgl_GraphicsDevice*)
+{
+    ImGui::Render();
+    ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+}
+
+static void* DXDevice_ImGui_GetContext(sgl_GraphicsDevice*) {
+    return ImGui::GetCurrentContext();
+}
+
 static const sgl_GraphicsDeviceVTable gDxVTable =
 {
     .SetClearColour = &sgl_GraphicsDevice_SetClearColour,
@@ -161,6 +200,12 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .Present = &DXDevice_Present,
     .Destroy = &DXDevice_Destroy,
     .Draw = &DXDevice_Draw,
+
+    .ImGui_Init = &DXDevice_ImGui_Init,
+    .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
+    .ImGui_NewFrame = &DXDevice_ImGui_NewFrame,
+    .ImGui_RenderDrawData = &DXDevice_ImGui_RenderDrawData,
+    .ImGui_GetContext = &DXDevice_ImGui_GetContext,
 };
 
 #endif

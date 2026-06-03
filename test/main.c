@@ -103,6 +103,8 @@ int main(int argc, char** argv)
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
 
+    sgl_GraphicsDevice_ImGui_Init(gpu);
+
     sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
 
     {
@@ -163,9 +165,13 @@ int main(int argc, char** argv)
 
         sgl_GraphicsDevice_Draw(gpu, va, shader, &ub, 1);
 
+        sgl_GraphicsDevice_ImGui_NewFrame(gpu);
+        sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
+
         sgl_GraphicsDevice_Present(gpu);
     }
 
+    sgl_GraphicsDevice_ImGui_Shutdown(gpu);
     sgl_UniformBuffer_Destroy(ub);
     sgl_Shader_Destroy(shader);
     sgl_VertexArray_Destroy(va);
@@ -175,7 +181,6 @@ int main(int argc, char** argv)
 
     sgl_Logger_Shutdown();
     sgl_Runtime_Shutdown();
-    sgl_Memory_ReportLeaks();
 
     return 0;
 }

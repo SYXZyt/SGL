@@ -57,3 +57,23 @@ void sgl_GraphicsDevice_Present(sgl_GraphicsDevice* device) {
 void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_UniformBuffer** buffers, size_t count) {
     device->vtable->Draw(device, va, shader, buffers, count);
 }
+
+void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device) {
+    device->vtable->ImGui_Init(device);
+}
+
+void sgl_GraphicsDevice_ImGui_Shutdown(sgl_GraphicsDevice* device) {
+    device->vtable->ImGui_Shutdown(device);
+}
+
+void sgl_GraphicsDevice_ImGui_NewFrame(sgl_GraphicsDevice* device) {
+    device->vtable->ImGui_NewFrame(device);
+}
+
+void sgl_GraphicsDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* device) {
+    device->vtable->ImGui_RenderDrawData(device);
+}
+
+void* sgl_GraphicsDevice_ImGui_GetContext(sgl_GraphicsDevice* device) {
+    return device->vtable->ImGui_GetContext(device);
+}
