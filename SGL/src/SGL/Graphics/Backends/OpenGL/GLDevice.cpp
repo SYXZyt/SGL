@@ -80,7 +80,7 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     glViewport(0, 0, device->base.width, device->base.height);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
-    glFrontFace(GL_CW);
+    glFrontFace(GL_CCW);
 
     std::stringstream ss;
 

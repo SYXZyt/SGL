@@ -207,7 +207,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     D3D11_RASTERIZER_DESC raster = {};
     raster.FillMode = D3D11_FILL_SOLID;
     raster.CullMode = D3D11_CULL_BACK;
-    raster.FrontCounterClockwise = false;
+    raster.FrontCounterClockwise = true;
 
     ID3D11RasterizerState* rasterState = nullptr;
 
