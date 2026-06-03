@@ -66,8 +66,8 @@ namespace SGLNet
 
         public void SwapBuffer() =>
         sgl_Window_SwapBuffer(mNativeHandle);
-        
-        public Window(EngineConfig cfg)
+
+        internal static void Init_FuncPtr()
         {
             sgl_Window_Create ??= Native.GetFunction<sgl_Window_Create_ptr>(nameof(sgl_Window_Create));
             sgl_Window_Destroy ??= Native.GetFunction<sgl_Window_Destroy_ptr>(nameof(sgl_Window_Destroy));
@@ -76,21 +76,8 @@ namespace SGLNet
             sgl_Window_RegisterResize ??= Native.GetFunction<sgl_Window_RegisterResize_ptr>(nameof(sgl_Window_RegisterResize));
             sgl_Window_DeregisterResize ??= Native.GetFunction<sgl_Window_DeregisterResize_ptr>(nameof(sgl_Window_DeregisterResize));
             sgl_Window_SwapBuffer ??= Native.GetFunction<sgl_Window_SwapBuffer_ptr>(nameof(sgl_Window_SwapBuffer));
-
-            mConfig = cfg;
-            mNativeHandle = sgl_Window_Create(cfg);
-
-            mScreenSize = new((int)cfg.width, (int)cfg.height);
-            mHalfScreenSize = mScreenSize / 2;
-            
-            mSelfHandle = GCHandle.Alloc(this);
-
-            sgl_Window_RegisterResize(
-                mNativeHandle,
-                OnResize,
-                GCHandle.ToIntPtr(mSelfHandle));
         }
-        
+
         private static void OnResize(IntPtr window, Vec2i size, IntPtr userdata)
         { 
             GCHandle handle = GCHandle.FromIntPtr(userdata);
@@ -120,6 +107,22 @@ namespace SGLNet
             }
 
             GC.SuppressFinalize(this);
+        }
+
+        public Window(EngineConfig cfg)
+        {
+            mConfig = cfg;
+            mNativeHandle = sgl_Window_Create(cfg);
+
+            mScreenSize = new((int)cfg.width, (int)cfg.height);
+            mHalfScreenSize = mScreenSize / 2;
+            
+            mSelfHandle = GCHandle.Alloc(this);
+
+            sgl_Window_RegisterResize(
+                mNativeHandle,
+                OnResize,
+                GCHandle.ToIntPtr(mSelfHandle));
         }
 
         ~Window() =>

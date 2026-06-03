@@ -92,23 +92,21 @@ namespace SGLNet.Graphics
             return clone;
         }
 
-        private VertexLayout()
+        internal static void Init_FuncPtr()
         {
             sgl_VertexLayout_New ??= Native.GetFunction<sgl_VertexLayout_New_ptr>(nameof(sgl_VertexLayout_New));
             sgl_VertexLayout_Add ??= Native.GetFunction<sgl_VertexLayout_Add_ptr>(nameof(sgl_VertexLayout_Add));
             sgl_VertexLayout_Destroy ??= Native.GetFunction<sgl_VertexLayout_Destroy_ptr>(nameof(sgl_VertexLayout_Destroy));
             sgl_VertexLayout_DeepCopy ??= Native.GetFunction<sgl_VertexLayout_DeepCopy_ptr>(nameof(sgl_VertexLayout_DeepCopy));
+        }
 
+        private VertexLayout()
+        {
             mHandle = IntPtr.Zero;
         }
 
         public VertexLayout(GraphicsDevice graphics)
         {
-            sgl_VertexLayout_New ??= Native.GetFunction<sgl_VertexLayout_New_ptr>(nameof(sgl_VertexLayout_New));
-            sgl_VertexLayout_Add ??= Native.GetFunction<sgl_VertexLayout_Add_ptr>(nameof(sgl_VertexLayout_Add));
-            sgl_VertexLayout_Destroy ??= Native.GetFunction<sgl_VertexLayout_Destroy_ptr>(nameof(sgl_VertexLayout_Destroy));
-            sgl_VertexLayout_DeepCopy ??= Native.GetFunction<sgl_VertexLayout_DeepCopy_ptr>(nameof(sgl_VertexLayout_DeepCopy));
-
             mHandle = sgl_VertexLayout_New(graphics.Handle);
         }
 

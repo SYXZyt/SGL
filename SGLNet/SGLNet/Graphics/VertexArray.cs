@@ -70,14 +70,17 @@ namespace SGLNet.Graphics
             GC.SuppressFinalize(this);
         }
 
-        public VertexArray(GraphicsDevice graphics, uint vertexSize, VertexLayout layout)
+        internal static void Init_FuncPtr()
         {
             sgl_VertexArray_Create ??= Native.GetFunction<sgl_VertexArray_Create_ptr>();
             sgl_VertexArray_Bind ??= Native.GetFunction<sgl_VertexArray_Bind_ptr>(nameof(sgl_VertexArray_Bind));
             sgl_VertexArray_Destroy ??= Native.GetFunction<sgl_VertexArray_Destroy_ptr>(nameof(sgl_VertexArray_Destroy));
             sgl_VertexArray_Set ??= Native.GetFunction<sgl_VertexArray_Set_ptr>(nameof(sgl_VertexArray_Set));
             sgl_VertexArray_AddVertex ??= Native.GetFunction<sgl_VertexArray_AddVertex_ptr>(nameof(sgl_VertexArray_AddVertex));
+        }
 
+        public VertexArray(GraphicsDevice graphics, uint vertexSize, VertexLayout layout)
+        {
             mVertexLayout = layout.Clone() as VertexLayout;
 
             mGraphics = graphics;

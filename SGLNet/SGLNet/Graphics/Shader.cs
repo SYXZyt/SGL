@@ -69,13 +69,16 @@ namespace SGLNet.Graphics
             GC.SuppressFinalize(this);
         }
 
-        public Shader(GraphicsDevice graphicsDevice, VertexLayout layout)
+        internal static void Init_FuncPtr()
         {
-            mGraphics = graphicsDevice;
-
             sgl_Shader_Create_Source ??= Native.GetFunction<sgl_Shader_Create_Source_ptr>(nameof(sgl_Shader_Create_Source));
             sgl_Shader_Destroy ??= Native.GetFunction<sgl_Shader_Destroy_ptr>(nameof(sgl_Shader_Destroy));
             sgl_Shader_Bind ??= Native.GetFunction<sgl_Shader_Bind_ptr>(nameof(sgl_Shader_Bind));
+        }
+
+        public Shader(GraphicsDevice graphicsDevice, VertexLayout layout)
+        {
+            mGraphics = graphicsDevice;
             mLayout = layout.Clone() as VertexLayout;
         }
 

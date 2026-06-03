@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using SGLNet.Graphics;
+using SGLNet.Util;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text;
 
@@ -69,6 +71,15 @@ namespace SGLNet.Interop
             mHandle = NativeLibrary.Load(fullPath);
 
             Memory.Init_FuncPtr();
+            Window.Init_FuncPtr();
+            Runtime.Init_FuncPtr();
+            GraphicsDevice.Init_FuncPtr();
+            Shader.Init_FuncPtr();
+            UniformBufferNative.Init_FuncPtr();
+            VertexArray.Init_FuncPtr();
+            VertexLayout.Init_FuncPtr();
+            Logger.Init_FuncPtr();
+            Util.String.Init_FuncPtr();
         }
     }
 }

@@ -32,11 +32,14 @@ namespace SGLNet.Util
         public void Free() =>
             sgl_FreeString(mNative);
 
-        public String(string data)
+        internal static void Init_FuncPtr()
         {
             sgl_MakeString ??= Native.GetFunction<sgl_MakeString_ptr>(nameof(sgl_MakeString));
             sgl_FreeString ??= Native.GetFunction<sgl_FreeString_ptr>(nameof(sgl_FreeString));
-            
+        }
+
+        public String(string data)
+        {
             mNative = sgl_MakeString(data);
         }
     }

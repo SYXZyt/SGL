@@ -22,6 +22,14 @@ namespace SGLNet.Graphics
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal unsafe delegate void sgl_UniformBuffer_Upload_ptr(IntPtr ub, void* data);
         internal static sgl_UniformBuffer_Upload_ptr sgl_UniformBuffer_Upload;
+
+        internal static void Init_FuncPtr()
+        {
+            sgl_UniformBuffer_Create ??= Native.GetFunction<sgl_UniformBuffer_Create_ptr>();
+            sgl_UniformBuffer_Destroy ??= Native.GetFunction<sgl_UniformBuffer_Destroy_ptr>();
+            sgl_UniformBuffer_Bind ??= Native.GetFunction<sgl_UniformBuffer_Bind_ptr>();
+            sgl_UniformBuffer_Upload ??= Native.GetFunction<sgl_UniformBuffer_Upload_ptr>();
+        }
     }
 
     public sealed class UniformBuffer<T> : IUniformBuffer
@@ -59,15 +67,10 @@ namespace SGLNet.Graphics
         public void Bind(uint slot) =>
             sgl_UniformBuffer_Bind(mHandle, slot);
 
+
         public UniformBuffer(GraphicsDevice device)
         {
-            sgl_UniformBuffer_Create ??= Native.GetFunction<sgl_UniformBuffer_Create_ptr>();
-            sgl_UniformBuffer_Destroy ??= Native.GetFunction<sgl_UniformBuffer_Destroy_ptr>();
-            sgl_UniformBuffer_Bind ??= Native.GetFunction<sgl_UniformBuffer_Bind_ptr>();
-            sgl_UniformBuffer_Upload ??= Native.GetFunction<sgl_UniformBuffer_Upload_ptr>();
-
             mHandle = sgl_UniformBuffer_Create(device.Handle, (nuint)Marshal.SizeOf<T>());
-
             mData = new();
         }
 

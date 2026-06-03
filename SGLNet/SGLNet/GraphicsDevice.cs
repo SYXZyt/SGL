@@ -61,7 +61,7 @@ namespace SGLNet
             }
         }
 
-        public GraphicsDevice(Window window)
+        internal static void Init_FuncPtr()
         {
             sgl_GraphicsDevice_Create ??= Native.GetFunction<sgl_GraphicsDevice_Create_ptr>(nameof(sgl_GraphicsDevice_Create));
             sgl_GraphicsDevice_Destroy ??= Native.GetFunction<sgl_GraphicsDevice_Destroy_ptr>(nameof(sgl_GraphicsDevice_Destroy));
@@ -69,7 +69,10 @@ namespace SGLNet
             sgl_GraphicsDevice_Clear ??= Native.GetFunction<sgl_GraphicsDevice_Clear_ptr>(nameof(sgl_GraphicsDevice_Clear));
             sgl_GraphicsDevice_Present ??= Native.GetFunction<sgl_GraphicsDevice_Present_ptr>(nameof(sgl_GraphicsDevice_Present));
             sgl_GraphicsDevice_Draw ??= Native.GetFunction<sgl_GraphicsDevice_Draw_ptr>(nameof(sgl_GraphicsDevice_Draw));
+        }
 
+        public GraphicsDevice(Window window)
+        {
             mHandle = sgl_GraphicsDevice_Create(window.Handle);
         }
 

@@ -20,33 +20,21 @@ namespace SGLNet.Util
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void sgl_Logger_Init_ptr();
         private static sgl_Logger_Init_ptr sgl_Logger_Init;
-        public static void Init()
-        {
-            sgl_Logger_Init ??= Native.GetFunction<sgl_Logger_Init_ptr>(nameof(sgl_Logger_Init));
+        public static void Init() =>
             sgl_Logger_Init();
-        }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void sgl_Logger_Shutdown_ptr();
         private static sgl_Logger_Shutdown_ptr sgl_Logger_Shutdown;
-        public static void Shutdown()
-        {
-            sgl_Logger_Shutdown ??= Native.GetFunction<sgl_Logger_Shutdown_ptr>(nameof(sgl_Logger_Shutdown));
+        public static void Shutdown() =>
             sgl_Logger_Shutdown();
-        }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.U1)]
         private delegate bool sgl_Logger_IsLogging_ptr();
         private static sgl_Logger_IsLogging_ptr sgl_Logger_IsLogging;
-        public static bool IsLogging
-        {
-            get
-            {
-                sgl_Logger_IsLogging ??= Native.GetFunction<sgl_Logger_IsLogging_ptr>(nameof(sgl_Logger_IsLogging));
-                return sgl_Logger_IsLogging();
-            }
-        }
+        public static bool IsLogging =>
+            sgl_Logger_IsLogging();
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void sgl_Log_ptr(IntPtr message);
@@ -57,8 +45,6 @@ namespace SGLNet.Util
 
         public static void Log(string message)
         {
-            sgl_Log ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_Log));
-            
             IntPtr ptr = StringToHGlobalUtf8(message);
             try
             {
@@ -72,8 +58,6 @@ namespace SGLNet.Util
 
         public static void LogWarning(string message)
         {
-            sgl_LogWarning ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_LogWarning));
-
             IntPtr ptr = StringToHGlobalUtf8(message);
             try
             {
@@ -87,8 +71,6 @@ namespace SGLNet.Util
 
         public static void LogError(string message)
         {
-            sgl_LogError ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_LogError));
-
             IntPtr ptr = StringToHGlobalUtf8(message);
             try
             {
@@ -102,8 +84,6 @@ namespace SGLNet.Util
 
         public static void LogSuccess(string message)
         {
-            sgl_LogSuccess ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_LogSuccess));
-
             IntPtr ptr = StringToHGlobalUtf8(message);
             try
             {
@@ -113,6 +93,17 @@ namespace SGLNet.Util
             {
                 Marshal.FreeHGlobal(ptr);
             }
+        }
+
+        internal static void Init_FuncPtr()
+        {
+            sgl_Logger_IsLogging ??= Native.GetFunction<sgl_Logger_IsLogging_ptr>(nameof(sgl_Logger_IsLogging));
+            sgl_Logger_Shutdown ??= Native.GetFunction<sgl_Logger_Shutdown_ptr>(nameof(sgl_Logger_Shutdown));
+            sgl_Logger_Init ??= Native.GetFunction<sgl_Logger_Init_ptr>(nameof(sgl_Logger_Init));
+            sgl_Log ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_Log));
+            sgl_LogWarning ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_LogWarning));
+            sgl_LogError ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_LogError));
+            sgl_LogSuccess ??= Native.GetFunction<sgl_Log_ptr>(nameof(sgl_LogSuccess));
         }
     }
 }
