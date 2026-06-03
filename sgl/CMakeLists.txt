@@ -72,6 +72,8 @@ add_library(SGL SHARED
     src/SGL/Graphics/Backends/OpenGL/GLuniformBuffer.cpp
     src/SGL/Version.h
     src/SGL/Version.cpp
+    src/SGL/imgui/ImGui.h
+    src/SGL/ImGui/ImGui.cpp
 )
 
 include(CMake/Dependencies.cmake)
@@ -85,10 +87,8 @@ target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm)
 target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
 target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
 
-target_include_directories(SGL PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/src
-    ${CMAKE_CURRENT_LIST_DIR}/src/imgui
-)
+target_include_directories(SGL PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(SGL PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/imgui)
 
 target_compile_definitions(SGL PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
 
