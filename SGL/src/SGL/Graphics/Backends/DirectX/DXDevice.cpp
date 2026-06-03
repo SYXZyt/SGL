@@ -1,5 +1,6 @@
 #ifdef SGL_DIRECTX
 #include "DXDevice.h"
+#include <SGL/Version.h>
 #include <SGL/Util/Memory.h>
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/Shader.h>
@@ -223,6 +224,10 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     std::stringstream ss;
 
     ss << "SDL Version: " << SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MINOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MICRO(SDL_VERSION);
+    sgl_Log(ss.str().c_str());
+    ss.str("");
+
+    ss << "SGL Version: " << sgl_VersionString();
     sgl_Log(ss.str().c_str());
     ss.str("");
 

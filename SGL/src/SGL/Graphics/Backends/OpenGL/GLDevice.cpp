@@ -1,4 +1,5 @@
 #include "GLDevice.h"
+#include <SGL/Version.h>
 #include <SGL/Util/Memory.h>
 #include <glad/glad.h>
 #include <sstream>
@@ -84,6 +85,10 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     std::stringstream ss;
 
     ss << "SDL Version: " << SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MINOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MICRO(SDL_VERSION);
+    sgl_Log(ss.str().c_str());
+    ss.str("");
+
+    ss << "SGL Version: " << sgl_VersionString();
     sgl_Log(ss.str().c_str());
     ss.str("");
 
