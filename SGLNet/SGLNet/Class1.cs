@@ -106,7 +106,7 @@ float4 main(PSInput input) : SV_TARGET
 
             EngineConfig cfg = new();
             cfg.backend = Backend.DIRECTX11;
-            //cfg.backend = Backend.OPENGL;
+            cfg.backend = Backend.OPENGL;
 
             Runtime.Init();
             Logger.Init();

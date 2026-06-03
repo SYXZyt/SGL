@@ -7,6 +7,8 @@
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/UniformBuffer.h>
+#include <backends/imgui_impl_opengl3.h>
+#include <backends/imgui_impl_sdl3.h>
 
 template <typename T>
 T* GetBackend(void* ptr) {
@@ -57,6 +59,34 @@ static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
     glDrawArrays(GL_TRIANGLES, 0, va->vertexCount);
 }
 
+static void GLDevice_ImGui_Init(sgl_GraphicsDevice* dev)
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+
+    ImGui_ImplSDL3_InitForOpenGL(dev->window->window, dev->window->glContext);
+    ImGui_ImplOpenGL3_Init("#version 460 core");
+}
+
+static void GLDevice_ImGui_Shutdown(sgl_GraphicsDevice*)
+{
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplSDL3_Shutdown();
+}
+
+static void GLDevice_ImGui_NewFrame(sgl_GraphicsDevice*)
+{
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplSDL3_NewFrame();
+    ImGui::NewFrame();
+}
+
+static void GLDevice_ImGui_RenderDrawData(sgl_GraphicsDevice*)
+{
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
 static const sgl_GraphicsDeviceVTable gGlVTable =
 {
     .SetClearColour = &GLDevice_SetClearColour,
@@ -65,6 +95,11 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
     .Present = &GLDevice_Present,
     .Destroy = &GLDevice_Destroy,
     .Draw = &GLDevice_Draw,
+
+    .ImGui_Init = &GLDevice_ImGui_Init,
+    .ImGui_Shutdown = &GLDevice_ImGui_Shutdown,
+    .ImGui_NewFrame = &GLDevice_ImGui_NewFrame,
+    .ImGui_RenderDrawData = &GLDevice_ImGui_RenderDrawData,
 };
 
 sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)

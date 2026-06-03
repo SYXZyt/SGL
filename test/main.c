@@ -99,7 +99,7 @@ int main(int argc, char** argv)
     sgl_Logger_Init();
 
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
-    cfg.backend = sgl_Backend_DIRECTX11;
+    //cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
