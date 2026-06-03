@@ -14,10 +14,6 @@ static sgl_Vec2* ImToSgl(ImVec2* v) {
     return reinterpret_cast<sgl_Vec2*>(v);
 }
 
-static sgl_Colour* ImToSgl(ImColor* c) {
-    return reinterpret_cast<sgl_Colour*>(c);
-}
-
 static sgl_Colour* ImToSgl(ImVec4* c) {
     return reinterpret_cast<sgl_Colour*>(c);
 }
@@ -278,7 +274,7 @@ void sgl_TextColoured(sgl_Colour colour, const char* fmt, ...)
 void sgl_TextUnformattedColoured(sgl_Colour colour, const char* text)
 {
     ImColor* c = SglToIm(&colour);
-    ImGui::TextColored(*c, text);
+    ImGui::TextColored(*c, "%s", text);
 }
 
 bool sgl_BeginMainMenuBar() {
@@ -304,11 +300,11 @@ bool sgl_MenuItem(const char* text, const char* shortcut, bool selected, bool en
 sgl_Vec2 sgl_GetContentRegionAvail()
 {
     ImVec2 v = ImGui::GetContentRegionAvail();
-    return { v.x, v.y };
+    return {{{ v.x, v.y }}};
 }
 
 sgl_Vec2 sgl_CalcTextSize(const char* text, const char* textEnd, bool hideTextAfterDoubleHash, float wrapWidth)
 {
     ImVec2 v = ImGui::CalcTextSize(text, textEnd, hideTextAfterDoubleHash, wrapWidth);
-    return { v.x, v.y };
+    return {{{ v.x, v.y }}};
 }

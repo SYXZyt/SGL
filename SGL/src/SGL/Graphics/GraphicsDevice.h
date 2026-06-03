@@ -7,6 +7,10 @@
 
 SGL_BEGIN
 
+struct sgl_VertexArray;
+struct sgl_Shader;
+struct sgl_UniformBuffer;
+
 struct sgl_GraphicsDevice;
 typedef struct sgl_GraphicsDeviceVTable sgl_sealed
 {

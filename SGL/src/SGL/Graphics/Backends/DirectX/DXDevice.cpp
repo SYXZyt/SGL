@@ -202,18 +202,17 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .ImGui_RenderDrawData = &DXDevice_ImGui_RenderDrawData,
 };
 
-#endif
 
 sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
 {
     sgl_DXDevice* device = sgl::Memory::New<sgl_DXDevice>();
-
+    
     device->base.clearColour = sgl_Col_CornflowerBlue;
     device->base.window = window;
     device->base.width = window->screenSize.width;
     device->base.height = window->screenSize.height;
     device->base.vtable = &gDxVTable;
-
+    
     DXGI_SWAP_CHAIN_DESC swapDesc = {};
     swapDesc.BufferCount = 1;
     swapDesc.BufferDesc.Width = device->base.width;
@@ -223,16 +222,16 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     swapDesc.OutputWindow = sgl_Window_GetWin32Window(window);
     swapDesc.SampleDesc.Count = 1;
     swapDesc.Windowed = TRUE;
-
+    
     HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &swapDesc, &device->swapchain, &device->device, nullptr, &device->ctx);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create device and swapchain", hr);
         return device;
     }
-
+    
     RecreateBackbuffer(device);
-
+    
     D3D11_VIEWPORT viewport =
     {
         .Width = (FLOAT)window->screenSize.width,
@@ -240,74 +239,76 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
         .MinDepth = 0.f,
         .MaxDepth = 1.f,
     };
-
+    
     device->ctx->RSSetViewports(1, &viewport);
-
+    
     D3D11_RASTERIZER_DESC raster = {};
     raster.FillMode = D3D11_FILL_SOLID;
     raster.CullMode = D3D11_CULL_BACK;
     raster.FrontCounterClockwise = true;
-
+    
     ID3D11RasterizerState* rasterState = nullptr;
-
+    
     hr = device->device->CreateRasterizerState(&raster, &rasterState);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create rasteriser state", hr);
         return device;
     }
-
+    
     device->ctx->RSSetState(rasterState);
     rasterState->Release();
-
+    
     std::stringstream ss;
-
+    
     ss << "SDL Version: " << SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MINOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MICRO(SDL_VERSION);
     sgl_Log(ss.str().c_str());
     ss.str("");
-
+    
     ss << "SGL Version: " << sgl_VersionString();
     sgl_Log(ss.str().c_str());
     ss.str("");
-
+    
     D3D_FEATURE_LEVEL featureLevel = device->device->GetFeatureLevel();
     ss << "D3D Feature Level: " << FeatureLevelToString(featureLevel);
     sgl_Log(ss.str().c_str());
     ss.str("");
-
+    
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
     Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
     DXGI_ADAPTER_DESC desc;
     char gpuName[128] = {};
     const char* vendorName;
     uint64_t vramMB;
-
+    
     if (FAILED(device->device->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice)))
-        goto ret;
-
+    goto ret;
+    
     if (FAILED(dxgiDevice->GetAdapter(&adapter)))
-        goto ret;
-
+    goto ret;
+    
     if (FAILED(adapter->GetDesc(&desc)))
-        goto ret;
-
+    goto ret;
+    
     std::wcstombs(gpuName, desc.Description, sizeof(gpuName) - 1);
-
+    
     vendorName = VendorIdToString(desc.VendorId);
-
+    
     ss << "Vendor: " << vendorName << " (0x"
-        << std::hex << desc.VendorId << std::dec << ")";
+    << std::hex << desc.VendorId << std::dec << ")";
     sgl_Log(ss.str().c_str());
     ss.str("");
-
+    
     ss << "Renderer: " << gpuName;
     sgl_Log(ss.str().c_str());
     ss.str("");
-
+    
     vramMB = desc.DedicatedVideoMemory / (1024ull * 1024ull);
     ss << "Dedicated VRAM: " << vramMB << " MB";
     sgl_Log(ss.str().c_str());
-
-ret:
+    
+    ret:
     return device;
 }
+
+#endif

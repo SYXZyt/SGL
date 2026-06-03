@@ -72,9 +72,12 @@ add_library(SGL SHARED
     src/SGL/Graphics/Backends/OpenGL/GLuniformBuffer.cpp
     src/SGL/Version.h
     src/SGL/Version.cpp
-    src/SGL/imgui/ImGui.h
+    src/SGL/ImGui/ImGui.h
     src/SGL/ImGui/ImGui.cpp
- "src/SGL/Input/Key.h" "src/SGL/Input/Keyboard.h" "src/SGL/Input/Keyboard.cpp")
+    src/SGL/Input/Key.h
+    src/SGL/Input/Keyboard.h
+    src/SGL/Input/Keyboard.cpp
+    )
 
 include(CMake/Dependencies.cmake)
 

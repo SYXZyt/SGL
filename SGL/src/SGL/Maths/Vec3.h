@@ -66,7 +66,7 @@ SGL_API extern const sgl_Vec3i sgl_Vec3i_Right;
 SGL_API extern const sgl_Vec3i sgl_Vec3i_Up;
 SGL_API extern const sgl_Vec3i sgl_Vec3i_Down;
 SGL_API extern const sgl_Vec3i sgl_Vec3i_Forward;
-SGL_API extern const sgl_Vec3i sgl_Vec3i_Back;
+SGL_API extern const sgl_Vec3i sgl_Vec3i_Backward;
 SGL_API extern const sgl_Vec3i sgl_Vec3i_Inf;
 SGL_API extern const sgl_Vec3i sgl_Vec3i_NegativeInf;
 

@@ -40,7 +40,7 @@ static void PrintSymbol(void* addr)
     if (symbols)
     {
         std::println("  {}", symbols[0]);
-        free(symbols)
+        free(symbols);
     }
     else
         std::println("  {}", addr);

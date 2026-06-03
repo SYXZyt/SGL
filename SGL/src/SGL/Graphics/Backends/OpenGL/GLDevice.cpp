@@ -48,8 +48,6 @@ static void GLDevice_Destroy(sgl_GraphicsDevice* dev)
 
 static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, struct sgl_UniformBuffer** buffers, size_t count)
 {
-    GetSelf;
-
     sgl_Shader_Bind(shr);
     sgl_VertexArray_Bind(va);
 
