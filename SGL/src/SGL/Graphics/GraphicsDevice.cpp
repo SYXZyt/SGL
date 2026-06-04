@@ -75,6 +75,15 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
     PP_Vertex bl = { .pos = {{{-1, -1, 0}}}, .uv = {{{0, 0}}} };
     PP_Vertex br = { .pos = {{{ 1, -1, 0}}}, .uv = {{{1, 0}}} };
 
+    // DirectX wants the Y uv flipping, otherwise each effect will cause the next buffer to flip
+    if (window->cfg.backend == sgl_Backend_DIRECTX11)
+    {
+        tl.uv.y *= -1;
+        tr.uv.y *= -1;
+        bl.uv.y *= -1;
+        br.uv.y *= -1;
+    }
+
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
     sgl_VertexArray_AddQuad(device->screenQuad, q);
 

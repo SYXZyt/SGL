@@ -285,9 +285,9 @@ int main(int argc, char** argv)
             sgl_UniformBuffer_Upload(ub, &ubData);
         }
 
-        sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
-
         sgl_GraphicsDevice_EndFrame(gpu);
+
+        sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
     }
 
     sgl_PostProcess_Destroy(postProcessEffect);
