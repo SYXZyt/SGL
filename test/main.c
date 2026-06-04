@@ -125,6 +125,44 @@ const char* PostProcessEffectFragmentGL =
 "    FragCol.rgb = 1 - FragCol.rgb;"
 "}\n";
 
+const char* PostProcessEffectVertexHLSL =
+"struct VSInput\n"
+"{\n"
+"    float3 Pos : POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"struct PSInput\n"
+"{\n"
+"    float4 Pos : SV_POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"PSInput main(VSInput input)\n"
+"{\n"
+"    PSInput output;\n"
+"    output.Pos = float4(input.Pos, 1.0f);\n"
+"    output.UV = input.UV;\n"
+"    return output;\n"
+"}\n";
+
+const char* PostProcessEffectPixelHLSL =
+"Texture2D FrameTexture : register(t0);\n"
+"SamplerState FrameSampler : register(s0);\n"
+"\n"
+"struct PSInput\n"
+"{\n"
+"    float4 Pos : SV_POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"float4 main(PSInput input) : SV_TARGET\n"
+"{\n"
+"    float4 colour = FrameTexture.Sample(FrameSampler, input.UV);\n"
+"    colour.rgb = 1.0f - colour.rgb;\n"
+"    return colour;\n"
+"}\n";
+
 int main(int argc, char** argv)
 {
     sgl_Runtime_Init();
@@ -186,6 +224,7 @@ int main(int argc, char** argv)
     if (cfg.backend == sgl_Backend_DIRECTX11)
     {
         shader = sgl_Shader_Create_Source(gpu, VertexShaderSourceDX, PixelShaderSourceDX, layout);
+        postProcessShader = sgl_Shader_Create_Source(gpu, PostProcessEffectVertexHLSL, PostProcessEffectPixelHLSL, gpu->screenQuadLayout);
     }
     else
     {

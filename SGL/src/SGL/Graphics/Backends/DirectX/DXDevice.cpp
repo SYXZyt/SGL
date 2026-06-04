@@ -6,6 +6,7 @@
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/UniformBuffer.h>
 #include <SGL/Graphics/Texture2D.h>
+#include <SGL/Graphics/Backends/DirectX/DXPostProcess.h>
 #include <SGL/Util/Logger.h>
 #include <SGL/Util/Error.h>
 #include <sstream>
@@ -16,6 +17,50 @@
 #include <backends/imgui_impl_sdl3.h>
 
 #define GetSelf sgl_DXDevice* self = (sgl_DXDevice*)dev
+
+const char* BlitVertex =
+"struct VSInput\n"
+"{\n"
+"    float3 Pos : POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"struct PSInput\n"
+"{\n"
+"    float4 Pos : SV_POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"PSInput main(VSInput input)\n"
+"{\n"
+"    PSInput output;\n"
+"    output.Pos = float4(input.Pos, 1.0f);\n"
+"    output.UV = input.UV;\n"
+"    return output;\n"
+"}\n";
+
+const char* BlitFragment =
+"Texture2D FrameTexture : register(t0);\n"
+"SamplerState FrameSampler : register(s0);\n"
+"\n"
+"struct PSInput\n"
+"{\n"
+"    float4 Pos : SV_POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"float4 main(PSInput input) : SV_TARGET\n"
+"{\n"
+"    float4 colour = FrameTexture.Sample(FrameSampler, input.UV);\n"
+"    return colour;\n"
+"}\n";
+
+template <typename T>
+static void TryRelease(T* t)
+{
+    if (t)
+        t->Release();
+}
 
 static const char* FeatureLevelToString(D3D_FEATURE_LEVEL level)
 {
@@ -90,10 +135,20 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     self->ctx->OMSetRenderTargets(0, nullptr, nullptr);
 
-    if (self->backBufferRtv)
-        self->backBufferRtv->Release();
+    TryRelease(self->backBufferRtv);
 
-    HRESULT hr = self->swapchain->ResizeBuffers(0, dev->width, dev->height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+    TryRelease(self->sceneSrv);
+    TryRelease(self->sceneRtv);
+    TryRelease(self->sceneTexture);
+
+    HRESULT hr = self->swapchain->ResizeBuffers(
+        0,
+        dev->width,
+        dev->height,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        0
+    );
+
     if (FAILED(hr))
     {
         ReportHRError("Failed to resize swapchain", hr);
@@ -102,34 +157,124 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     RecreateBackbuffer(self);
 
+    D3D11_TEXTURE2D_DESC sceneDesc = {};
+    sceneDesc.Width = dev->width;
+    sceneDesc.Height = dev->height;
+    sceneDesc.MipLevels = 1;
+    sceneDesc.ArraySize = 1;
+    sceneDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sceneDesc.SampleDesc.Count = 1;
+    sceneDesc.Usage = D3D11_USAGE_DEFAULT;
+    sceneDesc.BindFlags =
+        D3D11_BIND_RENDER_TARGET |
+        D3D11_BIND_SHADER_RESOURCE;
+
+    hr = self->device->CreateTexture2D(
+        &sceneDesc,
+        nullptr,
+        &self->sceneTexture
+    );
+
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene texture", hr);
+        return;
+    }
+
+    hr = self->device->CreateRenderTargetView(
+        self->sceneTexture,
+        nullptr,
+        &self->sceneRtv
+    );
+
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene RTV", hr);
+        return;
+    }
+
+    hr = self->device->CreateShaderResourceView(
+        self->sceneTexture,
+        nullptr,
+        &self->sceneSrv
+    );
+
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene SRV", hr);
+        return;
+    }
+
     D3D11_VIEWPORT viewport =
     {
         .Width = (FLOAT)dev->width,
         .Height = (FLOAT)dev->height,
-        .MinDepth = 0.f,
-        .MaxDepth = 1.f,
+        .MinDepth = 0.0f,
+        .MaxDepth = 1.0f,
     };
 
     self->ctx->RSSetViewports(1, &viewport);
 }
 
-static void DXDevice_Clear(sgl_GraphicsDevice* dev)
+static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
 {
     GetSelf;
-    self->ctx->ClearRenderTargetView(self->backBufferRtv, &dev->clearColour.r);
+
+    self->ctx->OMSetRenderTargets(1, &self->sceneRtv, nullptr);
+
+    self->ctx->ClearRenderTargetView(
+        self->sceneRtv,
+        &dev->clearColour.r
+    );
 }
 
-static void DXDevice_Present(sgl_GraphicsDevice* dev)
+static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
 {
     GetSelf;
+
+    self->ctx->RSSetState(self->postProState);
+
+    sgl_PostProcess** effects;
+    size_t effectCount = sgl_GraphicsDevice_GetEffects(dev, &effects);
+
+    ID3D11ShaderResourceView* currentSrv = self->sceneSrv;
+
+    for (size_t i = 0; i < effectCount; ++i)
+    {
+        sgl_DXPostProcess* effect = (sgl_DXPostProcess*)effects[i];
+
+        if (!effect->base.enabled)
+            continue;
+
+        self->ctx->OMSetRenderTargets(1, &effect->renderTargetView, nullptr);
+
+        sgl_PostProcess_Bind(effects[i]);
+
+        self->ctx->PSSetShaderResources(0, 1, &currentSrv);
+
+        sgl_VertexArray_Bind(dev->screenQuad);
+
+        self->ctx->Draw(dev->screenQuad->vertexCount, 0);
+
+        ID3D11ShaderResourceView* nullSrv = nullptr;
+        self->ctx->PSSetShaderResources(0, 1, &nullSrv);
+
+        currentSrv = effect->shaderResourceView;
+    }
+
+    self->ctx->OMSetRenderTargets(1, &self->backBufferRtv, nullptr);
+    sgl_Shader_Bind(self->blitShader);
+    self->ctx->PSSetShaderResources(0, 1, &currentSrv);
+    sgl_VertexArray_Bind(dev->screenQuad);
+
+    self->ctx->Draw(dev->screenQuad->vertexCount, 0);
+
+    ID3D11ShaderResourceView* nullSrv = nullptr;
+    self->ctx->PSSetShaderResources(0, 1, &nullSrv);
+
+    self->ctx->RSSetState(self->rasterState);
+
     self->swapchain->Present(1, 0);
-}
-
-template <typename T>
-static void TryRelease(T* t)
-{
-    if (t)
-        t->Release();
 }
 
 static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
@@ -141,6 +286,13 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->device);
     TryRelease(self->swapchain);
     TryRelease(self->sampler);
+    TryRelease(self->sceneRtv);
+    TryRelease(self->sceneSrv);
+    TryRelease(self->sceneTexture);
+    TryRelease(self->rasterState);
+    TryRelease(self->postProState);
+
+    sgl_Shader_Destroy(self->blitShader);
 
     sgl::Memory::Delete(self);
 }
@@ -208,8 +360,8 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
 {
     .SetClearColour = &sgl_GraphicsDevice_SetClearColour,
     .Resize = &DXDevice_Resize,
-    .BeginFrame = &DXDevice_Clear,
-    .EndFrame = &DXDevice_Present,
+    .BeginFrame = &DXDevice_BeginFrame,
+    .EndFrame = &DXDevice_EndFrame,
     .Destroy = &DXDevice_Destroy,
     .Draw = &DXDevice_Draw,
 
@@ -220,7 +372,7 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
 };
 
 
-sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
+sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQuadLayout)
 {
     sgl_DXDevice* device = sgl::Memory::New<sgl_DXDevice>();
 
@@ -264,17 +416,51 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     raster.CullMode = D3D11_CULL_BACK;
     raster.FrontCounterClockwise = true;
 
-    ID3D11RasterizerState* rasterState = nullptr;
-
-    hr = device->device->CreateRasterizerState(&raster, &rasterState);
+    hr = device->device->CreateRasterizerState(&raster, &device->rasterState);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create rasteriser state", hr);
         return device;
     }
 
-    device->ctx->RSSetState(rasterState);
-    rasterState->Release();
+    device->ctx->RSSetState(device->rasterState);
+
+    raster.CullMode = D3D11_CULL_NONE;
+    hr = device->device->CreateRasterizerState(&raster, &device->postProState);
+
+#pragma region Framebuffer
+    {
+        D3D11_TEXTURE2D_DESC desc = {};
+        desc.Width = device->base.width;
+        desc.Height = device->base.height;
+        desc.MipLevels = 1;
+        desc.ArraySize = 1;
+        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags =
+            D3D11_BIND_RENDER_TARGET |
+            D3D11_BIND_SHADER_RESOURCE;
+
+        device->device->CreateTexture2D(
+            &desc,
+            nullptr,
+            &device->sceneTexture
+        );
+
+        device->device->CreateRenderTargetView(
+            device->sceneTexture,
+            nullptr,
+            &device->sceneRtv
+        );
+
+        device->device->CreateShaderResourceView(
+            device->sceneTexture,
+            nullptr,
+            &device->sceneSrv
+        );
+    }
+#pragma endregion
 
 #pragma region Blend State
     D3D11_BLEND_DESC blendDesc{};
@@ -321,6 +507,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     device->ctx->PSSetSamplers(0, 1, &device->sampler);
 #pragma endregion
 
+    device->blitShader = sgl_Shader_Create_Source((sgl_GraphicsDevice*)device, BlitVertex, BlitFragment, screenQuadLayout);
     std::stringstream ss;
 
     ss << "SDL Version: " << SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MINOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MICRO(SDL_VERSION);

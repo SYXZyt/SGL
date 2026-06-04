@@ -1,5 +1,6 @@
 #include "PostProcess.h"
 #include <SGL/Graphics/Backends/OpenGL/GLPostProcess.h>
+#include <SGL/Graphics/Backends/DirectX/DXPostProcess.h>
 #include <SGL/Util/Error.h>
 
 sgl_PostProcess* sgl_PostProcess_Create(sgl_GraphicsDevice* device, sgl_Shader* shader)
@@ -9,6 +10,15 @@ sgl_PostProcess* sgl_PostProcess_Create(sgl_GraphicsDevice* device, sgl_Shader* 
     if (device->window->cfg.backend == sgl_Backend_OPENGL)
     {
         pp = (sgl_PostProcess*)sgl_GLPostProcess_Create(device, shader);
+    }
+    else if (device->window->cfg.backend == sgl_Backend_DIRECTX11)
+    {
+#ifdef SGL_DIRECTX
+        pp = (sgl_PostProcess*)sgl_DXPostProcess_Create(device, shader);
+#else
+        SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        return nullptr;
+#endif
     }
     else
     {

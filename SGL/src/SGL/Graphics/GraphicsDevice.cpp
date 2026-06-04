@@ -26,27 +26,7 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
 {
     sgl_GraphicsDevice* device = nullptr;
 
-    if (window->cfg.backend == sgl_Backend_OPENGL)
-    {
-        device = (sgl_GraphicsDevice*)sgl_GLDevice_Create(window);
-    }
-    else if (window->cfg.backend == sgl_Backend_DIRECTX11)
-    {
-#ifdef SGL_DIRECTX
-        device = (sgl_GraphicsDevice*)sgl_DXDevice_Create(window);
-#else
-        SGL_REPORT_ERROR("DirectX is not supported on this platform");
-        return nullptr;
-#endif
-    }
-    else
-    {
-        SGL_REPORT_ERROR("Unsupported backend");
-        return nullptr;
-    }
-
-    device->screenQuadLayout = sgl_VertexLayout_New(device);
-
+    sgl_VertexLayout* screenQuadLayout = sgl_VertexLayout_New(device);
     {
         sgl_VertexElement pos
         {
@@ -64,10 +44,30 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
             .perInstance = false,
         };
 
-        sgl_VertexLayout_Add(device->screenQuadLayout, pos);
-        sgl_VertexLayout_Add(device->screenQuadLayout, uv);
+        sgl_VertexLayout_Add(screenQuadLayout, pos);
+        sgl_VertexLayout_Add(screenQuadLayout, uv);
     }
 
+    if (window->cfg.backend == sgl_Backend_OPENGL)
+    {
+        device = (sgl_GraphicsDevice*)sgl_GLDevice_Create(window);
+    }
+    else if (window->cfg.backend == sgl_Backend_DIRECTX11)
+    {
+#ifdef SGL_DIRECTX
+        device = (sgl_GraphicsDevice*)sgl_DXDevice_Create(window, screenQuadLayout);
+#else
+        SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        return nullptr;
+#endif
+    }
+    else
+    {
+        SGL_REPORT_ERROR("Unsupported backend");
+        return nullptr;
+    }
+
+    device->screenQuadLayout = screenQuadLayout;
     device->screenQuad = sgl_VertexArray_Create(device, sizeof(PP_Vertex), device->screenQuadLayout);
 
     PP_Vertex tl = { .pos = {{{-1,  1, 0}}}, .uv = {{{0, 1}}} };
