@@ -54,8 +54,8 @@ void sgl_GraphicsDevice_Present(sgl_GraphicsDevice* device) {
     device->vtable->Present(device);
 }
 
-void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_UniformBuffer** buffers, size_t count) {
-    device->vtable->Draw(device, va, shader, buffers, count);
+void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture2D** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount) {
+    device->vtable->Draw(device, va, shader, textures, textureCount, buffers, bufferCount);
 }
 
 void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device) {

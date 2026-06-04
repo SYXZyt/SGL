@@ -12,11 +12,13 @@
 #include <SGL/Graphics/UniformBuffer.h>
 #include <SGL/ImGui/ImGui.h>
 #include <SGL/Input/Keyboard.h>
+#include <SGL/Graphics/Texture2D.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
     sgl_Vec3 pos;
-    sgl_Vec3 col;
+    sgl_Vec2 uv;
+    sgl_Vec2 __pad;
 } Vertex;
 
 typedef struct sgl_alignas(16) UB
@@ -28,9 +30,9 @@ typedef struct sgl_alignas(16) UB
 const char* VertexShaderSourceGL =
 "#version 460 core\n"
 "layout(location=0) in vec3 aPos;\n"
-"layout(location=1) in vec3 aCol;\n"
+"layout(location=1) in vec2 aUV;\n"
 "\n"
-"out vec3 oCol;\n"
+"out vec2 oUV;\n"
 "\n"
 "layout(std140, binding=0) uniform CameraBuffer\n"
 "{\n"
@@ -41,30 +43,31 @@ const char* VertexShaderSourceGL =
 "void main()\n"
 "{\n"
 "    gl_Position = proj * view * vec4(aPos, 1.0);\n"
-"    oCol = aCol;\n"
+"    oUV = aUV;\n"
 "}\n";
 
 const char* FragmentShaderSourceGL =
 "#version 460 core\n"
-"in vec3 oCol;\n"
+"in vec2 oUV;\n"
 "out vec4 FragCol;\n"
 "\n"
+"layout(binding = 0) uniform sampler2D tex;"
 "void main()\n"
 "{\n"
-"    FragCol = vec4(oCol, 1.0);\n"
+"    FragCol = texture(tex, oUV);\n"
 "}\n";
 
 const char* VertexShaderSourceDX =
 "struct VSInput\n"
 "{\n"
 "    float3 pos : POSITION;\n"
-"    float3 col : COLOR;\n"
+"    float2 uv : TEXCOORD;\n"
 "};\n"
 "\n"
 "struct VSOutput\n"
 "{\n"
 "    float4 pos : SV_POSITION;\n"
-"    float3 col : COLOR;\n"
+"    float2 uv : TEXCOORD;\n"
 "};\n"
 "\n"
 "cbuffer CameraMatrices : register(b0)\n"
@@ -77,7 +80,7 @@ const char* VertexShaderSourceDX =
 "{\n"
 "    VSOutput output;\n"
 "    output.pos = mul(Proj, mul(View, float4(input.pos, 1.0f)));\n"
-"    output.col = input.col;\n"
+"    output.uv = input.uv;\n"
 "    return output;\n"
 "}\n";
 
@@ -85,12 +88,14 @@ const char* PixelShaderSourceDX =
 "struct PSInput\n"
 "{\n"
 "    float4 pos : SV_POSITION;\n"
-"    float3 col : COLOR;\n"
+"    float2 uv : TEXCOORD;\n"
 "};\n"
 "\n"
+"Texture2D tex : register(t0);\n"
+"SamplerState texSampler : register(s0);"
 "float4 main(PSInput input) : SV_TARGET\n"
 "{\n"
-"    return float4(input.col, 1.0f);\n"
+"   return tex.Sample(texSampler, input.uv);\n"
 "}\n";
 
 int main(int argc, char** argv)
@@ -122,9 +127,9 @@ int main(int argc, char** argv)
 
         sgl_VertexElement col =
         {
-            .semantic = sgl_COLOUR,
-            .offset = offsetof(Vertex, col),
-            .type = sgl_VertexElementType_VEC3,
+            .semantic = sgl_TEXCOORD,
+            .offset = offsetof(Vertex, uv),
+            .type = sgl_VertexElementType_VEC2,
             .perInstance = false,
         };
 
@@ -138,10 +143,10 @@ int main(int argc, char** argv)
     const float x = 64.f * scale;
     const float y = 64.f * scale;
 
-    Vertex tl = { .pos = sgl_Vec3_New_ScalarXYZ(-x,  y, 0), .col = sgl_Colour_ToVec3(sgl_Col_Red) };
-    Vertex tr = { .pos = sgl_Vec3_New_ScalarXYZ(x,  y, 0), .col = sgl_Colour_ToVec3(sgl_Col_Green) };
-    Vertex bl = { .pos = sgl_Vec3_New_ScalarXYZ(-x, -y, 0), .col = sgl_Colour_ToVec3(sgl_Col_Blue) };
-    Vertex br = { .pos = sgl_Vec3_New_ScalarXYZ(x, -y, 0), .col = sgl_Colour_ToVec3(sgl_Col_Yellow) };
+    Vertex tl = { .pos = sgl_Vec3_New_ScalarXYZ(-x,  y, 0), .uv = sgl_Vec2_Up };
+    Vertex tr = { .pos = sgl_Vec3_New_ScalarXYZ(x,  y, 0), .uv = sgl_Vec2_One };
+    Vertex bl = { .pos = sgl_Vec3_New_ScalarXYZ(-x, -y, 0), .uv = sgl_Vec2_Zero };
+    Vertex br = { .pos = sgl_Vec3_New_ScalarXYZ(x, -y, 0), .uv = sgl_Vec2_Right };
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
     sgl_VertexArray_AddQuad(va, q);
@@ -160,6 +165,8 @@ int main(int argc, char** argv)
 
     sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
     sgl_UniformBuffer_Upload(ub, &ubData);
+
+    sgl_Texture2D* texture = sgl_Texture2D_New_File(gpu, "stone.png");
 
     sgl_Vec2 position = sgl_Vec2_Zero;
     while (!window->wantsClose)
@@ -192,7 +199,7 @@ int main(int argc, char** argv)
 
         sgl_GraphicsDevice_Clear(gpu);
 
-        sgl_GraphicsDevice_Draw(gpu, va, shader, &ub, 1);
+        sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, &ub, 1);
 
         sgl_GraphicsDevice_ImGui_NewFrame(gpu);
 
@@ -201,6 +208,7 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Present(gpu);
     }
 
+    sgl_Texture2D_Destroy(texture);
     sgl_Keyboard_Destroy(kb);
     sgl_GraphicsDevice_ImGui_Shutdown(gpu);
     sgl_UniformBuffer_Destroy(ub);

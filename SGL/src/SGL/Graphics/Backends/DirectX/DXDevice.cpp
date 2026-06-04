@@ -5,6 +5,7 @@
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/UniformBuffer.h>
+#include <SGL/Graphics/Texture2D.h>
 #include <SGL/Util/Logger.h>
 #include <SGL/Util/Error.h>
 #include <sstream>
@@ -62,7 +63,7 @@ static void RecreateBackbuffer(sgl_DXDevice* self)
         ReportHRError("Failed to get buffer", hr);
         return;
     }
-    
+
 
     hr = self->device->CreateRenderTargetView(backBuffer, nullptr, &self->backBufferRtv);
     if (FAILED(hr))
@@ -139,18 +140,22 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->ctx);
     TryRelease(self->device);
     TryRelease(self->swapchain);
+    TryRelease(self->sampler);
 
     sgl::Memory::Delete(self);
 }
 
-static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, struct sgl_UniformBuffer** buffers, size_t count)
+static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture2D** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount)
 {
     GetSelf;
 
     sgl_Shader_Bind(shr);
     sgl_VertexArray_Bind(va);
 
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < textureCount; ++i)
+        sgl_Texture2D_Bind(textures[i], (uint32)i);
+
+    for (size_t i = 0; i < bufferCount; ++i)
         sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
 
     self->ctx->Draw(va->vertexCount, 0);
@@ -218,13 +223,13 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
 sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
 {
     sgl_DXDevice* device = sgl::Memory::New<sgl_DXDevice>();
-    
+
     device->base.clearColour = sgl_Col_CornflowerBlue;
     device->base.window = window;
     device->base.width = window->screenSize.width;
     device->base.height = window->screenSize.height;
     device->base.vtable = &gDxVTable;
-    
+
     DXGI_SWAP_CHAIN_DESC swapDesc = {};
     swapDesc.BufferCount = 1;
     swapDesc.BufferDesc.Width = device->base.width;
@@ -234,16 +239,16 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     swapDesc.OutputWindow = sgl_Window_GetWin32Window(window);
     swapDesc.SampleDesc.Count = 1;
     swapDesc.Windowed = TRUE;
-    
+
     HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &swapDesc, &device->swapchain, &device->device, nullptr, &device->ctx);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create device and swapchain", hr);
         return device;
     }
-    
+
     RecreateBackbuffer(device);
-    
+
     D3D11_VIEWPORT viewport =
     {
         .Width = (FLOAT)window->screenSize.width,
@@ -251,75 +256,120 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
         .MinDepth = 0.f,
         .MaxDepth = 1.f,
     };
-    
+
     device->ctx->RSSetViewports(1, &viewport);
-    
+
     D3D11_RASTERIZER_DESC raster = {};
     raster.FillMode = D3D11_FILL_SOLID;
     raster.CullMode = D3D11_CULL_BACK;
     raster.FrontCounterClockwise = true;
-    
+
     ID3D11RasterizerState* rasterState = nullptr;
-    
+
     hr = device->device->CreateRasterizerState(&raster, &rasterState);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create rasteriser state", hr);
         return device;
     }
-    
+
     device->ctx->RSSetState(rasterState);
     rasterState->Release();
-    
+
+#pragma region Blend State
+    D3D11_BLEND_DESC blendDesc{};
+    blendDesc.RenderTarget[0].BlendEnable = true;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+    ID3D11BlendState* blendState = nullptr;
+    hr = device->device->CreateBlendState(&blendDesc, &blendState);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create blend state", hr);
+        return device;
+    }
+
+    float blendFactor[4] = { 0, 0, 0, 0 };
+    device->ctx->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+    blendState->Release();
+
+#pragma endregion
+
+#pragma region Sampler State
+    D3D11_SAMPLER_DESC sampDesc{};
+    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    sampDesc.MinLOD = 0;
+    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    hr = device->device->CreateSamplerState(&sampDesc, &device->sampler);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create sampler state", hr);
+        return device;
+    }
+
+    device->ctx->PSSetSamplers(0, 1, &device->sampler);
+#pragma endregion
+
     std::stringstream ss;
-    
+
     ss << "SDL Version: " << SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MINOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MICRO(SDL_VERSION);
     sgl_Log(ss.str().c_str());
     ss.str("");
-    
+
     ss << "SGL Version: " << sgl_VersionString();
     sgl_Log(ss.str().c_str());
     ss.str("");
-    
+
     D3D_FEATURE_LEVEL featureLevel = device->device->GetFeatureLevel();
     ss << "D3D Feature Level: " << FeatureLevelToString(featureLevel);
     sgl_Log(ss.str().c_str());
     ss.str("");
-    
+
     Microsoft::WRL::ComPtr<IDXGIDevice> dxgiDevice;
     Microsoft::WRL::ComPtr<IDXGIAdapter> adapter;
     DXGI_ADAPTER_DESC desc;
     char gpuName[128] = {};
     const char* vendorName;
     uint64_t vramMB;
-    
+
     if (FAILED(device->device->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxgiDevice)))
-    goto ret;
-    
+        goto ret;
+
     if (FAILED(dxgiDevice->GetAdapter(&adapter)))
-    goto ret;
-    
+        goto ret;
+
     if (FAILED(adapter->GetDesc(&desc)))
-    goto ret;
-    
+        goto ret;
+
     std::wcstombs(gpuName, desc.Description, sizeof(gpuName) - 1);
-    
+
     vendorName = VendorIdToString(desc.VendorId);
-    
+
     ss << "Vendor: " << vendorName << " (0x"
-    << std::hex << desc.VendorId << std::dec << ")";
+        << std::hex << desc.VendorId << std::dec << ")";
     sgl_Log(ss.str().c_str());
     ss.str("");
-    
+
     ss << "Renderer: " << gpuName;
     sgl_Log(ss.str().c_str());
     ss.str("");
-    
+
     vramMB = desc.DedicatedVideoMemory / (1024ull * 1024ull);
     ss << "Dedicated VRAM: " << vramMB << " MB";
     sgl_Log(ss.str().c_str());
-    
-    ret:
+
+ret:
     return device;
 }
 

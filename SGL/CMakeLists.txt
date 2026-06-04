@@ -77,7 +77,7 @@ add_library(SGL SHARED
     src/SGL/Input/Key.h
     src/SGL/Input/Keyboard.h
     src/SGL/Input/Keyboard.cpp
-    )
+     "src/SGL/Graphics/Texture2D.h" "src/SGL/Graphics/Backends/DirectX/DXTexture2D.h" "src/SGL/Graphics/Texture2D.cpp" "src/SGL/Graphics/Backends/DirectX/DXTexture2D.cpp" "src/SGL/Graphics/Backends/OpenGL/GLTexture2D.h" "src/SGL/Graphics/Backends/OpenGL/GLTexture2D.cpp")
 
 include(CMake/Dependencies.cmake)
 

@@ -5,6 +5,7 @@
 #include <sstream>
 #include <SGL/Util/Logger.h>
 #include <SGL/Graphics/VertexArray.h>
+#include <SGL/Graphics/Texture2D.h>
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/UniformBuffer.h>
 #include <backends/imgui_impl_opengl3.h>
@@ -46,10 +47,13 @@ static void GLDevice_Destroy(sgl_GraphicsDevice* dev)
     sgl::Memory::Delete(self);
 }
 
-static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, struct sgl_UniformBuffer** buffers, size_t count)
+static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture2D** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t count)
 {
     sgl_Shader_Bind(shr);
     sgl_VertexArray_Bind(va);
+
+    for (size_t i = 0; i < count; ++i)
+        sgl_Texture2D_Bind(textures[i], (uint32)i);
 
     for (size_t i = 0; i < count; ++i)
         sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
@@ -127,6 +131,9 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     std::stringstream ss;
 
