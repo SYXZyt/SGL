@@ -166,7 +166,7 @@ int main(int argc, char** argv)
     sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
     sgl_UniformBuffer_Upload(ub, &ubData);
 
-    sgl_Texture2D* texture = sgl_Texture2D_New_File(gpu, "stone.png");
+    sgl_Texture* texture = sgl_Texture2D_New_File(gpu, "stone.png");
 
     sgl_Vec2 position = sgl_Vec2_Zero;
     while (!window->wantsClose)
@@ -208,7 +208,7 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_Present(gpu);
     }
 
-    sgl_Texture2D_Destroy(texture);
+    sgl_Texture_Destroy(texture);
     sgl_Keyboard_Destroy(kb);
     sgl_GraphicsDevice_ImGui_Shutdown(gpu);
     sgl_UniformBuffer_Destroy(ub);

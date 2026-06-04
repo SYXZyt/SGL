@@ -3,7 +3,7 @@
 
 #define GetSelf sgl_GLTexture2D* self = (sgl_GLTexture2D*)tex
 
-static void GLTexture_Destroy(sgl_Texture2D* tex)
+static void GLTexture_Destroy(sgl_Texture* tex)
 {
     GetSelf;
 
@@ -12,13 +12,13 @@ static void GLTexture_Destroy(sgl_Texture2D* tex)
     sgl::Memory::Delete(self);
 }
 
-static void GLTexture_Bind(sgl_Texture2D* tex, uint32 unit)
+static void GLTexture_Bind(sgl_Texture* tex, uint32 unit)
 {
     GetSelf;
     glBindTextureUnit(unit, self->texture);
 }
 
-static sgl_Texture2DVTable gGLVTable =
+static sgl_TextureVTable gGLVTable =
 {
     .Destroy = &GLTexture_Destroy,
     .Bind = &GLTexture_Bind,
@@ -27,8 +27,8 @@ static sgl_Texture2DVTable gGLVTable =
 sgl_GLTexture2D* sgl_GLTexture2D_Create(void* data, sgl_Vec2i size)
 {
     sgl_GLTexture2D* texture = sgl::Memory::New<sgl_GLTexture2D>();
-    texture->base.size = size;
-    texture->base.vtable = &gGLVTable;
+    texture->base.base.size = size;
+    texture->base.base.vtable = &gGLVTable;
 
     glCreateTextures(GL_TEXTURE_2D, 1, &texture->texture);
 

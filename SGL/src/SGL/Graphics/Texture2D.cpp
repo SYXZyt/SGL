@@ -7,7 +7,7 @@
 #include <fstream>
 #include <filesystem>
 
-sgl_Texture2D* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path)
+sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path)
 {
     if (!std::filesystem::exists(path))
     {
@@ -21,9 +21,9 @@ sgl_Texture2D* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* pa
     return sgl_Texture2D_New_Source(device, data.data(), data.size());
 }
 
-sgl_Texture2D* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize)
+sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize)
 {
-    sgl_Texture2D* texture = nullptr;
+    sgl_Texture* texture = nullptr;
 
     int width, height;
     stbi_set_flip_vertically_on_load_thread(false);
@@ -32,12 +32,12 @@ sgl_Texture2D* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, 
 
     if (device->window->cfg.backend == sgl_Backend_OPENGL)
     {
-        texture = (sgl_Texture2D*)sgl_GLTexture2D_Create(bytes, { {{width, height}} });
+        texture = (sgl_Texture*)sgl_GLTexture2D_Create(bytes, { {{width, height}} });
     }
     else if (device->window->cfg.backend == sgl_Backend_DIRECTX11)
     {
 #ifdef SGL_DIRECTX
-        texture = (sgl_Texture2D*)sgl_DXTexture2D_Create(device, bytes, { {{width, height}} });
+        texture = (sgl_Texture*)sgl_DXTexture2D_Create(device, bytes, { {{width, height}} });
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
         return nullptr;
@@ -51,12 +51,4 @@ sgl_Texture2D* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, 
 
     texture->gpu = device;
     return texture;
-}
-
-void sgl_Texture2D_Destroy(sgl_Texture2D* tex) {
-    tex->vtable->Destroy(tex);
-}
-
-void sgl_Texture2D_Bind(sgl_Texture2D* tex, uint32 slot) {
-    tex->vtable->Bind(tex, slot);
 }

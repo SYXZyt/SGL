@@ -13,7 +13,7 @@ static void ReportHRError(const char* message, HRESULT hr)
 
 #define GetSelf sgl_DXTexture2D* self = (sgl_DXTexture2D*)tex
 
-static void DXTexture_Destroy(sgl_Texture2D* tex)
+static void DXTexture_Destroy(sgl_Texture* tex)
 {
     GetSelf;
 
@@ -23,7 +23,7 @@ static void DXTexture_Destroy(sgl_Texture2D* tex)
     sgl::Memory::Delete(self);
 }
 
-static void DXTexture_Bind(sgl_Texture2D* tex, uint32 unit)
+static void DXTexture_Bind(sgl_Texture* tex, uint32 unit)
 {
     GetSelf;
     sgl_DXDevice* device = (sgl_DXDevice*)tex->gpu;
@@ -31,7 +31,7 @@ static void DXTexture_Bind(sgl_Texture2D* tex, uint32 unit)
     device->ctx->PSSetShaderResources(unit, 1, &self->textureView);
 }
 
-static sgl_Texture2DVTable gDXVTable =
+static sgl_TextureVTable gDXVTable =
 {
     .Destroy = &DXTexture_Destroy,
     .Bind = &DXTexture_Bind,
@@ -40,8 +40,8 @@ static sgl_Texture2DVTable gDXVTable =
 sgl_DXTexture2D* sgl_DXTexture2D_Create(sgl_GraphicsDevice* device, void* data, sgl_Vec2i size)
 {
     sgl_DXTexture2D* texture = sgl::Memory::New<sgl_DXTexture2D>();
-    texture->base.size = size;
-    texture->base.vtable = &gDXVTable;
+    texture->base.base.size = size;
+    texture->base.base.vtable = &gDXVTable;
 
     D3D11_TEXTURE2D_DESC desc{};
     desc.Width = size.width;
