@@ -12,6 +12,7 @@
 #include <SGL/Graphics/UniformBuffer.h>
 #include <SGL/ImGui/ImGui.h>
 #include <SGL/Input/Keyboard.h>
+#include <SGL/Graphics/PostProcess.h>
 #include <SGL/Graphics/Texture2D.h>
 #include <SGL/Graphics/Texture2DArray.h>
 
@@ -99,6 +100,31 @@ const char* PixelShaderSourceDX =
 "   return tex.Sample(texSampler, float3(input.uv, 3));\n"
 "}\n";
 
+const char* PostProcessEffectVertexGL =
+"#version 460 core\n"
+"layout(location=0) in vec3 aPos;\n"
+"layout(location=1) in vec2 aUV;\n"
+"\n"
+"out vec2 oUV;\n"
+"\n"
+"void main()\n"
+"{\n"
+"    gl_Position = vec4(aPos, 1.0);\n"
+"    oUV = aUV;\n"
+"}\n";
+
+const char* PostProcessEffectFragmentGL =
+"#version 460 core\n"
+"in vec2 oUV;\n"
+"out vec4 FragCol;\n"
+"\n"
+"layout(binding = 0) uniform sampler2D frametexture;"
+"void main()\n"
+"{\n"
+"    FragCol = texture(frametexture, oUV);\n"
+"    FragCol.rgb = 1 - FragCol.rgb;"
+"}\n";
+
 int main(int argc, char** argv)
 {
     sgl_Runtime_Init();
@@ -106,6 +132,8 @@ int main(int argc, char** argv)
     sgl_Logger_Init();
 
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
+    cfg.enableImGui = true;
+
     cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
@@ -153,11 +181,20 @@ int main(int argc, char** argv)
     sgl_VertexArray_AddQuad(va, q);
 
     sgl_Shader* shader;
+    sgl_Shader* postProcessShader;
 
     if (cfg.backend == sgl_Backend_DIRECTX11)
+    {
         shader = sgl_Shader_Create_Source(gpu, VertexShaderSourceDX, PixelShaderSourceDX, layout);
+    }
     else
+    {
         shader = sgl_Shader_Create_Source(gpu, VertexShaderSourceGL, FragmentShaderSourceGL, layout);
+        postProcessShader = sgl_Shader_Create_Source(gpu, PostProcessEffectVertexGL, PostProcessEffectFragmentGL, gpu->screenQuadLayout);
+    }
+
+    sgl_PostProcess* postProcessEffect = sgl_PostProcess_Create(gpu, postProcessShader);
+    sgl_GraphicsDevice_AddEffect(gpu, postProcessEffect);
 
     UB ubData;
 
@@ -198,17 +235,23 @@ int main(int argc, char** argv)
         sgl_Window_PollEvents(window);
         sgl_Keyboard_Update(kb);
 
-        sgl_GraphicsDevice_Clear(gpu);
+        sgl_GraphicsDevice_ImGui_NewFrame(gpu);
 
+        sgl_GraphicsDevice_BeginFrame(gpu);
         sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, &ub, 1);
 
-        sgl_GraphicsDevice_ImGui_NewFrame(gpu);
+        if (sgl_DragVec2("Position", &position, 0.1f, 0, 0))
+        {
+            ubData.view = sgl_Maths_Mat4_View(position, 0.0f);
+            sgl_UniformBuffer_Upload(ub, &ubData);
+        }
 
         sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
 
-        sgl_GraphicsDevice_Present(gpu);
+        sgl_GraphicsDevice_EndFrame(gpu);
     }
 
+    sgl_PostProcess_Destroy(postProcessEffect);
     sgl_Texture_Destroy(texture);
     sgl_Keyboard_Destroy(kb);
     sgl_GraphicsDevice_ImGui_Shutdown(gpu);

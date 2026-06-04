@@ -77,8 +77,8 @@ sgl_GLTexture2DArray* sgl_GLTexture2DArray_Create(void* data, sgl_Vec2i atlasSiz
 
     glTextureParameteri(texture->texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTextureParameteri(texture->texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTextureParameteri(texture->texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    glTextureParameteri(texture->texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    glTextureParameteri(texture->texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTextureParameteri(texture->texture, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     glGenerateTextureMipmap(texture->texture);
 

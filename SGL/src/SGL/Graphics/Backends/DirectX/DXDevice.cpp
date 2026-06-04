@@ -208,8 +208,8 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
 {
     .SetClearColour = &sgl_GraphicsDevice_SetClearColour,
     .Resize = &DXDevice_Resize,
-    .Clear = &DXDevice_Clear,
-    .Present = &DXDevice_Present,
+    .BeginFrame = &DXDevice_Clear,
+    .EndFrame = &DXDevice_Present,
     .Destroy = &DXDevice_Destroy,
     .Draw = &DXDevice_Draw,
 
