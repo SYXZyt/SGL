@@ -1,13 +1,12 @@
-#include "Texture2D.h"
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-#include <SGL/Util/Error.h>
-#include <SGL/Graphics/Backends/DirectX/DXTexture2D.h>
-#include <SGL/Graphics/Backends/OpenGL/GLTexture2D.h>
+#include "Texture2DArray.h"
 #include <fstream>
 #include <filesystem>
+#include <SGL/Util/Error.h>
+#include <stb/stb_image.h>
+#include <SGL/Graphics/Backends/OpenGL/GLTexture2DArray.h>
+#include <SGL/Graphics/Backends/DirectX/DXTexture2DArray.h>
 
-sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path)
+sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* device, const char* path, sgl_Vec2i frameSize)
 {
     if (!std::filesystem::exists(path))
     {
@@ -18,10 +17,10 @@ sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path
     std::ifstream f(path, std::ios::binary);
     std::vector<uint8> data((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
-    return sgl_Texture2D_New_Source(device, data.data(), data.size());
+    return sgl_Texture2DArray_New_Source(device, data.data(), data.size(), frameSize);
 }
 
-sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize)
+sgl_Texture* sgl_Texture2DArray_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, sgl_Vec2i frameSize)
 {
     sgl_Texture* texture = nullptr;
 
@@ -32,23 +31,27 @@ sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, si
 
     if (device->window->cfg.backend == sgl_Backend_OPENGL)
     {
-        texture = (sgl_Texture*)sgl_GLTexture2D_Create(bytes, { {{width, height}} });
+        texture = (sgl_Texture*)sgl_GLTexture2DArray_Create(bytes, { {{width, height}} }, frameSize);
     }
     else if (device->window->cfg.backend == sgl_Backend_DIRECTX11)
     {
 #ifdef SGL_DIRECTX
-        texture = (sgl_Texture*)sgl_DXTexture2D_Create(device, bytes, { {{width, height}} });
+        texture = (sgl_Texture*)sgl_DXTexture2DArray_Create(device, bytes, { {{width, height}} }, frameSize);
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        stbi_image_free(bytes);
         return nullptr;
 #endif
     }
     else
     {
         SGL_REPORT_ERROR("Unsupported backend");
+        stbi_image_free(bytes);
         return nullptr;
     }
 
     texture->gpu = device;
+
+    stbi_image_free(bytes);
     return texture;
 }

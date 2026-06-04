@@ -13,6 +13,7 @@
 #include <SGL/ImGui/ImGui.h>
 #include <SGL/Input/Keyboard.h>
 #include <SGL/Graphics/Texture2D.h>
+#include <SGL/Graphics/Texture2DArray.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
@@ -51,10 +52,10 @@ const char* FragmentShaderSourceGL =
 "in vec2 oUV;\n"
 "out vec4 FragCol;\n"
 "\n"
-"layout(binding = 0) uniform sampler2D tex;"
+"layout(binding = 0) uniform sampler2DArray tex;"
 "void main()\n"
 "{\n"
-"    FragCol = texture(tex, oUV);\n"
+"    FragCol = texture(tex, vec3(oUV, 3));\n"
 "}\n";
 
 const char* VertexShaderSourceDX =
@@ -91,11 +92,11 @@ const char* PixelShaderSourceDX =
 "    float2 uv : TEXCOORD;\n"
 "};\n"
 "\n"
-"Texture2D tex : register(t0);\n"
+"Texture2DArray tex : register(t0);\n"
 "SamplerState texSampler : register(s0);"
 "float4 main(PSInput input) : SV_TARGET\n"
 "{\n"
-"   return tex.Sample(texSampler, input.uv);\n"
+"   return tex.Sample(texSampler, float3(input.uv, 3));\n"
 "}\n";
 
 int main(int argc, char** argv)
@@ -125,7 +126,7 @@ int main(int argc, char** argv)
             .perInstance = false,
         };
 
-        sgl_VertexElement col =
+        sgl_VertexElement uv =
         {
             .semantic = sgl_TEXCOORD,
             .offset = offsetof(Vertex, uv),
@@ -134,7 +135,7 @@ int main(int argc, char** argv)
         };
 
         sgl_VertexLayout_Add(layout, pos);
-        sgl_VertexLayout_Add(layout, col);
+        sgl_VertexLayout_Add(layout, uv);
     }
 
     sgl_VertexArray* va = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
@@ -143,10 +144,10 @@ int main(int argc, char** argv)
     const float x = 64.f * scale;
     const float y = 64.f * scale;
 
-    Vertex tl = { .pos = sgl_Vec3_New_ScalarXYZ(-x,  y, 0), .uv = sgl_Vec2_Up };
-    Vertex tr = { .pos = sgl_Vec3_New_ScalarXYZ(x,  y, 0), .uv = sgl_Vec2_One };
-    Vertex bl = { .pos = sgl_Vec3_New_ScalarXYZ(-x, -y, 0), .uv = sgl_Vec2_Zero };
-    Vertex br = { .pos = sgl_Vec3_New_ScalarXYZ(x, -y, 0), .uv = sgl_Vec2_Right };
+    Vertex tl = { .pos = sgl_Vec3_New_ScalarXYZ(-x,  y, 0), .uv = sgl_Vec2_Zero };
+    Vertex tr = { .pos = sgl_Vec3_New_ScalarXYZ(x,  y, 0), .uv = sgl_Vec2_Right };
+    Vertex bl = { .pos = sgl_Vec3_New_ScalarXYZ(-x, -y, 0), .uv = sgl_Vec2_Up };
+    Vertex br = { .pos = sgl_Vec3_New_ScalarXYZ(x, -y, 0), .uv = sgl_Vec2_One };
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
     sgl_VertexArray_AddQuad(va, q);
@@ -166,7 +167,7 @@ int main(int argc, char** argv)
     sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
     sgl_UniformBuffer_Upload(ub, &ubData);
 
-    sgl_Texture* texture = sgl_Texture2D_New_File(gpu, "stone.png");
+    sgl_Texture* texture = sgl_Texture2DArray_New_File(gpu, "stone.png", sgl_Vec2i_New_Scalar(16));
 
     sgl_Vec2 position = sgl_Vec2_Zero;
     while (!window->wantsClose)

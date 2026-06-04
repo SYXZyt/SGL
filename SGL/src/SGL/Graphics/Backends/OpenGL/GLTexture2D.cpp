@@ -41,5 +41,7 @@ sgl_GLTexture2D* sgl_GLTexture2D_Create(void* data, sgl_Vec2i size)
     glTextureStorage2D(texture->texture, 1, GL_RGBA8, size.width, size.height);
     glTextureSubImage2D(texture->texture, 0, 0, 0, size.width, size.height, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
+    glGenerateTextureMipmap(texture->texture);
+
     return texture;
 }
