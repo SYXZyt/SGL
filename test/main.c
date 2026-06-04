@@ -286,8 +286,8 @@ int main(int argc, char** argv)
         }
 
         sgl_GraphicsDevice_EndFrame(gpu);
-
         sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
+        sgl_GraphicsDevice_SwapBuffer(gpu);
     }
 
     sgl_PostProcess_Destroy(postProcessEffect);

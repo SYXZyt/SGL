@@ -84,7 +84,9 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glEnable(GL_CULL_FACE);
+}
 
+static void GLDevice_SwapBuffer(sgl_GraphicsDevice* dev) {
     sgl_Window_SwapBuffer(dev->window);
 }
 
@@ -157,6 +159,7 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
     .BeginFrame = &GLDevice_BeginFrame,
     .EndFrame = &GLDevice_EndFrame,
     .Destroy = &GLDevice_Destroy,
+    .SwapBuffer = &GLDevice_SwapBuffer,
     .Draw = &GLDevice_Draw,
 
     .ImGui_Init = &GLDevice_ImGui_Init,

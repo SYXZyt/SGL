@@ -21,6 +21,7 @@ typedef struct sgl_GraphicsDeviceVTable sgl_sealed
     void (*BeginFrame)(struct sgl_GraphicsDevice* self);
     void (*EndFrame)(struct sgl_GraphicsDevice* self);
     void (*Destroy)(struct sgl_GraphicsDevice* self);
+    void (*SwapBuffer)(struct sgl_GraphicsDevice* self);
     void (*Draw)(struct sgl_GraphicsDevice* self, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount);
 
     void (*ImGui_Init)(struct sgl_GraphicsDevice* self);
@@ -47,6 +48,7 @@ SGL_API extern void sgl_GraphicsDevice_Destroy(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_SetClearColour(sgl_GraphicsDevice* device, sgl_Colour colour);
 SGL_API extern void sgl_GraphicsDevice_BeginFrame(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_EndFrame(sgl_GraphicsDevice* device);
+SGL_API extern void sgl_GraphicsDevice_SwapBuffer(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t count);
 
 SGL_API extern void sgl_GraphicsDevice_AddEffect(sgl_GraphicsDevice* device, struct sgl_PostProcess* effect);

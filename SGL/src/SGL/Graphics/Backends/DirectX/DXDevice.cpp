@@ -273,7 +273,11 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
     self->ctx->PSSetShaderResources(0, 1, &nullSrv);
 
     self->ctx->RSSetState(self->rasterState);
+}
 
+static void DXDevice_SwapBuffer(sgl_GraphicsDevice* dev)
+{
+    GetSelf;
     self->swapchain->Present(1, 0);
 }
 
@@ -363,6 +367,7 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .BeginFrame = &DXDevice_BeginFrame,
     .EndFrame = &DXDevice_EndFrame,
     .Destroy = &DXDevice_Destroy,
+    .SwapBuffer = &DXDevice_SwapBuffer,
     .Draw = &DXDevice_Draw,
 
     .ImGui_Init = &DXDevice_ImGui_Init,

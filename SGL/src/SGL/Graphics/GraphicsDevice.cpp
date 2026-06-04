@@ -116,6 +116,10 @@ void sgl_GraphicsDevice_EndFrame(sgl_GraphicsDevice* device) {
     device->vtable->EndFrame(device);
 }
 
+void sgl_GraphicsDevice_SwapBuffer(sgl_GraphicsDevice* device) {
+    device->vtable->SwapBuffer(device);
+}
+
 void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount) {
     device->vtable->Draw(device, va, shader, textures, textureCount, buffers, bufferCount);
 }
