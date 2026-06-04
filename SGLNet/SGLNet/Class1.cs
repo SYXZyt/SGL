@@ -12,9 +12,9 @@ namespace SGLNet
         private static readonly string VertexShaderSourceGL = @"
 #version 460 core
 layout(location=0) in vec3 aPos;
-layout(location=1) in vec3 aCol;
+layout(location=1) in vec2 aUV;
 
-out vec3 oCol;
+out vec2 oUV;
 
 layout(std140, binding = 0) uniform CameraBuffer
 {
@@ -25,18 +25,19 @@ layout(std140, binding = 0) uniform CameraBuffer
 void main()
 {
     gl_Position = proj * view * vec4(aPos, 1.0);
-    oCol = aCol;
+    oUV = aUV;
 }
 ";
 
         private static readonly string FragmentShaderSourceGL = @"
 #version 460 core
-in vec3 oCol;
+in vec2 oUV;
 out vec4 FragCol;
 
-void main()
-{
-    FragCol = vec4(oCol, 1.0);
+layout(binding = 0) uniform sampler2DArray tex;
+
+void main() {
+    FragCol = texture(tex, vec3(oUV, 3));
 }
 ";
 
@@ -44,13 +45,13 @@ void main()
 struct VSInput
 {
     float3 pos : POSITION;
-    float3 col : COLOR;
+    float2 uv  : TEXCOORD;
 };
 
 struct VSOutput
 {
     float4 pos : SV_POSITION;
-    float3 col : COLOR;
+    float2 uv  : TEXCOORD;
 };
 
 cbuffer CameraMatrices : register(b0)
@@ -64,8 +65,7 @@ VSOutput main(VSInput input)
     VSOutput output;
 
     output.pos = mul(Proj, mul(View, float4(input.pos, 1.0f)));
-    //output.pos = float4(input.pos, 1);
-    output.col = input.col;
+    output.uv = input.uv;
     return output;
 }
 ";
@@ -74,14 +74,15 @@ VSOutput main(VSInput input)
 struct PSInput
 {
     float4 pos : SV_POSITION;
-    float3 col : COLOR;
+    float2 uv  : TEXCOORD;
 };
 
-float4 main(PSInput input) : SV_TARGET
-{
-    return float4(input.col, 1.0f);
-}
+Texture2DArray tex      : register(t0);
+SamplerState texSampler : register(s0);
 
+float4 main(PSInput input) : SV_TARGET {
+    return tex.Sample(texSampler, float3(input.uv, 3));
+}
 ";
 
         [StructLayout(LayoutKind.Explicit)]
@@ -90,7 +91,7 @@ float4 main(PSInput input) : SV_TARGET
             [FieldOffset(0)]
             public Vec3 pos;
             [FieldOffset(12)]
-            public Vec3 col;
+            public Vec2 uv;
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 16)]
@@ -122,7 +123,7 @@ float4 main(PSInput input) : SV_TARGET
 
                 using VertexLayout layout = new(device);
                 layout.Add(Semantic.POSITION, 0, ElementType.Type.VEC3);
-                layout.Add(Semantic.COLOUR, 12, ElementType.Type.VEC3);
+                layout.Add(Semantic.TEXCOORD, 12, ElementType.Type.VEC2);
 
                 using VertexArray va = new(device, 32, layout);
                 
@@ -140,10 +141,10 @@ float4 main(PSInput input) : SV_TARGET
                 br.pos = new(x, -y, 0);
                 bl.pos = new(-x, -y, 0);
 
-                tl.col = Colour.Red;
-                tr.col = Colour.Green;
-                bl.col = Colour.Blue;
-                br.col = Colour.Yellow;
+                tl.uv = Vec2.Zero;
+                tr.uv = Vec2.Right;
+                bl.uv = Vec2.Up;
+                br.uv = Vec2.One;
 
                 va.AddQuad(in tl, in tr, in bl, in br);
 
@@ -161,6 +162,9 @@ float4 main(PSInput input) : SV_TARGET
                 ub.Data.Proj = Mathf.OrthographicGL(window.ScreenSize, 1f);
 
                 ub.Upload();
+
+                using Texture2DArray texture = new(device, Vec2i.One * 16);
+                texture.LoadFromFile("stone.png");
 
                 device.ImGui_Init();
 
@@ -197,7 +201,7 @@ float4 main(PSInput input) : SV_TARGET
                     device.ImGui_NewFrame();
 
                     device.Clear();
-                    device.Draw(va, shader, ub);
+                    device.Draw(va, shader, [texture], [ub]);
 
                     if (ImGui.DragVec2("Position", ref position, 0.1f))
                     {

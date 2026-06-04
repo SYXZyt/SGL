@@ -1,4 +1,6 @@
-﻿using SGLNet.Graphics;
+﻿global using size_t = nuint;
+
+using SGLNet.Graphics;
 using SGLNet.Input;
 using SGLNet.Maths;
 using SGLNet.Util;
@@ -83,6 +85,9 @@ namespace SGLNet.Interop
             Mathf.Init_FuncPtr();
             ImGuiNative.Init_FuncPtr();
             Keyboard.Init_FuncPtr();
+            Texture.Init_FuncPtr();
+            Texture2D.Init_FuncPtr();
+            Texture2DArray.Init_FuncPtr();
         }
     }
 }

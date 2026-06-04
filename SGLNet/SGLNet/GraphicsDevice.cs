@@ -32,7 +32,7 @@ namespace SGLNet
         private static sgl_GraphicsDevice_Present_ptr sgl_GraphicsDevice_Present;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private unsafe delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr, IntPtr* textures, nuint textureCount, IntPtr* buffers, nuint bufferCount);
+        private unsafe delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr, IntPtr* textures, size_t textureCount, IntPtr* buffers, size_t bufferCount);
         private static sgl_GraphicsDevice_Draw_ptr sgl_GraphicsDevice_Draw;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -62,18 +62,23 @@ namespace SGLNet
         public void Present() =>
             sgl_GraphicsDevice_Present(mHandle);
 
-        public void Draw(VertexArray va, Shader shader, params IUniformBuffer[] uniformBuffers)
+        public void Draw(VertexArray va, Shader shader, Texture[] textures, IUniformBuffer[] uniformBuffers)
         {
             unsafe
             {
-                int count = uniformBuffers?.Length ?? 0;
+                int texCount = textures?.Length ?? 0;
+                IntPtr* texturePtrs = stackalloc IntPtr[texCount];
 
-                IntPtr* bufferPtrs = stackalloc IntPtr[count];
+                int bufCount = uniformBuffers?.Length ?? 0;
+                IntPtr* bufferPtrs = stackalloc IntPtr[bufCount];
 
-                for (int i = 0; i < count; ++i)
+                for (int i = 0; i < texCount; ++i)
+                    texturePtrs[i] = textures[i].Handle;
+
+                for (int i = 0; i < bufCount; ++i)
                     bufferPtrs[i] = uniformBuffers[i].Handle;
 
-                sgl_GraphicsDevice_Draw(mHandle, va.Handle, shader.Handle, null, 0, bufferPtrs, (nuint)count);
+                sgl_GraphicsDevice_Draw(mHandle, va.Handle, shader.Handle, texturePtrs, (size_t)texCount, bufferPtrs, (size_t)bufCount);
             }
         }
 

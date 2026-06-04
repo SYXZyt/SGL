@@ -3,13 +3,47 @@ using System.Runtime.InteropServices;
 
 namespace SGLNet
 {
-    public class PackedColour : CustomValueType<PackedColour, uint>
+    public readonly struct PackedColour(uint value) :
+        IEquatable<PackedColour>,
+        IComparable<PackedColour>
     {
-        private PackedColour(uint value) : base(value) { }
-        public static implicit operator PackedColour(uint value) { return new PackedColour(value); }
-        public static implicit operator PackedColour(int value) { return new PackedColour((uint)value); }
-        public static implicit operator uint(PackedColour custom) { return custom._value; }
-        public static implicit operator int(PackedColour custom) { return (int)custom._value; }
+        private readonly uint mValue = value;
+
+        public static implicit operator PackedColour(uint value) =>
+            new(value);
+
+        public static implicit operator uint(PackedColour value) =>
+            value.mValue;
+
+        public bool Equals(PackedColour other) =>
+            mValue == other.mValue;
+
+        public override bool Equals(object obj) =>
+            obj is PackedColour other && Equals(other);
+
+        public override int GetHashCode() =>
+            mValue.GetHashCode();
+
+        public int CompareTo(PackedColour other) =>
+            mValue.CompareTo(other.mValue);
+
+        public static bool operator ==(PackedColour left, PackedColour right) =>
+            left.mValue == right.mValue;
+
+        public static bool operator !=(PackedColour left, PackedColour right) =>
+            left.mValue != right.mValue;
+
+        public static bool operator <(PackedColour left, PackedColour right) =>
+            left.mValue < right.mValue;
+
+        public static bool operator >(PackedColour left, PackedColour right) =>
+            left.mValue > right.mValue;
+
+        public static bool operator <=(PackedColour left, PackedColour right) =>
+            left.mValue <= right.mValue;
+
+        public static bool operator >=(PackedColour left, PackedColour right) =>
+            left.mValue >= right.mValue;
     }
 
     [StructLayout(LayoutKind.Sequential)]

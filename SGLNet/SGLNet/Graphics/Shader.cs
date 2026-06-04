@@ -41,6 +41,9 @@ namespace SGLNet.Graphics
 
         public void LoadFromSource(string vertexSource, string fragmentSource)
         {
+            if (mHandle != IntPtr.Zero)
+                throw new InvalidOperationException("Shader has already been created");
+
             mHandle = sgl_Shader_Create_Source(mGraphics.Handle, vertexSource, fragmentSource, mLayout.Handle);
 
             mHasLoaded = true;
@@ -48,6 +51,9 @@ namespace SGLNet.Graphics
 
         public void LoadFromFile(string vertexPath, string fragmentPath)
         {
+            if (mHandle != IntPtr.Zero)
+                throw new InvalidOperationException("Shader has already been created");
+
             if (!File.Exists(vertexPath))
                 throw new FileNotFoundException($"Could not find file {vertexPath}");
 
