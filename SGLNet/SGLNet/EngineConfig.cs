@@ -22,5 +22,8 @@ namespace SGLNet
 
         [MarshalAs(UnmanagedType.U1)]
         public bool resizable = true;
+
+        [MarshalAs(UnmanagedType.U1)]
+        public bool enableImGui = false;
     }
 }

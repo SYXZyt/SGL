@@ -32,7 +32,7 @@ namespace SGLNet
         private static sgl_GraphicsDevice_Present_ptr sgl_GraphicsDevice_Present;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private unsafe delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr, IntPtr* buffers, nuint bufferCount);
+        private unsafe delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr, IntPtr* textures, nuint textureCount, IntPtr* buffers, nuint bufferCount);
         private static sgl_GraphicsDevice_Draw_ptr sgl_GraphicsDevice_Draw;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -73,7 +73,7 @@ namespace SGLNet
                 for (int i = 0; i < count; ++i)
                     bufferPtrs[i] = uniformBuffers[i].Handle;
 
-                sgl_GraphicsDevice_Draw(mHandle, va.Handle, shader.Handle, bufferPtrs, (nuint)count);
+                sgl_GraphicsDevice_Draw(mHandle, va.Handle, shader.Handle, null, 0, bufferPtrs, (nuint)count);
             }
         }
 

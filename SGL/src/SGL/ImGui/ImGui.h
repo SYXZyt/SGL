@@ -5,6 +5,52 @@
 
 SGL_BEGIN
 
+typedef enum sgl_InputTextFlags
+{
+    sgl_ImGuiInputTextFlags_None = 0,
+    sgl_ImGuiInputTextFlags_CharsDecimal = 1 << 0,   // Allow 0123456789.+-*/
+    sgl_ImGuiInputTextFlags_CharsHexadecimal = 1 << 1,   // Allow 0123456789ABCDEFabcdef
+    sgl_ImGuiInputTextFlags_CharsScientific = 1 << 2,   // Allow 0123456789.+-*/eE (Scientific notation input)
+    sgl_ImGuiInputTextFlags_CharsUppercase = 1 << 3,   // Turn a..z into A..Z
+    sgl_ImGuiInputTextFlags_CharsNoBlank = 1 << 4,   // Filter out spaces, tabs
+
+    // Inputs
+    sgl_ImGuiInputTextFlags_AllowTabInput = 1 << 5,   // Pressing TAB input a '\t' character into the text field
+    sgl_ImGuiInputTextFlags_EnterReturnsTrue = 1 << 6,   // Return 'true' when Enter is pressed (as opposed to every time the value was modified). Consider using IsItemDeactivatedAfterEdit() instead!
+    sgl_ImGuiInputTextFlags_EscapeClearsAll = 1 << 7,   // Escape key clears content if not empty, and deactivate otherwise (contrast to default behavior of Escape to revert)
+    sgl_ImGuiInputTextFlags_CtrlEnterForNewLine = 1 << 8,   // In multi-line mode: validate with Enter, add new line with Ctrl+Enter (default is opposite: validate with Ctrl+Enter, add line with Enter). Note that Shift+Enter always enter a new line either way.
+
+    // Other options
+    sgl_ImGuiInputTextFlags_ReadOnly = 1 << 9,   // Read-only mode
+    sgl_ImGuiInputTextFlags_Password = 1 << 10,  // Password mode, display all characters as '*', disable copy
+    sgl_ImGuiInputTextFlags_AlwaysOverwrite = 1 << 11,  // Overwrite mode
+    sgl_ImGuiInputTextFlags_AutoSelectAll = 1 << 12,  // Select entire text when first taking mouse focus
+    sgl_ImGuiInputTextFlags_ParseEmptyRefVal = 1 << 13,  // InputFloat(), InputInt(), InputScalar() etc. only: parse empty string as zero value.
+    sgl_ImGuiInputTextFlags_DisplayEmptyRefVal = 1 << 14,  // InputFloat(), InputInt(), InputScalar() etc. only: when value is zero, do not display it. Generally used with ImGuiInputTextFlags_ParseEmptyRefVal.
+    sgl_ImGuiInputTextFlags_NoHorizontalScroll = 1 << 15,  // Disable following the cursor horizontally
+    sgl_ImGuiInputTextFlags_NoUndoRedo = 1 << 16,  // Disable undo/redo. Note that input text owns the text data while active, if you want to provide your own undo/redo stack you need e.g. to call ClearActiveID().
+
+    // Elide display / Alignment
+    sgl_ImGuiInputTextFlags_ElideLeft = 1 << 17,  // When text doesn't fit, elide left side to ensure right side stays visible. Useful for path/filenames. Single-line only!
+
+    // Callback features
+    sgl_ImGuiInputTextFlags_CallbackCompletion = 1 << 18,  // Callback on pressing TAB (for completion handling)
+    sgl_ImGuiInputTextFlags_CallbackHistory = 1 << 19,  // Callback on pressing Up/Down arrows (for history handling)
+    sgl_ImGuiInputTextFlags_CallbackAlways = 1 << 20,  // Callback on each iteration. User code may query cursor position, modify text buffer.
+    sgl_ImGuiInputTextFlags_CallbackCharFilter = 1 << 21,  // Callback on character inputs to replace or discard them. Modify 'EventChar' to replace or discard, or return 1 in callback to discard.
+    sgl_ImGuiInputTextFlags_CallbackResize = 1 << 22,  // Callback on buffer capacity changes request (beyond 'buf_size' parameter value), allowing the string to grow. Notify when the string wants to be resized (for string types which hold a cache of their Size). You will be provided a new BufSize in the callback and NEED to honor it. (see misc/cpp/imgui_stdlib.h for an example of using this)
+    sgl_ImGuiInputTextFlags_CallbackEdit = 1 << 23,  // Callback on any edit. Note that InputText() already returns true on edit + you can always use IsItemEdited(). The callback is useful to manipulate the underlying buffer while focus is active.
+
+    // Multi-line Word-Wrapping [BETA]
+    // - Not well tested yet. Please report any incorrect cursor movement, selection behavior etc. bug to https://github.com/ocornut/imgui/issues/3237.
+    // - Wrapping style is not ideal. Wrapping of long words/sections (e.g. words larger than total available width) may be particularly unpleasing.
+    // - Wrapping width needs to always account for the possibility of a vertical scrollbar.
+    // - It is much slower than regular text fields.
+    //   Ballpark estimate of cost on my 2019 desktop PC: for a 100 KB text buffer: +~0.3 ms (Optimized) / +~1.0 ms (Debug build).
+    //   The CPU cost is very roughly proportional to text length, so a 10 KB buffer should cost about ten times less.
+    sgl_ImGuiInputTextFlags_WordWrap = 1 << 24,  // InputTextMultiline(): word-wrap lines that are too long.
+} sgl_InputTextFlags;
+
 typedef enum sgl_WindowFlags
 {
     sgl_ImGuiWindowFlags_None = 0,
@@ -185,5 +231,24 @@ SGL_API extern bool sgl_MenuItem(const char* text, const char* shortcut, bool se
 
 SGL_API extern sgl_Vec2 sgl_GetContentRegionAvail();
 SGL_API extern sgl_Vec2 sgl_CalcTextSize(const char* text, const char* textEnd, bool hideTextAfterDoubleHash, float wrapWidth);
+
+SGL_API extern bool sgl_InputText(const char* text, char* buffer, size_t bufferSize, sgl_InputTextFlags flags);
+SGL_API extern bool sgl_InputInt(const char* text, int* v, int step, int stepFast, sgl_InputTextFlags flags);
+SGL_API extern bool sgl_InputFloat(const char* text, float* v, float step, float stepFast, sgl_InputTextFlags flags);
+SGL_API extern bool sgl_InputVec2(const char* text, sgl_Vec2* v, sgl_InputTextFlags flags);
+
+SGL_API extern bool sgl_SliderFloat(const char* text, float* v, float min, float max);
+SGL_API extern bool sgl_SliderAngle(const char* text, float* v, float min, float max);
+SGL_API extern bool sgl_SliderInt(const char* text, int* v, int min, int max);
+
+SGL_API extern bool sgl_DragFloat(const char* text, float* v, float speed, float min, float max);
+SGL_API extern bool sgl_DragInt(const char* text, int* v, float speed, int min, int max);
+SGL_API extern bool sgl_DragVec2(const char* text, sgl_Vec2* v, float speed, float min, float max);
+
+SGL_API extern bool sgl_Checkbox(const char* text, bool* v);
+
+SGL_API extern bool sgl_CollapsableHeader(const char* text);
+SGL_API extern bool sgl_TreeNode(const char* text);
+SGL_API extern void sgl_TreePop();
 
 SGL_END

@@ -308,3 +308,59 @@ sgl_Vec2 sgl_CalcTextSize(const char* text, const char* textEnd, bool hideTextAf
     ImVec2 v = ImGui::CalcTextSize(text, textEnd, hideTextAfterDoubleHash, wrapWidth);
     return {{{ v.x, v.y }}};
 }
+
+bool sgl_InputText(const char* text, char* buffer, size_t bufferSize, sgl_InputTextFlags flags) {
+    return ImGui::InputText(text, buffer, bufferSize, flags);
+}
+
+bool sgl_InputInt(const char* text, int* v, int step, int stepFast, sgl_InputTextFlags flags) {
+    return ImGui::InputInt(text, v, step, stepFast, flags);
+}
+
+bool sgl_InputFloat(const char* text, float* v, float step, float stepFast, sgl_InputTextFlags flags) {
+    return ImGui::InputFloat(text, v, step, stepFast, "%.3f", flags);
+}
+
+bool sgl_InputVec2(const char* text, sgl_Vec2* v, sgl_InputTextFlags flags) {
+    return ImGui::InputFloat2(text, &v->x, "%.3f", flags);
+}
+
+bool sgl_SliderFloat(const char* text, float* v, float min, float max) {
+    return ImGui::SliderFloat(text, v, min, max);
+}
+
+bool sgl_SliderAngle(const char* text, float* v, float min, float max) {
+    return ImGui::SliderAngle(text, v, min, max);
+}
+
+bool sgl_SliderInt(const char* text, int* v, int min, int max) {
+    return ImGui::SliderInt(text, v, min, max);
+}
+
+bool sgl_DragFloat(const char* text, float* v, float speed, float min, float max) {
+    return ImGui::DragFloat(text, v, speed, min, max);
+}
+
+bool sgl_DragInt(const char* text, int* v, float speed, int min, int max) {
+    return ImGui::DragInt(text, v, speed, min, max);
+}
+
+bool sgl_DragVec2(const char* text, sgl_Vec2* v, float speed, float min, float max) {
+    return ImGui::DragFloat2(text, &v->x, speed, min, max);
+}
+
+bool sgl_Checkbox(const char* text, bool* v) {
+    return ImGui::Checkbox(text, v);
+}
+
+bool sgl_CollapsableHeader(const char* text) {
+    return ImGui::CollapsingHeader(text);
+}
+
+bool sgl_TreeNode(const char* text) {
+    return ImGui::TreeNode(text);
+}
+
+void sgl_TreePop() {
+    ImGui::TreePop();
+}

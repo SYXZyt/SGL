@@ -47,15 +47,15 @@ static void GLDevice_Destroy(sgl_GraphicsDevice* dev)
     sgl::Memory::Delete(self);
 }
 
-static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t count)
+static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount)
 {
     sgl_Shader_Bind(shr);
     sgl_VertexArray_Bind(va);
 
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < textureCount; ++i)
         sgl_Texture_Bind(textures[i], (uint32)i);
 
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < bufferCount; ++i)
         sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
 
     glDrawArrays(GL_TRIANGLES, 0, va->vertexCount);

@@ -132,6 +132,136 @@ namespace SGLNet
         );
         internal static sgl_CalcTextSize_ptr sgl_CalcTextSize;
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_InputText_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            byte* buffer,
+            nuint bufferSize,
+            uint flags
+        );
+        internal static sgl_InputText_ptr sgl_InputText;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_InputInt_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            int* v,
+            int step,
+            int stepFast,
+            uint flags
+        );
+        internal static sgl_InputInt_ptr sgl_InputInt;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_InputFloat_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            float* v,
+            float step,
+            float stepFast,
+            uint flags
+        );
+        internal static sgl_InputFloat_ptr sgl_InputFloat;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_InputVec2_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            Vec2* v,
+            uint flags
+        );
+        internal static sgl_InputVec2_ptr sgl_InputVec2;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_SliderFloat_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            float* v,
+            float min,
+            float max
+        );
+        internal static sgl_SliderFloat_ptr sgl_SliderFloat;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_SliderAngle_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            float* v,
+            float min,
+            float max
+        );
+        internal static sgl_SliderAngle_ptr sgl_SliderAngle;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_SliderInt_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            int* v,
+            int min,
+            int max
+        );
+        internal static sgl_SliderInt_ptr sgl_SliderInt;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_DragFloat_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            float* v,
+            float speed,
+            float min,
+            float max
+        );
+        internal static sgl_DragFloat_ptr sgl_DragFloat;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_DragInt_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            int* v,
+            float speed,
+            int min,
+            int max
+        );
+        internal static sgl_DragInt_ptr sgl_DragInt;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_DragVec2_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            Vec2* v,
+            float speed,
+            float min,
+            float max
+        );
+        internal static sgl_DragVec2_ptr sgl_DragVec2;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_Checkbox_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            bool* v
+        );
+        internal static sgl_Checkbox_ptr sgl_Checkbox;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_CollapsableHeader_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text
+        );
+        internal static sgl_CollapsableHeader_ptr sgl_CollapsableHeader;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_TreeNode_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text
+        );
+        internal static sgl_TreeNode_ptr sgl_TreeNode;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        internal delegate void sgl_TreePop_ptr();
+        internal static sgl_TreePop_ptr sgl_TreePop;
+
         internal static void Init_FuncPtr()
         {
             sgl_Begin ??= Native.GetFunction<sgl_Begin_ptr>();
@@ -173,6 +303,21 @@ namespace SGLNet
 
             sgl_GetContentRegionAvail ??= Native.GetFunction<sgl_GetContentRegionAvail_ptr>();
             sgl_CalcTextSize ??= Native.GetFunction<sgl_CalcTextSize_ptr>();
+
+            sgl_InputText ??= Native.GetFunction<sgl_InputText_ptr>();
+            sgl_InputInt ??= Native.GetFunction<sgl_InputInt_ptr>();
+            sgl_InputFloat ??= Native.GetFunction<sgl_InputFloat_ptr>();
+            sgl_InputVec2 ??= Native.GetFunction<sgl_InputVec2_ptr>();
+            sgl_SliderFloat ??= Native.GetFunction<sgl_SliderFloat_ptr>();
+            sgl_SliderAngle ??= Native.GetFunction<sgl_SliderAngle_ptr>();
+            sgl_SliderInt ??= Native.GetFunction<sgl_SliderInt_ptr>();
+            sgl_DragFloat ??= Native.GetFunction<sgl_DragFloat_ptr>();
+            sgl_DragInt ??= Native.GetFunction<sgl_DragInt_ptr>();
+            sgl_DragVec2 ??= Native.GetFunction<sgl_DragVec2_ptr>();
+            sgl_Checkbox ??= Native.GetFunction<sgl_Checkbox_ptr>();
+            sgl_CollapsableHeader ??= Native.GetFunction<sgl_CollapsableHeader_ptr>();
+            sgl_TreeNode ??= Native.GetFunction<sgl_TreeNode_ptr>();
+            sgl_TreePop ??= Native.GetFunction<sgl_TreePop_ptr>();
         }
     }
 
@@ -315,6 +460,42 @@ namespace SGLNet
             MODAL_WINDOW_DIM_BG,
         }
 
+        public enum InputTextFlags
+        {
+            NONE = 0,
+            CHARS_DECIMAL = 1 << 0,
+            CHARS_HEXADECIMCAL = 1 << 1,
+            CHARS_SCIENTIFIC = 1 << 2,
+            CHARS_UPPERCASE = 1 << 3,
+            CHARS_NO_BLANK = 1 << 4,
+
+            ALLOW_TAB_INPUT = 1 << 5,
+            ENTER_RETURNS_TRUE = 1 << 6,
+            ESCAPE_CLEARS_ALL = 1 << 7,
+            CTRL_ENTER_FOR_NEWLINE = 1 << 8,
+
+            READONLY = 1 << 9,
+            PASSWORD = 1 << 10,
+            ALWAYS_OVERWRITE = 1 << 11,
+            AUTO_SELECT_ALL = 1 << 12,
+            PARSE_EMPTY_REF_VAL = 1 << 13,
+            DISPLAY_EMPTY_REF_VAL = 1 << 14,
+            NO_HORIZONTAL_SCROLL = 1 << 15,
+            NO_UNDO_REDO = 1 << 16,
+
+            ELIDE_LEFT = 1 << 17,
+
+            // Currently we don't support callbacks
+            CALLBACK_COMPLETION = 1 << 18,
+            CALLBACK_HISTORY = 1 << 19,
+            CALLBACK_ALWAYS = 1 << 20,
+            CALLBACK_CHAR_FILTER = 1 << 21,
+            CALLBACK_RESIZE = 1 << 22,
+            CALLBACK_EDIT = 1 << 23,
+
+            WORD_WRAP = 1 << 24,
+        }
+
         public static bool Begin(string title, ref bool open, WindowFlags flags = WindowFlags.NONE)
         {
             unsafe
@@ -415,5 +596,138 @@ namespace SGLNet
 
         public static Vec2 CalcTextSize(string text, string textEnd = "", bool hideTextAfterDoubleHash = false, float wrapWidth = -1) =>
             sgl_CalcTextSize(text, textEnd, hideTextAfterDoubleHash, wrapWidth);
+
+        public static bool InputText(string label, ref string value, int bufferSize = 256, InputTextFlags flags = InputTextFlags.NONE)
+        {
+            unsafe
+            {
+                byte* buffer = stackalloc byte[bufferSize];
+
+                if (!string.IsNullOrEmpty(value))
+                {
+                    byte[] utf8 = System.Text.Encoding.UTF8.GetBytes(value);
+                    int len = Mathf.Min(utf8.Length, bufferSize - 1);
+
+                    for (int i = 0; i < len; ++i)
+                        buffer[i] = utf8[i];
+
+                    buffer[len] = 0;
+                }
+                else
+                    buffer[0] = 0;
+
+                bool changed = sgl_InputText(label, buffer, (UIntPtr)buffer, (uint)flags);
+
+                if (changed)
+                {
+                    int len = 0;
+                    while (len < bufferSize && buffer[len] != 0)
+                        ++len;
+
+                    value = System.Text.Encoding.UTF8.GetString(buffer, len);
+                }
+
+                return changed;
+            }
+        }
+
+        public static bool InputInt(string label, ref int value, int step = 1, int stepFast = 100, InputTextFlags flags = InputTextFlags.NONE)
+        {
+            unsafe
+            {
+                fixed (int* p = &value)
+                    return sgl_InputInt(label, p, step, stepFast, (uint)flags);
+            }
+        }
+
+        public static bool InputFloat(string label, ref float value, float step = 0, float stepFast = 0, InputTextFlags flags = InputTextFlags.NONE)
+        {
+            unsafe
+            {
+                fixed (float* p = &value)
+                    return sgl_InputFloat(label, p, step, stepFast, (uint)flags);
+            }
+        }
+
+        public static bool InputVec2(string label, ref Vec2 value, InputTextFlags flags = InputTextFlags.NONE)
+        {
+            unsafe
+            {
+                fixed (Vec2* p = &value)
+                    return sgl_InputVec2(label, p, (uint)flags);
+            }
+        }
+
+        public static bool SliderFloat(string label, ref float value, float min, float max)
+        {
+            unsafe
+            {
+                fixed (float* p = &value)
+                    return sgl_SliderFloat(label, p, min, max);
+            }
+        }
+
+        public static bool SliderAngle(string label, ref float angleRad, float minDeg = -360, float maxDeg = 360)
+        {
+            unsafe
+            {
+                fixed (float* p = &angleRad)
+                    return sgl_SliderAngle(label, p, minDeg, minDeg);
+            }
+        }
+
+        public static bool SliderInt(string label, ref int value, int min, int max)
+        {
+            unsafe
+            {
+                fixed (int* p = &value)
+                    return sgl_SliderInt(label, p, min, max);
+            }
+        }
+
+        public static bool DragFloat(string label, ref float value, float speed, float min = 0, float max = 0)
+        {
+            unsafe
+            {
+                fixed (float* p = &value)
+                    return sgl_DragFloat(label, p, speed, min, max);
+            }
+        }
+
+        public static bool DragInt(string label, ref int value, float speed, int min = 0, int max = 0)
+        {
+            unsafe
+            {
+                fixed (int* p = &value)
+                    return sgl_DragInt(label, p, speed, min, max);
+            }
+        }
+
+        public static bool DragVec2(string label, ref Vec2 value, float speed, float min = 0, float max = 0)
+        {
+            unsafe
+            {
+                fixed (Vec2* p = &value)
+                    return sgl_DragVec2(label, p, speed, min, max);
+            }
+        }
+
+        public static bool Checkbox(string label, ref bool v)
+        {
+            unsafe
+            {
+                fixed (bool* p = &v)
+                    return sgl_Checkbox(label, p);
+            }
+        }
+
+        public static bool CollapsableHeader(string label) =>
+            sgl_CollapsableHeader(label);
+
+        public static bool TreeNode(string label) =>
+            sgl_TreeNode(label);
+
+        public static void TreePop() =>
+            sgl_TreePop();
     }
 }

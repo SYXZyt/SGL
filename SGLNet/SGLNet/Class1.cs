@@ -106,6 +106,8 @@ float4 main(PSInput input) : SV_TARGET
             Memory.StackTraceEnableIfDebug();
 
             EngineConfig cfg = new();
+            cfg.enableImGui = true;
+
             cfg.backend = Backend.DIRECTX11;
             cfg.backend = Backend.OPENGL;
 
@@ -196,6 +198,12 @@ float4 main(PSInput input) : SV_TARGET
 
                     device.Clear();
                     device.Draw(va, shader, ub);
+
+                    if (ImGui.DragVec2("Position", ref position, 0.1f))
+                    {
+                        ub.Data.View = Mathf.View(position, 0f);
+                        ub.Upload();
+                    }
 
                     device.ImGui_RenderDrawData();
 

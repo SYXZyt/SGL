@@ -52,6 +52,18 @@ namespace SGLNet.Maths
             Max(min, Min(max, value));
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Min(int a, int b) =>
+            a < b ? a : b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Max(int a, int b) =>
+            a > b ? a : b;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static int Clamp(int value, int min, int max) =>
+            Max(min, Min(max, value));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static float Abs(float f) =>
             f < 0 ? -f : f;
 
