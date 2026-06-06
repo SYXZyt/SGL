@@ -12,6 +12,6 @@ typedef struct sgl_GLPostProcess sgl_sealed
 
 } sgl_GLPostProcess;
 
-SGL_API extern sgl_GLPostProcess* sgl_GLPostProcess_Create(sgl_GraphicsDevice* device, sgl_Shader* shader);
+SGL_API extern sgl_GLPostProcess* sgl_GLPostProcess_Create(sgl_GraphicsDevice* device);
 
 SGL_END

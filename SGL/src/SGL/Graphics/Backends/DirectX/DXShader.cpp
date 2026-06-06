@@ -67,9 +67,6 @@ static void DXInitialise(sgl_Shader* shr)
 {
     GetSelf;
 
-    if (shr->resource.isInitialised)
-        return;
-
     ID3DBlob* errors = nullptr;
 
     HRESULT hr = D3DCompile(
@@ -165,16 +162,13 @@ static void DXInitialise(sgl_Shader* shr)
     sgl_FreeString(shr->data_vcode);
     sgl_FreeString(shr->data_fcode);
 
-    shr->resource.isInitialised = true;
+    shr->contentsLoaded = true;
 }
 
 static void DXBind(sgl_Shader* shr)
 {
     GetSelf;
     sgl_DXDevice* device = (sgl_DXDevice*)shr->gpu;
-
-    if (!shr->resource.isInitialised)
-        shr->vtable->Initialise(shr);
 
     device->ctx->VSSetShader(
         self->vertexShader,
@@ -210,21 +204,34 @@ static void DXDestroy(sgl_Shader* shr)
     sgl::Memory::Delete(self);
 }
 
+static void DXLoad(sgl_Shader* shr, const char* vSrc, const char* fSrc)
+{
+    if (shr->contentsLoaded)
+    {
+        SGL_REPORT_ERROR("Shader already loaded");
+        return;
+    }
+
+    shr->data_vcode = sgl_MakeString(vSrc);
+    shr->data_fcode = sgl_MakeString(fSrc);
+
+    DXInitialise(shr);
+}
+
 static const sgl_ShaderVTable gDXVTable =
 {
-    .Initialise = &DXInitialise,
     .Bind = &DXBind,
     .Destroy = &DXDestroy,
+    .Load = &DXLoad,
 };
 
-sgl_DXShader* sgl_DXShader_Create(const char* vsrc, const char* fsrc, sgl_VertexLayout* vertexLayout)
+sgl_DXShader* sgl_DXShader_Create()
 {
     sgl_DXShader* shader = sgl::Memory::New<sgl_DXShader>();
 
-    shader->base.resource.initState = sgl_InitState_LOADED;
-    shader->base.resource.isInitialised = false;
-    shader->base.data_vcode = sgl_MakeString(vsrc);
-    shader->base.data_fcode = sgl_MakeString(fsrc);
+    shader->base.contentsLoaded = false;
+    shader->base.data_vcode = { .str = nullptr, .len = 0, .capacity = 0 };
+    shader->base.data_fcode = { .str = nullptr, .len = 0, .capacity = 0 };
     shader->base.vtable = &gDXVTable;
 
     return shader;

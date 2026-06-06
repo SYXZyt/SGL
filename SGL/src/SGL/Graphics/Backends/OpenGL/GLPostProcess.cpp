@@ -57,7 +57,7 @@ static sgl_PostProcessVTable gGLVTable =
     .OnResize = &GL_OnResize,
 };
 
-sgl_GLPostProcess* sgl_GLPostProcess_Create(sgl_GraphicsDevice* device, sgl_Shader* shader)
+sgl_GLPostProcess* sgl_GLPostProcess_Create(sgl_GraphicsDevice* device)
 {
     sgl_GLPostProcess* pp = sgl::Memory::New<sgl_GLPostProcess>();
     pp->base.enabled = true;

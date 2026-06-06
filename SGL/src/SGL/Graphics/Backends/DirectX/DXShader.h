@@ -18,7 +18,7 @@ typedef struct sgl_DXShader sgl_sealed
     ID3DBlob* pixelBlob;
 } sgl_DXShader;
 
-SGL_API extern sgl_DXShader* sgl_DXShader_Create(const char* vsrc, const char* fsrc, sgl_VertexLayout* vertexLayout);
+SGL_API extern sgl_DXShader* sgl_DXShader_Create();
 
 SGL_END
 

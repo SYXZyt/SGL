@@ -13,7 +13,7 @@ typedef struct sgl_DXPostProcess
     ID3D11ShaderResourceView* shaderResourceView;
 } sgl_DXPostProcess;
 
-SGL_API extern sgl_DXPostProcess* sgl_DXPostProcess_Create(sgl_GraphicsDevice* device, sgl_Shader* shader);
+SGL_API extern sgl_DXPostProcess* sgl_DXPostProcess_Create(sgl_GraphicsDevice* device);
 
 SGL_END
 

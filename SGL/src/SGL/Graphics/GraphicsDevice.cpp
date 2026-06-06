@@ -138,6 +138,10 @@ size_t sgl_GraphicsDevice_GetEffects(sgl_GraphicsDevice* device, sgl_PostProcess
     return effects.size();
 }
 
+sgl_VertexLayout* sgl_GraphicsDevice_GetPostProcessLayout(sgl_GraphicsDevice* device) {
+    return device->screenQuadLayout;
+}
+
 void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device) {
     device->vtable->ImGui_Init(device);
 }

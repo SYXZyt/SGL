@@ -22,8 +22,9 @@ typedef struct sgl_PostProcess sgl_sealed
     bool enabled;
 } sgl_PostProcess;
 
-SGL_API extern sgl_PostProcess* sgl_PostProcess_Create(sgl_GraphicsDevice* device, sgl_Shader* shader);
+SGL_API extern sgl_PostProcess* sgl_PostProcess_Create(sgl_GraphicsDevice* device);
 
+SGL_API extern sgl_Shader* sgl_PostProcess_GetShader(sgl_PostProcess* pp);
 SGL_API extern void sgl_PostProcess_Bind(sgl_PostProcess* pp);
 SGL_API extern void sgl_PostProcess_OnResize(sgl_PostProcess* pp);  // <-- The graphics pipeline will call this automatically, you shouldn't ever need to do it manually
 SGL_API extern void sgl_PostProcess_Destroy(sgl_PostProcess* pp);

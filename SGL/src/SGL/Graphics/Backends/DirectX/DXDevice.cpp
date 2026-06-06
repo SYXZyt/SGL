@@ -512,7 +512,9 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     device->ctx->PSSetSamplers(0, 1, &device->sampler);
 #pragma endregion
 
-    device->blitShader = sgl_Shader_Create_Source((sgl_GraphicsDevice*)device, BlitVertex, BlitFragment, screenQuadLayout);
+    device->blitShader = sgl_Shader_Create((sgl_GraphicsDevice*)device, screenQuadLayout);
+    sgl_Shader_Load_Source(device->blitShader, BlitVertex, BlitFragment);
+
     std::stringstream ss;
 
     ss << "SDL Version: " << SDL_VERSIONNUM_MAJOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MINOR(SDL_VERSION) << "." << SDL_VERSIONNUM_MICRO(SDL_VERSION);

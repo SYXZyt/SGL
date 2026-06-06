@@ -54,6 +54,8 @@ SGL_API extern void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct s
 SGL_API extern void sgl_GraphicsDevice_AddEffect(sgl_GraphicsDevice* device, struct sgl_PostProcess* effect);
 SGL_API extern size_t sgl_GraphicsDevice_GetEffects(sgl_GraphicsDevice* device, struct sgl_PostProcess*** effects);
 
+SGL_API extern struct sgl_VertexLayout* sgl_GraphicsDevice_GetPostProcessLayout(sgl_GraphicsDevice* device);
+
 SGL_API extern void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_ImGui_Shutdown(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_ImGui_NewFrame(sgl_GraphicsDevice* device);

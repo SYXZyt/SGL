@@ -8,47 +8,22 @@
 #include <sstream>
 #include <SGL/Graphics/VertexLayout.h>
 
-sgl_Shader* sgl_Shader_Create_Source(struct sgl_GraphicsDevice* gpu, const char* vSrc, const char* fSrc, sgl_VertexLayout* layout)
-{
-    sgl_Shader* shader = nullptr;
-    sgl_VertexLayout* ourLayout = sgl_VertexLayout_DeepCopy(layout);
-
-    if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
-    {
-        shader = (sgl_Shader*)sgl_GLShader_Create(vSrc, fSrc);
-    }
-    else if (gpu->window->cfg.backend == sgl_Backend_DIRECTX11)
-    {
-#ifdef SGL_DIRECTX
-        shader = (sgl_Shader*)sgl_DXShader_Create(vSrc, fSrc, ourLayout);
-#else
-        SGL_REPORT_ERROR("DirectX is not supported on this platform");
-        return nullptr;
-#endif
-    }
-    else
-    {
-        SGL_REPORT_ERROR("Unsupported backend");
-        return nullptr;
-    }
-
-    shader->layout = ourLayout;
-    shader->gpu = gpu;
-    return shader;
+void sgl_Shader_Load_Source(sgl_Shader* shader, const char* vSrc, const char* fSrc) {
+    shader->vtable->Load(shader, vSrc, fSrc);
 }
 
-sgl_Shader* sgl_Shader_Create_Filename(sgl_GraphicsDevice* gpu, const char* vFile, const char* fFile, sgl_VertexLayout* layout)
+void sgl_Shader_Load_Filename(sgl_Shader* shader, const char* vFile, const char* fFile)
 {
     if (!std::filesystem::exists(vFile))
     {
         SGL_REPORT_ERROR((std::string("Could not find file: ") + vFile).c_str());
-        return nullptr;
+        return;
     }
 
     if (!std::filesystem::exists(fFile))
     {
         SGL_REPORT_ERROR((std::string("Could not find file: ") + fFile).c_str());
-        return nullptr;
+        return;
     }
 
     std::ifstream v(vFile);
@@ -58,7 +33,40 @@ sgl_Shader* sgl_Shader_Create_Filename(sgl_GraphicsDevice* gpu, const char* vFil
     vs << v.rdbuf();
     fs << f.rdbuf();
 
-    return sgl_Shader_Create_Source(gpu, vs.str().c_str(), fs.str().c_str(), layout);
+    sgl_Shader_Load_Source(shader, vs.str().c_str(), fs.str().c_str());
+}
+
+bool sgl_Shader_Contents_Loaded(sgl_Shader* shader) {
+    return shader->contentsLoaded;
+}
+
+sgl_Shader* sgl_Shader_Create(sgl_GraphicsDevice* gpu, sgl_VertexLayout* layout)
+{
+    sgl_Shader* shader = nullptr;
+    sgl_VertexLayout* ourLayout = sgl_VertexLayout_DeepCopy(layout);
+
+    if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
+    {
+        shader = (sgl_Shader*)sgl_GLShader_Create();
+    }
+    else if (gpu->window->cfg.backend == sgl_Backend_DIRECTX11)
+    {
+#ifdef SGL_DIRECTX
+        shader = (sgl_Shader*)sgl_DXShader_Create();
+#else
+        SGL_REPORT_ERROR("DirectX is not supported on this platform");
+#endif
+    }
+    else
+    {
+        SGL_REPORT_ERROR("Unsupported backend");
+        return nullptr;
+    }
+
+    shader->gpu = gpu;
+    shader->layout = ourLayout;
+
+    return shader;
 }
 
 void sgl_Shader_Destroy(sgl_Shader* shader)

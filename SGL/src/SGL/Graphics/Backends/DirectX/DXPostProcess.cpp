@@ -94,7 +94,7 @@ static sgl_PostProcessVTable gDXVTable =
     .OnResize = &DX_OnResize,
 };
 
-sgl_DXPostProcess* sgl_DXPostProcess_Create(sgl_GraphicsDevice* device, sgl_Shader* shader)
+sgl_DXPostProcess* sgl_DXPostProcess_Create(sgl_GraphicsDevice* device)
 {
     sgl_DXPostProcess* pp = sgl::Memory::New<sgl_DXPostProcess>();
     pp->base.enabled = true;
