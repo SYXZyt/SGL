@@ -59,6 +59,9 @@ namespace SGLNet.Graphics
         public IntPtr Handle =>
             mHandle;
 
+        internal void Leak() =>
+            mHandle = IntPtr.Zero;
+
         public void Dispose()
         {
             if (mHandle != IntPtr.Zero)
@@ -108,6 +111,11 @@ namespace SGLNet.Graphics
         public VertexLayout(GraphicsDevice graphics)
         {
             mHandle = sgl_VertexLayout_New(graphics.Handle);
+        }
+
+        internal VertexLayout(IntPtr handle)
+        {
+            mHandle = handle;
         }
 
         ~VertexLayout()

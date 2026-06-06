@@ -11,6 +11,8 @@ namespace SGLNet
         internal IntPtr Handle =>
             mHandle;
 
+        private VertexLayout mPostProcessLayout;
+
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate IntPtr sgl_GraphicsDevice_Create_ptr(IntPtr window);
         private static sgl_GraphicsDevice_Create_ptr sgl_GraphicsDevice_Create;
@@ -24,12 +26,16 @@ namespace SGLNet
         private static sgl_GraphicsDevice_SetClearColour_ptr sgl_GraphicsDevice_SetClearColour;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void sgl_GraphicsDevice_Clear_ptr(IntPtr device, byte flag);
-        private static sgl_GraphicsDevice_Clear_ptr sgl_GraphicsDevice_Clear;
+        private delegate void sgl_GraphicsDevice_BeginFrame_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_BeginFrame_ptr sgl_GraphicsDevice_BeginFrame;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate void sgl_GraphicsDevice_Present_ptr(IntPtr device);
-        private static sgl_GraphicsDevice_Present_ptr sgl_GraphicsDevice_Present;
+        private delegate void sgl_GraphicsDevice_EndFrame_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_EndFrame_ptr sgl_GraphicsDevice_EndFrame;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_GraphicsDevice_SwapBuffer_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_SwapBuffer_ptr sgl_GraphicsDevice_SwapBuffer;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private unsafe delegate void sgl_GraphicsDevice_Draw_ptr(IntPtr device, IntPtr va, IntPtr shr, IntPtr* textures, size_t textureCount, IntPtr* buffers, size_t bufferCount);
@@ -51,16 +57,26 @@ namespace SGLNet
         private delegate void sgl_GraphicsDevice_ImGui_RenderDrawData_ptr(IntPtr device);
         private static sgl_GraphicsDevice_ImGui_RenderDrawData_ptr sgl_GraphicsDevice_ImGui_RenderDrawData;
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr sgl_GraphicsDevice_GetPostProcessLayout_ptr(IntPtr device);
+        private static sgl_GraphicsDevice_GetPostProcessLayout_ptr sgl_GraphicsDevice_GetPostProcessLayout;
+
         public Colour ClearColour
         {
             set => sgl_GraphicsDevice_SetClearColour(mHandle, value);
         }
 
-        public void Clear() =>
-            sgl_GraphicsDevice_Clear(mHandle, 0b11);
+        public VertexLayout PostProcessLayout =>
+            mPostProcessLayout;
 
-        public void Present() =>
-            sgl_GraphicsDevice_Present(mHandle);
+        public void BeginFrame() =>
+            sgl_GraphicsDevice_BeginFrame(mHandle);
+
+        public void EndFrame() =>
+            sgl_GraphicsDevice_EndFrame(mHandle);
+
+        public void SwapBuffer() =>
+            sgl_GraphicsDevice_SwapBuffer(mHandle);
 
         public void Draw(VertexArray va, Shader shader, Texture[] textures, IUniformBuffer[] uniformBuffers)
         {
@@ -96,12 +112,14 @@ namespace SGLNet
 
         internal static void Init_FuncPtr()
         {
-            sgl_GraphicsDevice_Create ??= Native.GetFunction<sgl_GraphicsDevice_Create_ptr>(nameof(sgl_GraphicsDevice_Create));
-            sgl_GraphicsDevice_Destroy ??= Native.GetFunction<sgl_GraphicsDevice_Destroy_ptr>(nameof(sgl_GraphicsDevice_Destroy));
-            sgl_GraphicsDevice_SetClearColour ??= Native.GetFunction<sgl_GraphicsDevice_SetClearColour_ptr>(nameof(sgl_GraphicsDevice_SetClearColour));
-            sgl_GraphicsDevice_Clear ??= Native.GetFunction<sgl_GraphicsDevice_Clear_ptr>(nameof(sgl_GraphicsDevice_Clear));
-            sgl_GraphicsDevice_Present ??= Native.GetFunction<sgl_GraphicsDevice_Present_ptr>(nameof(sgl_GraphicsDevice_Present));
-            sgl_GraphicsDevice_Draw ??= Native.GetFunction<sgl_GraphicsDevice_Draw_ptr>(nameof(sgl_GraphicsDevice_Draw));
+            sgl_GraphicsDevice_Create ??= Native.GetFunction<sgl_GraphicsDevice_Create_ptr>();
+            sgl_GraphicsDevice_Destroy ??= Native.GetFunction<sgl_GraphicsDevice_Destroy_ptr>();
+            sgl_GraphicsDevice_SetClearColour ??= Native.GetFunction<sgl_GraphicsDevice_SetClearColour_ptr>();
+            sgl_GraphicsDevice_BeginFrame ??= Native.GetFunction<sgl_GraphicsDevice_BeginFrame_ptr>();
+            sgl_GraphicsDevice_EndFrame ??= Native.GetFunction<sgl_GraphicsDevice_EndFrame_ptr>();
+            sgl_GraphicsDevice_SwapBuffer ??= Native.GetFunction<sgl_GraphicsDevice_SwapBuffer_ptr>();
+            sgl_GraphicsDevice_Draw ??= Native.GetFunction<sgl_GraphicsDevice_Draw_ptr>();
+            sgl_GraphicsDevice_GetPostProcessLayout ??= Native.GetFunction<sgl_GraphicsDevice_GetPostProcessLayout_ptr>();
 
             sgl_GraphicsDevice_ImGui_Init ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_Init_ptr>();
             sgl_GraphicsDevice_ImGui_Shutdown ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_Shutdown_ptr>();
@@ -112,10 +130,14 @@ namespace SGLNet
         public GraphicsDevice(Window window)
         {
             mHandle = sgl_GraphicsDevice_Create(window.Handle);
+            mPostProcessLayout = new(sgl_GraphicsDevice_GetPostProcessLayout(mHandle));
         }
 
         public void Dispose()
         {
+            mPostProcessLayout.Leak();
+            mPostProcessLayout.Dispose();
+
             sgl_GraphicsDevice_Destroy(mHandle);
             mHandle = IntPtr.Zero;
 

@@ -85,6 +85,34 @@ float4 main(PSInput input) : SV_TARGET {
 }
 ";
 
+        private static readonly string PostProcessEffectVertexGL = @"
+#version 460 core
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec2 aUV;
+
+out vec2 oUV;
+
+void main()
+{
+    gl_Position = vec4(aPos, 1.0);
+    oUV = aUV;
+}
+";
+
+        private static readonly string PostProcessEffectFragmentGL = @"
+#version 460 core
+in vec2 oUV;
+out vec4 FragCol;
+
+layout(binding = 0) uniform sampler2D frametexture;
+
+void main()
+{
+    FragCol = texture(frametexture, oUV);
+    FragCol.rgb = 1 - FragCol.rgb;
+}
+";
+
         [StructLayout(LayoutKind.Explicit)]
         private struct Vertex
         {
@@ -170,6 +198,12 @@ float4 main(PSInput input) : SV_TARGET {
 
                 Vec2 position = Vec2.Zero;
 
+                using Shader postProcessShader = new(device, device.PostProcessLayout);
+                if (cfg.backend == Backend.OPENGL)
+                    postProcessShader.LoadFromSource(PostProcessEffectVertexGL, PostProcessEffectFragmentGL);
+
+                using PostProcess effect = new(device, postProcessShader);
+
                 while (!window.WantClose)
                 {
                     {
@@ -200,7 +234,7 @@ float4 main(PSInput input) : SV_TARGET {
 
                     device.ImGui_NewFrame();
 
-                    device.Clear();
+                    device.BeginFrame();
                     device.Draw(va, shader, [texture], [ub]);
 
                     if (ImGui.DragVec2("Position", ref position, 0.1f))
@@ -211,7 +245,8 @@ float4 main(PSInput input) : SV_TARGET {
 
                     device.ImGui_RenderDrawData();
 
-                    device.Present();
+                    device.EndFrame();
+                    device.SwapBuffer();
                 }
 
                 device.ImGui_Shutdown();

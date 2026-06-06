@@ -44,8 +44,21 @@ namespace SGLNet.Interop
         public static IntPtr LibHandle =>
             mHandle;
 
-        public static FPtr GetFunction<FPtr>(string name) where FPtr : Delegate =>
-            Marshal.GetDelegateForFunctionPointer<FPtr>(NativeLibrary.GetExport(LibHandle, name));
+        public static FPtr GetFunction<FPtr>(string name) where FPtr : Delegate
+        {
+            try
+            {
+                return Marshal.GetDelegateForFunctionPointer<FPtr>(NativeLibrary.GetExport(LibHandle, name));
+            }
+            catch (EntryPointNotFoundException)
+            {
+                throw new EntryPointNotFoundException($"Could not find function: {name}");
+            }
+            catch
+            {
+                throw;
+            }
+        }
 
         public static FPtr GetFunction<FPtr>() where FPtr : Delegate
         {
@@ -88,6 +101,7 @@ namespace SGLNet.Interop
             Texture.Init_FuncPtr();
             Texture2D.Init_FuncPtr();
             Texture2DArray.Init_FuncPtr();
+            PostProcess.Init_FuncPtr();
         }
     }
 }
