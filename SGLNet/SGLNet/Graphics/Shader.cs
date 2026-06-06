@@ -10,15 +10,15 @@ namespace SGLNet.Graphics
         internal IntPtr Handle =>
             mHandle;
 
-        private readonly GraphicsDevice mGraphics;
-
-        private readonly VertexLayout mLayout;
-
         private bool mHasLoaded = false;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        private delegate IntPtr sgl_Shader_Create_Source_ptr(IntPtr graphics, [MarshalAs(UnmanagedType.LPUTF8Str)] string vSrc, [MarshalAs(UnmanagedType.LPUTF8Str)] string fSrc, IntPtr layout);
-        private static sgl_Shader_Create_Source_ptr sgl_Shader_Create_Source;
+        private delegate IntPtr sgl_Shader_Create_ptr(IntPtr graphics, IntPtr layout);
+        private static sgl_Shader_Create_ptr sgl_Shader_Create;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr sgl_Shader_Load_Source_ptr(IntPtr shaders, [MarshalAs(UnmanagedType.LPUTF8Str)] string vSrc, [MarshalAs(UnmanagedType.LPUTF8Str)] string fSrc);
+        private static sgl_Shader_Load_Source_ptr sgl_Shader_Load_Source;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void sgl_Shader_Destroy_ptr(IntPtr shader);
@@ -27,6 +27,11 @@ namespace SGLNet.Graphics
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void sgl_Shader_Bind_ptr(IntPtr shader);
         private static sgl_Shader_Bind_ptr sgl_Shader_Bind;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        private delegate bool sgl_Shader_Contents_Loaded_ptr(IntPtr shader);
+        private static sgl_Shader_Contents_Loaded_ptr sgl_Shader_Contents_Loaded;
 
         public bool IsLoaded =>
             mHasLoaded;
@@ -41,18 +46,18 @@ namespace SGLNet.Graphics
 
         public void LoadFromSource(string vertexSource, string fragmentSource)
         {
-            if (mHandle != IntPtr.Zero)
-                throw new InvalidOperationException("Shader has already been created");
+            if (mHasLoaded)
+                throw new InvalidOperationException("Shader has already been loaded");
 
-            mHandle = sgl_Shader_Create_Source(mGraphics.Handle, vertexSource, fragmentSource, mLayout.Handle);
+            sgl_Shader_Load_Source(mHandle, vertexSource, fragmentSource);
 
             mHasLoaded = true;
         }
 
         public void LoadFromFile(string vertexPath, string fragmentPath)
         {
-            if (mHandle != IntPtr.Zero)
-                throw new InvalidOperationException("Shader has already been created");
+            if (mHasLoaded)
+                throw new InvalidOperationException("Shader has already been loaded");
 
             if (!File.Exists(vertexPath))
                 throw new FileNotFoundException($"Could not find file {vertexPath}");
@@ -70,22 +75,28 @@ namespace SGLNet.Graphics
         {
             sgl_Shader_Destroy(mHandle);
             mHandle = IntPtr.Zero;
-            mLayout.Dispose();
 
             GC.SuppressFinalize(this);
         }
 
         internal static void Init_FuncPtr()
         {
-            sgl_Shader_Create_Source ??= Native.GetFunction<sgl_Shader_Create_Source_ptr>(nameof(sgl_Shader_Create_Source));
-            sgl_Shader_Destroy ??= Native.GetFunction<sgl_Shader_Destroy_ptr>(nameof(sgl_Shader_Destroy));
-            sgl_Shader_Bind ??= Native.GetFunction<sgl_Shader_Bind_ptr>(nameof(sgl_Shader_Bind));
+            sgl_Shader_Create ??= Native.GetFunction<sgl_Shader_Create_ptr>();
+            sgl_Shader_Load_Source ??= Native.GetFunction<sgl_Shader_Load_Source_ptr>();
+            sgl_Shader_Destroy ??= Native.GetFunction<sgl_Shader_Destroy_ptr>();
+            sgl_Shader_Bind ??= Native.GetFunction<sgl_Shader_Bind_ptr>();
+            sgl_Shader_Contents_Loaded ??= Native.GetFunction<sgl_Shader_Contents_Loaded_ptr>();
+        }
+
+        internal Shader(IntPtr handle)
+        {
+            mHandle = handle;
+            mHasLoaded = sgl_Shader_Contents_Loaded(handle);
         }
 
         public Shader(GraphicsDevice graphicsDevice, VertexLayout layout)
         {
-            mGraphics = graphicsDevice;
-            mLayout = layout.Clone() as VertexLayout;
+            mHandle = sgl_Shader_Create(graphicsDevice.Handle, layout.Handle);
         }
 
         ~Shader() =>

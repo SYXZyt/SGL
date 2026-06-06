@@ -113,6 +113,48 @@ void main()
 }
 ";
 
+        private static readonly string PostProcessEffectVertexDX = @"
+struct VSInput
+{
+    float3 Position : POSITION;
+    float2 UV : TEXCOORD0;
+};
+
+struct VSOutput
+{
+    float4 Position : SV_POSITION;
+    float2 UV : TEXCOORD0;
+};
+
+VSOutput main(VSInput input)
+{
+    VSOutput output;
+
+    output.Position = float4(input.Position, 1.0f);
+    output.UV = input.UV;
+
+    return output;
+}
+";
+
+        private static readonly string PostProcessEffectPixelDX = @"
+Texture2D FrameTexture : register(t0);
+SamplerState FrameSampler : register(s0);
+
+struct PSInput
+{
+    float4 Position : SV_POSITION;
+    float2 UV : TEXCOORD0;
+};
+
+float4 main(PSInput input) : SV_TARGET
+{
+    float4 colour = FrameTexture.Sample(FrameSampler, input.UV);
+    colour.rgb = 1.0f - colour.rgb;
+    return colour;
+}
+";
+
         [StructLayout(LayoutKind.Explicit)]
         private struct Vertex
         {
@@ -138,7 +180,7 @@ void main()
             cfg.enableImGui = true;
 
             cfg.backend = Backend.DIRECTX11;
-            cfg.backend = Backend.OPENGL;
+            //cfg.backend = Backend.OPENGL;
 
             Runtime.Init();
             Logger.Init();
@@ -198,11 +240,12 @@ void main()
 
                 Vec2 position = Vec2.Zero;
 
-                using Shader postProcessShader = new(device, device.PostProcessLayout);
+                PostProcess effect = new(device);
                 if (cfg.backend == Backend.OPENGL)
-                    postProcessShader.LoadFromSource(PostProcessEffectVertexGL, PostProcessEffectFragmentGL);
-
-                using PostProcess effect = new(device, postProcessShader);
+                    effect.Shader.LoadFromSource(PostProcessEffectVertexGL, PostProcessEffectFragmentGL);
+                else
+                    effect.Shader.LoadFromSource(PostProcessEffectVertexDX, PostProcessEffectPixelDX);
+                device.AddEffect(effect);
 
                 while (!window.WantClose)
                 {

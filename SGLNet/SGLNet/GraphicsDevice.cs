@@ -61,6 +61,12 @@ namespace SGLNet
         private delegate IntPtr sgl_GraphicsDevice_GetPostProcessLayout_ptr(IntPtr device);
         private static sgl_GraphicsDevice_GetPostProcessLayout_ptr sgl_GraphicsDevice_GetPostProcessLayout;
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_GraphicsDevice_AddEffect_ptr(IntPtr device, IntPtr effect);
+        private static sgl_GraphicsDevice_AddEffect_ptr sgl_GraphicsDevice_AddEffect;
+
+        private readonly List<PostProcess> mPostProcessEffects = [];
+
         public Colour ClearColour
         {
             set => sgl_GraphicsDevice_SetClearColour(mHandle, value);
@@ -120,11 +126,18 @@ namespace SGLNet
             sgl_GraphicsDevice_SwapBuffer ??= Native.GetFunction<sgl_GraphicsDevice_SwapBuffer_ptr>();
             sgl_GraphicsDevice_Draw ??= Native.GetFunction<sgl_GraphicsDevice_Draw_ptr>();
             sgl_GraphicsDevice_GetPostProcessLayout ??= Native.GetFunction<sgl_GraphicsDevice_GetPostProcessLayout_ptr>();
+            sgl_GraphicsDevice_AddEffect ??= Native.GetFunction<sgl_GraphicsDevice_AddEffect_ptr>();
 
             sgl_GraphicsDevice_ImGui_Init ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_Init_ptr>();
             sgl_GraphicsDevice_ImGui_Shutdown ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_Shutdown_ptr>();
             sgl_GraphicsDevice_ImGui_NewFrame ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_NewFrame_ptr>();
             sgl_GraphicsDevice_ImGui_RenderDrawData ??= Native.GetFunction<sgl_GraphicsDevice_ImGui_RenderDrawData_ptr>();
+        }
+
+        public void AddEffect(PostProcess effect)
+        {
+            if (mPostProcessEffects.TryAdd(effect))
+                sgl_GraphicsDevice_AddEffect(mHandle, effect.Handle);
         }
 
         public GraphicsDevice(Window window)
@@ -137,6 +150,10 @@ namespace SGLNet
         {
             mPostProcessLayout.Leak();
             mPostProcessLayout.Dispose();
+
+            foreach (PostProcess effect in mPostProcessEffects)
+                effect.Dispose();
+            mPostProcessEffects.Clear();
 
             sgl_GraphicsDevice_Destroy(mHandle);
             mHandle = IntPtr.Zero;
