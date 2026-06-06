@@ -14,15 +14,19 @@ typedef struct sgl_PostProcessVTable sgl_sealed
     void (*OnResize)(struct sgl_PostProcess* self);
 } sgl_PostProcessVTable;
 
+struct sgl_UniformBuffer;
 typedef struct sgl_PostProcess sgl_sealed
 {
     const sgl_PostProcessVTable* vtable;
     sgl_GraphicsDevice* gpu;
     sgl_Shader* shader;
     bool enabled;
+    struct sgl_UniformBuffer** uniforms;
+    size_t uniformCount;
 } sgl_PostProcess;
 
-SGL_API extern sgl_PostProcess* sgl_PostProcess_Create(sgl_GraphicsDevice* device);
+SGL_API extern sgl_PostProcess* sgl_PostProcess_Create(sgl_GraphicsDevice* device, size_t uniformCount);
+SGL_API extern void sgl_PostProcess_AddUniformBuffer(sgl_PostProcess* pp, struct sgl_UniformBuffer* buffer, size_t index);
 
 SGL_API extern sgl_Shader* sgl_PostProcess_GetShader(sgl_PostProcess* pp);
 SGL_API extern void sgl_PostProcess_Bind(sgl_PostProcess* pp);
