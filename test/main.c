@@ -219,20 +219,23 @@ int main(int argc, char** argv)
     sgl_VertexArray_AddQuad(va, q);
 
     sgl_Shader* shader;
-    sgl_Shader* postProcessShader;
+    sgl_PostProcess* postProcessEffect = sgl_PostProcess_Create(gpu);
 
     if (cfg.backend == sgl_Backend_DIRECTX11)
     {
-        shader = sgl_Shader_Create_Source(gpu, VertexShaderSourceDX, PixelShaderSourceDX, layout);
-        postProcessShader = sgl_Shader_Create_Source(gpu, PostProcessEffectVertexHLSL, PostProcessEffectPixelHLSL, gpu->screenQuadLayout);
+        shader = sgl_Shader_Create(gpu, layout);
+        sgl_Shader_Load_Source(shader, VertexShaderSourceDX, PixelShaderSourceDX);
+
+        sgl_Shader_Load_Source(postProcessEffect->shader, PostProcessEffectVertexHLSL, PostProcessEffectPixelHLSL);
     }
     else
     {
-        shader = sgl_Shader_Create_Source(gpu, VertexShaderSourceGL, FragmentShaderSourceGL, layout);
-        postProcessShader = sgl_Shader_Create_Source(gpu, PostProcessEffectVertexGL, PostProcessEffectFragmentGL, gpu->screenQuadLayout);
+        shader = sgl_Shader_Create(gpu, layout);
+        sgl_Shader_Load_Source(shader, VertexShaderSourceGL, FragmentShaderSourceGL);
+
+        sgl_Shader_Load_Source(postProcessEffect->shader, PostProcessEffectVertexGL, PostProcessEffectFragmentGL);
     }
 
-    sgl_PostProcess* postProcessEffect = sgl_PostProcess_Create(gpu, postProcessShader);
     sgl_GraphicsDevice_AddEffect(gpu, postProcessEffect);
 
     UB ubData;
