@@ -43,7 +43,7 @@ add_library(SGL SHARED
     src/SGL/Graphics/Backends/OpenGL/GLShader.h
     src/SGL/Graphics/Backends/OpenGL/GLShader.cpp
     src/SGL/Graphics/Shader.cpp
-    src/SGL/IResource.h
+    
     src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h
     src/SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.cpp
     src/SGL/Maths/Vec3.h
