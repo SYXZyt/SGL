@@ -167,8 +167,15 @@ float4 main(PSInput input) : SV_TARGET
         [StructLayout(LayoutKind.Sequential, Pack = 16)]
         private struct UB
         {
-            public Mat4 View;
-            public Mat4 Proj;
+            [ImGuiDrag] public Mat4 View;
+            [ImGuiDrag] public Mat4 Proj;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 16)]
+        private struct PostProcessEffectUniform
+        {
+            public float Time;
+            public Vec3 __padding;
         }
 
         private static void Main(string[] _)
@@ -286,9 +293,13 @@ float4 main(PSInput input) : SV_TARGET
                         ub.Upload();
                     }
 
-                    device.ImGui_RenderDrawData();
+                    ImGui.Begin("UB");
+                    ImGuiInspector.Edit(ub);
+                    ImGui.End();
 
                     device.EndFrame();
+                    device.ImGui_RenderDrawData();
+
                     device.SwapBuffer();
                 }
 

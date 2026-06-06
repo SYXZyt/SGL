@@ -15,6 +15,7 @@
 #include <SGL/Graphics/PostProcess.h>
 #include <SGL/Graphics/Texture2D.h>
 #include <SGL/Graphics/Texture2DArray.h>
+#include <stdio.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
@@ -203,6 +204,7 @@ int main(int argc, char** argv)
         sgl_VertexLayout_Add(layout, pos);
         sgl_VertexLayout_Add(layout, uv);
     }
+
 
     sgl_VertexArray* va = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
 

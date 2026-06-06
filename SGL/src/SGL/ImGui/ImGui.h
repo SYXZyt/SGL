@@ -1,6 +1,7 @@
 #pragma once
 #include <SGL/SGL.h>
 #include <SGL/Maths/Vec2.h>
+#include <SGL/Maths/Mat4.h>
 #include <SGL/Colour.h>
 
 SGL_BEGIN
@@ -236,6 +237,7 @@ SGL_API extern bool sgl_InputText(const char* text, char* buffer, size_t bufferS
 SGL_API extern bool sgl_InputInt(const char* text, int* v, int step, int stepFast, sgl_InputTextFlags flags);
 SGL_API extern bool sgl_InputFloat(const char* text, float* v, float step, float stepFast, sgl_InputTextFlags flags);
 SGL_API extern bool sgl_InputVec2(const char* text, sgl_Vec2* v, sgl_InputTextFlags flags);
+SGL_API extern bool sgl_InputMat4(const char* text, sgl_Mat4* v, sgl_InputTextFlags flags);
 
 SGL_API extern bool sgl_SliderFloat(const char* text, float* v, float min, float max);
 SGL_API extern bool sgl_SliderAngle(const char* text, float* v, float min, float max);
@@ -244,6 +246,7 @@ SGL_API extern bool sgl_SliderInt(const char* text, int* v, int min, int max);
 SGL_API extern bool sgl_DragFloat(const char* text, float* v, float speed, float min, float max);
 SGL_API extern bool sgl_DragInt(const char* text, int* v, float speed, int min, int max);
 SGL_API extern bool sgl_DragVec2(const char* text, sgl_Vec2* v, float speed, float min, float max);
+SGL_API extern bool sgl_DragMat4(const char* text, sgl_Mat4* v, float speed, float min, float max);
 
 SGL_API extern bool sgl_Checkbox(const char* text, bool* v);
 

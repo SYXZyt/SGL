@@ -325,6 +325,47 @@ bool sgl_InputVec2(const char* text, sgl_Vec2* v, sgl_InputTextFlags flags) {
     return ImGui::InputFloat2(text, &v->x, "%.3f", flags);
 }
 
+// God damn I miss RAII D:
+struct IDPush final
+{
+    IDPush(const char* id) {
+        ImGui::PushID(id);
+    }
+
+    ~IDPush() {
+        ImGui::PopID();
+    }
+};
+
+bool sgl_InputMat4(const char* text, sgl_Mat4* v, sgl_InputTextFlags flags)
+{
+    bool c0, c1, c2, c3;
+    c0 = c1 = c2 = c3 = false;
+
+    {
+        IDPush ID("Mat_0");
+        c0 = ImGui::InputFloat4(text, v->column[0], "%.3f", flags);
+    }
+
+    {
+        IDPush ID("Mat_1");
+        c1 = ImGui::InputFloat4(text, v->column[1], "%.3f", flags);
+    }
+
+    {
+        IDPush ID("Mat_2");
+        c2 = ImGui::InputFloat4(text, v->column[2], "%.3f", flags);
+    }
+
+    {
+        IDPush ID("Mat_3");
+        c3 = ImGui::InputFloat4(text, v->column[3], "%.3f", flags);
+    }
+
+
+    return c0 || c1 || c2 || c3;
+}
+
 bool sgl_SliderFloat(const char* text, float* v, float min, float max) {
     return ImGui::SliderFloat(text, v, min, max);
 }
@@ -347,6 +388,35 @@ bool sgl_DragInt(const char* text, int* v, float speed, int min, int max) {
 
 bool sgl_DragVec2(const char* text, sgl_Vec2* v, float speed, float min, float max) {
     return ImGui::DragFloat2(text, &v->x, speed, min, max);
+}
+
+bool sgl_DragMat4(const char* text, sgl_Mat4* v, float speed, float min, float max)
+{
+    bool c0, c1, c2, c3;
+    c0 = c1 = c2 = c3 = false;
+
+    {
+        IDPush ID("Mat_0");
+        c0 = ImGui::DragFloat4(text, v->column[0], speed, min, max);
+    }
+
+    {
+        IDPush ID("Mat_1");
+        c1 = ImGui::DragFloat4(text, v->column[1], speed, min, max);
+    }
+
+    {
+        IDPush ID("Mat_2");
+        c2 = ImGui::DragFloat4(text, v->column[2], speed, min, max);
+    }
+
+    {
+        IDPush ID("Mat_3");
+        c3 = ImGui::DragFloat4(text, v->column[3], speed, min, max);
+    }
+
+
+    return c0 || c1 || c2 || c3;
 }
 
 bool sgl_Checkbox(const char* text, bool* v) {

@@ -1,4 +1,5 @@
-﻿using SGLNet.Interop;
+﻿using SGLNet.Graphics;
+using SGLNet.Interop;
 using SGLNet.Maths;
 using System.Runtime.InteropServices;
 
@@ -175,6 +176,15 @@ namespace SGLNet
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_InputMat4_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            Mat4* v,
+            uint flags
+            );
+        internal static sgl_InputMat4_ptr sgl_InputMat4;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
         internal unsafe delegate bool sgl_SliderFloat_ptr(
             [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
             float* v,
@@ -182,16 +192,6 @@ namespace SGLNet
             float max
         );
         internal static sgl_SliderFloat_ptr sgl_SliderFloat;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        [return: MarshalAs(UnmanagedType.U1)]
-        internal unsafe delegate bool sgl_SliderAngle_ptr(
-            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
-            float* v,
-            float min,
-            float max
-        );
-        internal static sgl_SliderAngle_ptr sgl_SliderAngle;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -235,6 +235,17 @@ namespace SGLNet
             float max
         );
         internal static sgl_DragVec2_ptr sgl_DragVec2;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        internal unsafe delegate bool sgl_DragMat4_ptr(
+            [MarshalAs(UnmanagedType.LPUTF8Str)] string text,
+            Mat4* v,
+            float speed,
+            float min,
+            float max
+        );
+        internal static sgl_DragMat4_ptr sgl_DragMat4;
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.U1)]
@@ -308,12 +319,13 @@ namespace SGLNet
             sgl_InputInt ??= Native.GetFunction<sgl_InputInt_ptr>();
             sgl_InputFloat ??= Native.GetFunction<sgl_InputFloat_ptr>();
             sgl_InputVec2 ??= Native.GetFunction<sgl_InputVec2_ptr>();
+            sgl_InputMat4 ??= Native.GetFunction<sgl_InputMat4_ptr>();
             sgl_SliderFloat ??= Native.GetFunction<sgl_SliderFloat_ptr>();
-            sgl_SliderAngle ??= Native.GetFunction<sgl_SliderAngle_ptr>();
             sgl_SliderInt ??= Native.GetFunction<sgl_SliderInt_ptr>();
             sgl_DragFloat ??= Native.GetFunction<sgl_DragFloat_ptr>();
             sgl_DragInt ??= Native.GetFunction<sgl_DragInt_ptr>();
             sgl_DragVec2 ??= Native.GetFunction<sgl_DragVec2_ptr>();
+            sgl_DragMat4 ??= Native.GetFunction<sgl_DragMat4_ptr>();
             sgl_Checkbox ??= Native.GetFunction<sgl_Checkbox_ptr>();
             sgl_CollapsableHeader ??= Native.GetFunction<sgl_CollapsableHeader_ptr>();
             sgl_TreeNode ??= Native.GetFunction<sgl_TreeNode_ptr>();
@@ -658,21 +670,21 @@ namespace SGLNet
             }
         }
 
+        public static bool InputMat4(string label, ref Mat4 value, InputTextFlags flags = InputTextFlags.NONE)
+        {
+            unsafe
+            {
+                fixed (Mat4* p = &value)
+                    return sgl_InputMat4(label, p, (uint)flags);
+            }
+        }
+
         public static bool SliderFloat(string label, ref float value, float min, float max)
         {
             unsafe
             {
                 fixed (float* p = &value)
                     return sgl_SliderFloat(label, p, min, max);
-            }
-        }
-
-        public static bool SliderAngle(string label, ref float angleRad, float minDeg = -360, float maxDeg = 360)
-        {
-            unsafe
-            {
-                fixed (float* p = &angleRad)
-                    return sgl_SliderAngle(label, p, minDeg, minDeg);
             }
         }
 
@@ -712,6 +724,15 @@ namespace SGLNet
             }
         }
 
+        public static bool DragMat4(string label, ref Mat4 value, float speed, float min = 0, float max = 0)
+        {
+            unsafe
+            {
+                fixed (Mat4* p = &value)
+                    return sgl_DragMat4(label, p, speed, min, max);
+            }
+        }
+
         public static bool Checkbox(string label, ref bool v)
         {
             unsafe
@@ -729,5 +750,211 @@ namespace SGLNet
 
         public static void TreePop() =>
             sgl_TreePop();
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class ImGuiInputAttribute(bool hasStep = false, float step = 0f, bool hasStepFast = false, float stepFast = 0f) : Attribute
+    {
+        public bool HasStep = hasStep;
+        public float Step = step;
+
+        public bool HasStepFast = hasStepFast;
+        public float StepFast = stepFast;
+    }
+
+    [AttributeUsage(AttributeTargets.Field)]
+    public sealed class ImGuiDragAttribute(float speed = 0.1f, float min = 0f, float max = 0f) : Attribute
+    {
+        public float Speed = speed;
+        public float Min = min;
+        public float Max = max;
+    }
+
+    public static class ImGuiInspector
+    {
+        public static bool Edit<T>(UniformBuffer<T> uniformBuffer) where T : unmanaged
+        {
+            if (Edit(ref uniformBuffer.Data))
+            {
+                uniformBuffer.Upload();
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool Edit<T>(ref T value) where T : unmanaged
+        {
+            bool changed = false;
+
+            object boxed = value;
+
+            foreach (var field in typeof(T).GetFields())
+            {
+                object fieldValue = field.GetValue(boxed);
+
+                var attrDrag = (ImGuiDragAttribute)Attribute.GetCustomAttribute(field, typeof(ImGuiDragAttribute));
+                var attrInput = (ImGuiInputAttribute)Attribute.GetCustomAttribute(field, typeof(ImGuiInputAttribute));
+
+                switch (fieldValue)
+                {
+                    case int i:
+                    {
+                        int v = i;
+
+                        if (attrDrag is not null)
+                        {
+                            float speed = attrDrag.Speed;
+                            int min = (int)attrDrag.Min;
+                            int max = (int)attrDrag.Max;
+
+                            if (ImGui.DragInt(field.Name, ref v, speed, min, max))
+                            {
+                                field.SetValue(boxed, v);
+                                changed = true;
+                            }
+                        }
+                        else if (attrInput is not null)
+                        {
+                            bool hasStep = attrInput.HasStep;
+                            bool hasStepFast = attrInput.HasStepFast;
+
+                            int step = attrInput.HasStep ? (int)attrInput.Step : 1;
+                            int stepFast = attrInput.HasStepFast ? (int)attrInput.StepFast : 100;
+
+                            if (ImGui.InputInt(field.Name, ref v, step, stepFast))
+                            {
+                                field.SetValue(boxed, v);
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            if (ImGui.InputInt(field.Name, ref v))
+                            {
+                                field.SetValue(boxed, v);
+                                changed = true;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case float f:
+                    {
+                        float v = f;
+
+                        if (attrDrag is not null)
+                        {
+                            float speed = attrDrag.Speed;
+                            float min = attrDrag.Min;
+                            float max = attrDrag.Max;
+
+                            if (ImGui.DragFloat(field.Name, ref v, speed, min, max))
+                            {
+                                field.SetValue(boxed, v);
+                                changed = true;
+                            }
+                        }
+                        else if (attrInput is not null)
+                        {
+                            bool hasStep = attrInput.HasStep;
+                            bool hasStepFast = attrInput.HasStepFast;
+
+                            float step = attrInput.HasStep ? attrInput.Step : 0f;
+                            float stepFast = attrInput.HasStepFast ? attrInput.StepFast : 0f;
+
+                            if (ImGui.InputFloat(field.Name, ref v, step, stepFast))
+                            {
+                                field.SetValue(boxed, v);
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            if (ImGui.InputFloat(field.Name, ref v))
+                            {
+                                field.SetValue(boxed, v);
+                                changed = true;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case bool b:
+                    {
+                        if (ImGui.Checkbox(field.Name, ref b))
+                        {
+                            field.SetValue(boxed, b);
+                            changed = true;
+                        }
+
+                        break;
+                    }
+
+                    case Vec2 v:
+                    {
+                        Vec2 v2 = v;
+
+                        if (attrDrag is not null)
+                        {
+                            float speed = attrDrag.Speed;
+                            float min = attrDrag.Min;
+                            float max = attrDrag.Max;
+
+                            if (ImGui.DragVec2(field.Name, ref v2, speed, min, max))
+                            {
+                                field.SetValue(boxed, v2);
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            if (ImGui.InputVec2(field.Name, ref v2))
+                            {
+                                field.SetValue(boxed, v2);
+                                changed = true;
+                            }
+                        }
+
+                        break;
+                    }
+
+                    case Mat4 m:
+                    {
+                        Mat4 m4 = m;
+
+                        if (attrDrag is not null)
+                        {
+                            float speed = attrDrag.Speed;
+                            float min = attrDrag.Min;
+                            float max = attrDrag.Max;
+
+                            if (ImGui.DragMat4(field.Name, ref m4, speed, min, max))
+                            {
+                                field.SetValue(boxed, m4);
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            if (ImGui.InputMat4(field.Name, ref m4))
+                            {
+                                field.SetValue(boxed, m4);
+                                changed = true;
+                            }
+                        }
+
+                        break;
+                    }
+                }
+            }
+
+            if (changed)
+                value = (T)boxed;
+
+            return changed;
+        }
     }
 }
