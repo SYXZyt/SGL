@@ -199,7 +199,7 @@ float4 main(PSInput input) : SV_TARGET
             cfg.enableImGui = true;
 
             cfg.backend = Backend.DIRECTX11;
-            //cfg.backend = Backend.OPENGL;
+            cfg.backend = Backend.OPENGL;
 
             Runtime.Init();
             Logger.Init();
@@ -215,7 +215,7 @@ float4 main(PSInput input) : SV_TARGET
                 layout.Add(Semantic.TEXCOORD, 12, ElementType.Type.VEC2);
 
                 using VertexArray va = new(device, 32, layout);
-                
+
                 const float scale = 0.5f;
                 const float x = 64f * scale;
                 const float y = 64f * scale;
@@ -244,8 +244,6 @@ float4 main(PSInput input) : SV_TARGET
                 else
                     shader.LoadFromSource(VertexShaderSourceDX, PixelShaderSourceDX);
 
-                window.Resize += (w, h) => { Console.WriteLine($"Resize: {w}x{h}"); };
-                
                 using UniformBuffer<UB> ub = new(device);
                 ub.Data.View = Mathf.View(Vec2.One, 0f);
                 ub.Data.Proj = Mathf.OrthographicGL(window.ScreenSize, 1f);
@@ -268,6 +266,12 @@ float4 main(PSInput input) : SV_TARGET
                     effect.Shader.LoadFromSource(PostProcessEffectVertexDX, PostProcessEffectPixelDX);
                 device.AddEffect(effect);
                 effect.AddUniforms(ppUb);
+
+                window.Resize += (w, h) =>
+                {
+                    ub.Data.Proj = Mathf.OrthographicGL(window.ScreenSize, 1f);
+                    ub.Upload();
+                };
 
                 while (!window.WantClose)
                 {
