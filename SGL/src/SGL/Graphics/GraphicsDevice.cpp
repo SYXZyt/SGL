@@ -5,6 +5,7 @@
 #include <SGL/Graphics/Backends/DirectX/DXDevice.h>
 #include <vector>
 #include <SGL/Util/Memory.h>
+#include <SGL/Graphics/PostProcess.h>
 
 static std::vector<sgl_PostProcess*>& GetEffectList(void* ptr) {
     return *((std::vector<sgl_PostProcess*>*)ptr);
@@ -19,6 +20,11 @@ struct alignas(16) PP_Vertex
 static void OnResize(sgl_Window* window, sgl_Vec2i newSize, void* userdata)
 {
     sgl_GraphicsDevice* device = (sgl_GraphicsDevice*)userdata;
+
+    auto& effects = GetEffectList(device->vecPtr);
+    for (sgl_PostProcess* effect : effects)
+        sgl_PostProcess_OnResize(effect);
+        
     device->vtable->Resize(device, newSize);
 }
 
