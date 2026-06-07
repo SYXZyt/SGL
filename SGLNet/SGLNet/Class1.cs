@@ -147,10 +147,21 @@ struct PSInput
     float2 UV : TEXCOORD0;
 };
 
+cbuffer Time : register(b0)
+{
+    float time;
+    float3 _pad;
+}
+
 float4 main(PSInput input) : SV_TARGET
 {
     float4 colour = FrameTexture.Sample(FrameSampler, input.UV);
-    colour.rgb = 1.0f - colour.rgb;
+    float3 rgb = colour.rgb;
+    float3 invRgb = 1 - rgb;
+
+    float wave = sin(time) * 0.5 + 0.5;
+    colour.rgb = lerp(rgb, invRgb, wave);
+
     return colour;
 }
 ";
@@ -174,6 +185,7 @@ float4 main(PSInput input) : SV_TARGET
         [StructLayout(LayoutKind.Sequential, Pack = 16)]
         private struct PostProcessEffectUniform
         {
+            [ImGuiDrag(speed: 0.01f, min: 0, max: 1)]
             public float Time;
             public Vec3 __padding;
         }
@@ -247,15 +259,21 @@ float4 main(PSInput input) : SV_TARGET
 
                 Vec2 position = Vec2.Zero;
 
-                PostProcess effect = new(device);
+                UniformBuffer<PostProcessEffectUniform> ppUb = new(device);
+
+                PostProcess effect = new(device, 1);
                 if (cfg.backend == Backend.OPENGL)
                     effect.Shader.LoadFromSource(PostProcessEffectVertexGL, PostProcessEffectFragmentGL);
                 else
                     effect.Shader.LoadFromSource(PostProcessEffectVertexDX, PostProcessEffectPixelDX);
                 device.AddEffect(effect);
+                effect.AddUniforms(ppUb);
 
                 while (!window.WantClose)
                 {
+                    ppUb.Data.Time += 0.02f;
+                    ppUb.Upload();
+
                     {
                         Vec2 movement = Vec2.Zero;
 
@@ -293,8 +311,8 @@ float4 main(PSInput input) : SV_TARGET
                         ub.Upload();
                     }
 
-                    ImGui.Begin("UB");
-                    ImGuiInspector.Edit(ub);
+                    ImGui.Begin("Post Process");
+                    ImGuiInspector.Edit(effect);
                     ImGui.End();
 
                     device.EndFrame();

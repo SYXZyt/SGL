@@ -770,8 +770,16 @@ namespace SGLNet
         public float Max = max;
     }
 
+    public interface IImGuiEdit
+    {
+        public void Edit();
+    }
+
     public static class ImGuiInspector
     {
+        public static void Edit<T>(T obj) where T : IImGuiEdit =>
+            obj.Edit();
+
         public static bool Edit<T>(UniformBuffer<T> uniformBuffer) where T : unmanaged
         {
             if (Edit(ref uniformBuffer.Data))

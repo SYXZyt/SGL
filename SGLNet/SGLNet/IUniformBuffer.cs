@@ -6,5 +6,7 @@
 
         public void Bind(uint slot);
         public void Upload();
+
+        public bool ImGuiEdit();
     }
 }

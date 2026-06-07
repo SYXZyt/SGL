@@ -44,6 +44,17 @@ namespace SGLNet.Graphics
         public ref T Data =>
             ref mData;
 
+        public bool ImGuiEdit()
+        {
+            if (ImGuiInspector.Edit(ref mData))
+            {
+                Upload();
+                return true;
+            }
+
+            return false;
+        }
+
         public void Dispose()
         {
             if (mHandle != IntPtr.Zero)
@@ -66,7 +77,6 @@ namespace SGLNet.Graphics
 
         public void Bind(uint slot) =>
             sgl_UniformBuffer_Bind(mHandle, slot);
-
 
         public UniformBuffer(GraphicsDevice device)
         {
