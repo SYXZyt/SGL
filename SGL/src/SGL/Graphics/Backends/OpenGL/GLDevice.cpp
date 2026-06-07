@@ -27,9 +27,33 @@ static void GLDevice_SetClearColour(sgl_GraphicsDevice* dev, sgl_Colour colour)
 
 static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 {
+    GetSelf;
+
+    if (newSize.width <= 0 || newSize.height <= 0)
+        return;
+
     dev->width = newSize.width;
     dev->height = newSize.height;
+
     glViewport(0, 0, dev->width, dev->height);
+
+    glDeleteTextures(1, &self->sceneTexture);
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &self->sceneTexture);
+    glTextureStorage2D(
+        self->sceneTexture,
+        1,
+        GL_RGBA8,
+        (GLsizei)dev->width,
+        (GLsizei)dev->height
+    );
+
+    glNamedFramebufferTexture(
+        self->sceneFBO,
+        GL_COLOR_ATTACHMENT0,
+        self->sceneTexture,
+        0
+    );
 }
 
 static void GLDevice_BeginFrame(sgl_GraphicsDevice* dev)
