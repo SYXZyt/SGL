@@ -33,4 +33,7 @@ SGL_API extern void sgl_PostProcess_Bind(sgl_PostProcess* pp);
 SGL_API extern void sgl_PostProcess_OnResize(sgl_PostProcess* pp);  // <-- The graphics pipeline will call this automatically, you shouldn't ever need to do it manually
 SGL_API extern void sgl_PostProcess_Destroy(sgl_PostProcess* pp);
 
+SGL_API extern void sgl_PostProcess_SetEnabled(sgl_PostProcess* pp, bool enabled);
+SGL_API extern bool sgl_PostProcess_GetEnabled(sgl_PostProcess* pp);
+
 SGL_END

@@ -65,3 +65,11 @@ void sgl_PostProcess_Destroy(sgl_PostProcess* pp)
     sgl_Free(pp->uniforms);
     pp->vtable->Destroy(pp);
 }
+
+void sgl_PostProcess_SetEnabled(sgl_PostProcess* pp, bool enabled) {
+    pp->enabled = enabled;
+}
+
+bool sgl_PostProcess_GetEnabled(sgl_PostProcess* pp) {
+    return pp->enabled;
+}

@@ -21,6 +21,15 @@ namespace SGLNet.Graphics
         private delegate IntPtr sgl_PostProcess_GetShader_ptr(IntPtr pp);
         private static sgl_PostProcess_GetShader_ptr sgl_PostProcess_GetShader;
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void sgl_PostProcess_SetEnabled_ptr(IntPtr pp, [MarshalAs(UnmanagedType.U1)] bool enabled);
+        private static sgl_PostProcess_SetEnabled_ptr sgl_PostProcess_SetEnabled;
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.U1)]
+        private delegate bool sgl_PostProcess_GetEnabled_ptr(IntPtr pp);
+        private static sgl_PostProcess_GetEnabled_ptr sgl_PostProcess_GetEnabled;
+
         private readonly List<IUniformBuffer> mUniforms = [];
 
         internal static void Init_FuncPtr()
@@ -29,6 +38,8 @@ namespace SGLNet.Graphics
             sgl_PostProcess_Destroy ??= Native.GetFunction<sgl_PostProcess_Destroy_ptr>();
             sgl_PostProcess_GetShader ??= Native.GetFunction<sgl_PostProcess_GetShader_ptr>();
             sgl_PostProcess_AddUniformBuffer ??= Native.GetFunction<sgl_PostProcess_AddUniformBuffer_ptr>();
+            sgl_PostProcess_SetEnabled ??= Native.GetFunction<sgl_PostProcess_SetEnabled_ptr>();
+            sgl_PostProcess_GetEnabled ??= Native.GetFunction<sgl_PostProcess_GetEnabled_ptr>();
         }
 
         private IntPtr mHandle;
@@ -39,13 +50,16 @@ namespace SGLNet.Graphics
         public Shader Shader =>
             mShader;
 
+        public bool Enabled
+        {
+            get => sgl_PostProcess_GetEnabled(mHandle);
+            set => sgl_PostProcess_SetEnabled(mHandle, value);
+        }
+
         public void Dispose()
         {
             sgl_PostProcess_Destroy(mHandle);
             mHandle = IntPtr.Zero;
-
-            foreach (IUniformBuffer buffer in mUniforms)
-                buffer.Dispose();
 
             GC.SuppressFinalize(this);
         }
@@ -58,6 +72,10 @@ namespace SGLNet.Graphics
 
         void IImGuiEdit.Edit()
         {
+            bool enabled = Enabled;
+            if (ImGui.Checkbox("Enabled", ref enabled))
+                Enabled = enabled;
+
             foreach (IUniformBuffer buffer in mUniforms)
                 buffer.ImGuiEdit();
         }

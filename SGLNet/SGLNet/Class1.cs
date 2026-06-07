@@ -199,7 +199,7 @@ float4 main(PSInput input) : SV_TARGET
             cfg.enableImGui = true;
 
             cfg.backend = Backend.DIRECTX11;
-            cfg.backend = Backend.OPENGL;
+            //cfg.backend = Backend.OPENGL;
 
             Runtime.Init();
             Logger.Init();
@@ -256,8 +256,8 @@ float4 main(PSInput input) : SV_TARGET
                 device.ImGui_Init();
 
                 Vec2 position = Vec2.Zero;
-
-                UniformBuffer<PostProcessEffectUniform> ppUb = new(device);
+                 
+                using UniformBuffer<PostProcessEffectUniform> ppUb = new(device);
 
                 PostProcess effect = new(device, 1);
                 if (cfg.backend == Backend.OPENGL)
