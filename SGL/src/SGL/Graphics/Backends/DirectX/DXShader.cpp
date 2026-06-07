@@ -69,6 +69,13 @@ static void DXInitialise(sgl_Shader* shr)
 
     ID3DBlob* errors = nullptr;
 
+    UINT flags = D3DCOMPILE_ENABLE_STRICTNESS;
+
+#ifdef _DEBUG
+    flags |= D3DCOMPILE_DEBUG;
+    flags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
     HRESULT hr = D3DCompile(
         shr->data_vcode.str,
         shr->data_vcode.len,
@@ -77,7 +84,7 @@ static void DXInitialise(sgl_Shader* shr)
         nullptr,
         "main",
         "vs_5_0",
-        0,
+        flags,
         0,
         &self->vertexBlob,
         &errors

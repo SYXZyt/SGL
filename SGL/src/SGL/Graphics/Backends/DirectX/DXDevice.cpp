@@ -381,6 +381,11 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
 {
     sgl_DXDevice* device = sgl::Memory::New<sgl_DXDevice>();
 
+    UINT deviceFlags = 0;
+#ifdef _DEBUG
+    deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
+
     device->base.clearColour = sgl_Col_CornflowerBlue;
     device->base.window = window;
     device->base.width = window->screenSize.width;
@@ -397,7 +402,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     swapDesc.SampleDesc.Count = 1;
     swapDesc.Windowed = TRUE;
 
-    HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &swapDesc, &device->swapchain, &device->device, nullptr, &device->ctx);
+    HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, nullptr, 0, D3D11_SDK_VERSION, &swapDesc, &device->swapchain, &device->device, nullptr, &device->ctx);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create device and swapchain", hr);
