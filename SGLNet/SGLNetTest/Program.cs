@@ -1,11 +1,12 @@
-﻿using SGLNet.Graphics;
+﻿using SGLNet;
+using SGLNet.Graphics;
 using SGLNet.Input;
 using SGLNet.Interop;
 using SGLNet.Maths;
 using SGLNet.Util;
 using System.Runtime.InteropServices;
 
-namespace SGLNet
+namespace SGLNetTest
 {
     internal class Class1
     {
@@ -256,7 +257,7 @@ float4 main(PSInput input) : SV_TARGET
                 device.ImGui_Init();
 
                 Vec2 position = Vec2.Zero;
-                 
+
                 using UniformBuffer<PostProcessEffectUniform> ppUb = new(device);
 
                 PostProcess effect = new(device, 1);

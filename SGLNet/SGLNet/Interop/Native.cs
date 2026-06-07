@@ -10,7 +10,7 @@ using System.Text;
 
 namespace SGLNet.Interop
 {
-    internal static class Native
+    public static class Native
     {
         private const string WindowsLib = "SGL";
         private const string LinuxLib = "libSGL";
