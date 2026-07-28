@@ -25,7 +25,13 @@ typedef struct sgl_VertexArray sgl_sealed
     uint32 vertexCapacity;
     uint32 vertexSize;
 
+    // If indexCount is 0, backends draw with the non-indexed path
+    uint32* indexData;
+    uint32 indexCount;
+    uint32 indexCapacity;
+
     bool needsVertexUpload;
+    bool needsIndexUpload;
     bool layoutDirty;
 } sgl_VertexArray;
 
@@ -61,5 +67,9 @@ SGL_API extern void sgl_VertexArray_Set(sgl_VertexArray* va, byte* vertices, uin
 SGL_API extern void sgl_VertexArray_AddVertex(sgl_VertexArray* va, void* vertex);
 SGL_API extern void sgl_VertexArray_AddQuad(sgl_VertexArray* va, sgl_VertexArray_Quad quad);
 SGL_API extern void sgl_VertexArray_AddTri(sgl_VertexArray* va, sgl_VertexArray_Tri tri);
+
+SGL_API extern void sgl_VertexArray_SetIndices(sgl_VertexArray* va, const uint32* indices, uint32 indexCount);
+SGL_API extern void sgl_VertexArray_AddIndex(sgl_VertexArray* va, uint32 index);
+SGL_API extern void sgl_VertexArray_AddTriIndices(sgl_VertexArray* va, uint32 i0, uint32 i1, uint32 i2);
 
 SGL_END

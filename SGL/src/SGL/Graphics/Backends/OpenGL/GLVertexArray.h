@@ -8,7 +8,7 @@ SGL_BEGIN
 typedef struct sgl_GLVertexArray sgl_sealed
 {
     sgl_VertexArray base;
-    gluint vao, vbo;
+    gluint vao, vbo, ebo;
 
 } sgl_GLVertexArray;
 

@@ -28,6 +28,19 @@ static void AddRawVertex(sgl_VertexArray* va, const void* v)
     va->needsVertexUpload = true;
 }
 
+static void EnsureIndexCapacity(sgl_VertexArray* va, uint32 required)
+{
+    if (required <= va->indexCapacity)
+        return;
+
+    uint32 newCap = va->indexCapacity == 0 ? 16 : va->indexCapacity * 2;
+    while (newCap < required)
+        newCap *= 2;
+
+    va->indexData = (uint32*)sgl_Realloc(va->indexData, (size_t)newCap * sizeof(uint32));
+    va->indexCapacity = newCap;
+}
+
 sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, void* br, void* bl)
 {
     sgl_VertexArray_Triangulated result{};
@@ -79,6 +92,7 @@ void sgl_VertexArray_Bind(sgl_VertexArray* va) {
 void sgl_VertexArray_Destroy(sgl_VertexArray* va)
 {
     sgl_Free(va->vertexData);
+    sgl_Free(va->indexData);
     va->vtable->Destroy(va);
 }
 
@@ -115,4 +129,31 @@ void sgl_VertexArray_AddTri(sgl_VertexArray* va, sgl_VertexArray_Tri tri)
     AddRawVertex(va, tri.v0);
     AddRawVertex(va, tri.v1);
     AddRawVertex(va, tri.v2);
+}
+
+void sgl_VertexArray_SetIndices(sgl_VertexArray* va, const uint32* indices, uint32 indexCount)
+{
+    va->indexCount = indexCount;
+    va->indexCapacity = indexCount;
+
+    va->indexData = (uint32*)sgl_Realloc(va->indexData, (size_t)indexCount * sizeof(uint32));
+    std::memcpy(va->indexData, indices, (size_t)indexCount * sizeof(uint32));
+
+    va->needsIndexUpload = true;
+}
+
+void sgl_VertexArray_AddIndex(sgl_VertexArray* va, uint32 index)
+{
+    EnsureIndexCapacity(va, va->indexCount + 1);
+
+    va->indexData[va->indexCount] = index;
+    ++va->indexCount;
+    va->needsIndexUpload = true;
+}
+
+void sgl_VertexArray_AddTriIndices(sgl_VertexArray* va, uint32 i0, uint32 i1, uint32 i2)
+{
+    sgl_VertexArray_AddIndex(va, i0);
+    sgl_VertexArray_AddIndex(va, i1);
+    sgl_VertexArray_AddIndex(va, i2);
 }

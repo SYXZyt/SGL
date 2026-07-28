@@ -1,5 +1,4 @@
 #include "Texture2D.h"
-#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
 #include <SGL/Util/Error.h>
 #include <SGL/Graphics/Backends/DirectX/DXTexture2D.h>

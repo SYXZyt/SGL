@@ -188,26 +188,34 @@ typedef struct sgl_alignas(16) PostProcessEffectUniforms
 /* ---------------------------------------------------------------------
  * Cube helpers
  *
- * These build on the same sgl_VertexArray_AddQuad() pattern the existing
- * ground quad uses: 4 verts per face, 6 faces, no index buffer.
+ * 4 unique vertices per face, indexed as two triangles, 6 faces.
+ * Faces can't share vertices with each other even though their corner
+ * positions coincide in 3D space: each face needs its own UV at that
+ * corner (a cube's per-face 0-1 texture tiling requires it), so this is
+ * 24 unique (pos, uv) vertices + 36 indices, not 8 vertices + 36 indices.
  * Position convention follows the original quad (tl/tr have +Y, bl/br
  * have -Y) so it matches how the rest of this file lays out geometry.
  * --------------------------------------------------------------------- */
 
 static void AddCubeFace(sgl_VertexArray* va, sgl_Vec3 tl, sgl_Vec3 tr, sgl_Vec3 bl, sgl_Vec3 br)
 {
-    Vertex vtl = { .pos = tl, .uv = sgl_Vec2_Zero };
-    Vertex vtr = { .pos = tr, .uv = sgl_Vec2_Right };
-    Vertex vbl = { .pos = bl, .uv = sgl_Vec2_Up };
-    Vertex vbr = { .pos = br, .uv = sgl_Vec2_One };
+    Vertex vtl = { .pos = tl, .uv = sgl_Vec2_Up };
+    Vertex vtr = { .pos = tr, .uv = sgl_Vec2_One };
+    Vertex vbl = { .pos = bl, .uv = sgl_Vec2_Zero };
+    Vertex vbr = { .pos = br, .uv = sgl_Vec2_Right };
 
-    /* Reusing the flat ground-quad's tl/tr/bl/br order on each of the 6 cube
-     * faces produces a triangle winding that faces inward on every face, so
-     * back-face culling removes the whole cube. Swapping the diagonal pairs
-     * here only reorders the two triangles (fixing the winding); it doesn't
-     * touch which UV is attached to which physical corner. */
-    sgl_VertexArray_Quad q = { .tl = &vtr, .tr = &vtl, .bl = &vbr, .br = &vbl };
-    sgl_VertexArray_AddQuad(va, q);
+    uint32 base = va->vertexCount;
+
+    sgl_VertexArray_AddVertex(va, &vtl);
+    sgl_VertexArray_AddVertex(va, &vtr);
+    sgl_VertexArray_AddVertex(va, &vbl);
+    sgl_VertexArray_AddVertex(va, &vbr);
+
+    /* Same winding as sgl_Triangulate() would've produced via AddQuad with
+     * the diagonal-swapped {tl=vtr, tr=vtl, bl=vbr, br=vbl} that fixed the
+     * inward-facing cube: t0=(vtr,vtl,vbl), t1=(vtr,vbl,vbr). */
+    sgl_VertexArray_AddTriIndices(va, base + 1, base + 0, base + 2);
+    sgl_VertexArray_AddTriIndices(va, base + 1, base + 2, base + 3);
 }
 
 static void AddCube(sgl_VertexArray* va, sgl_Vec3 center, float halfSize)
@@ -283,13 +291,20 @@ int main(int argc, char** argv)
     const float x = 64.f * scale;
     const float y = 64.f * scale;
 
-    Vertex tl = { .pos = sgl_Vec3_New_ScalarXYZ(-x,  y, 0), .uv = sgl_Vec2_Zero };
-    Vertex tr = { .pos = sgl_Vec3_New_ScalarXYZ(x,  y, 0), .uv = sgl_Vec2_Right };
-    Vertex bl = { .pos = sgl_Vec3_New_ScalarXYZ(-x, -y, 0), .uv = sgl_Vec2_Up };
-    Vertex br = { .pos = sgl_Vec3_New_ScalarXYZ(x, -y, 0), .uv = sgl_Vec2_One };
+    Vertex tl = { .pos = sgl_Vec3_New_ScalarXYZ(-x,  y, 0), .uv = sgl_Vec2_Up };
+    Vertex tr = { .pos = sgl_Vec3_New_ScalarXYZ(x,  y, 0), .uv = sgl_Vec2_One };
+    Vertex bl = { .pos = sgl_Vec3_New_ScalarXYZ(-x, -y, 0), .uv = sgl_Vec2_Zero };
+    Vertex br = { .pos = sgl_Vec3_New_ScalarXYZ(x, -y, 0), .uv = sgl_Vec2_Right };
 
-    sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
-    sgl_VertexArray_AddQuad(va, q);
+    sgl_VertexArray_AddVertex(va, &tl);
+    sgl_VertexArray_AddVertex(va, &tr);
+    sgl_VertexArray_AddVertex(va, &bl);
+    sgl_VertexArray_AddVertex(va, &br);
+
+    /* Same winding sgl_Triangulate() would've produced via AddQuad(tl,tr,bl,br):
+     * t0=(tl,tr,br), t1=(tl,br,bl). */
+    sgl_VertexArray_AddTriIndices(va, 0, 1, 3);
+    sgl_VertexArray_AddTriIndices(va, 0, 3, 2);
 
     /* --- New: a 3D cube, built in its own vertex array so it can sit
      * alongside the ground quad. Placed off to the side so the two

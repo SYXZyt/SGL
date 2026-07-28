@@ -14,6 +14,7 @@ add_library(SGL SHARED
     src/glad/glad.c
     src/osbridge.h
     src/osbridge.cpp
+    src/HeaderOnlyImpl.cpp
     src/SGL/SGL.h
     src/SGL/Window.h
     src/SGL/Window.cpp
@@ -120,6 +121,19 @@ target_compile_options(SGL PRIVATE
 )
 
 target_compile_definitions(SGL PRIVATE $<$<PLATFORM_ID:Windows>:SGL_DIRECTX>)
+
+# tiny_obj_loader.h's embedded fast_float (v8.0.2) detects C++20 constexpr
+# algorithm support via __cpp_lib_constexpr_algorithms and marks some of its
+# functions constexpr accordingly, but MSVC's constexpr-validation is
+# stricter than that detection accounts for and fails to compile those
+# functions under /std:c++latest (see fastfloat/fast_float upstream issues
+# for this same MSVC incompatibility). Since that macro is only ever defined
+# at C++20+, compiling this one file at C++17 makes fast_float's detection
+# correctly fall back to its non-constexpr path instead - stb_image and
+# tinyobjloader are both fine at C++17.
+if (MSVC)
+    set_source_files_properties(src/HeaderOnlyImpl.cpp PROPERTIES COMPILE_OPTIONS "/std:c++17")
+endif ()
 
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_definitions(SGL PRIVATE -D_DEBUG)

@@ -314,7 +314,10 @@ static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
     for (size_t i = 0; i < bufferCount; ++i)
         sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
 
-    self->ctx->Draw(va->vertexCount, 0);
+    if (va->indexCount > 0)
+        self->ctx->DrawIndexed(va->indexCount, 0, 0);
+    else
+        self->ctx->Draw(va->vertexCount, 0);
 }
 
 static void DXDevice_ImGui_Init(sgl_GraphicsDevice* dev)

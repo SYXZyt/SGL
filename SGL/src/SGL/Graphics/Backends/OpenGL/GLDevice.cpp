@@ -132,7 +132,10 @@ static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
     for (size_t i = 0; i < bufferCount; ++i)
         sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
 
-    glDrawArrays(GL_TRIANGLES, 0, va->vertexCount);
+    if (va->indexCount > 0)
+        glDrawElements(GL_TRIANGLES, va->indexCount, GL_UNSIGNED_INT, nullptr);
+    else
+        glDrawArrays(GL_TRIANGLES, 0, va->vertexCount);
 }
 
 static void GLDevice_ImGui_Init(sgl_GraphicsDevice* dev)

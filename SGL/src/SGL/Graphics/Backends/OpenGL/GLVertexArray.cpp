@@ -7,8 +7,9 @@
 static void GLDestroy(sgl_VertexArray* va)
 {
     GetSelf;
-     
+
     glDeleteBuffers(1, &self->vbo);
+    glDeleteBuffers(1, &self->ebo);
     glDeleteVertexArrays(1, &self->vao);
 
     sgl_VertexLayout_Destroy(va->layout);
@@ -28,6 +29,12 @@ static void GLBind(sgl_VertexArray* va)
     {
         glNamedBufferData(self->vbo, (GLsizeiptr)(va->vertexCount * va->vertexSize), va->vertexData, GL_DYNAMIC_DRAW);
         va->needsVertexUpload = false;
+    }
+
+    if (va->needsIndexUpload && va->indexData != nullptr && va->indexCount > 0)
+    {
+        glNamedBufferData(self->ebo, (GLsizeiptr)(va->indexCount * sizeof(uint32)), va->indexData, GL_DYNAMIC_DRAW);
+        va->needsIndexUpload = false;
     }
 }
 
@@ -139,13 +146,26 @@ sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* la
     va->base.vertexCapacity = 0;
     va->base.vertexSize = vertexSize;
 
+    va->base.indexData = nullptr;
+    va->base.indexCount = 0;
+    va->base.indexCapacity = 0;
+
     va->base.needsVertexUpload = true;
+    va->base.needsIndexUpload = true;
     va->base.layoutDirty = true;
 
-    glGenVertexArrays(1, &va->vao);
-    glGenBuffers(1, &va->vbo);
+    // glCreateBuffers/glCreateVertexArrays (not glGenBuffers/glGenVertexArrays):
+    // glGen* only reserves a name - the object isn't "real" until it's bound
+    // or written to at least once, so glVertexArrayElementBuffer() below
+    // would reject a glGenBuffers-named ebo that's never been touched yet
+    // (GL_INVALID_OPERATION: "Buffer name does not refer to a buffer object").
+    // glCreateBuffers/glCreateVertexArrays materialize the object immediately.
+    glCreateVertexArrays(1, &va->vao);
+    glCreateBuffers(1, &va->vbo);
+    glCreateBuffers(1, &va->ebo);
 
     ApplyVertexLayout(va->vbo, va->vao, layout, vertexSize);
+    glVertexArrayElementBuffer(va->vao, va->ebo);
 
     return va;
 }

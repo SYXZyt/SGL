@@ -10,6 +10,7 @@ typedef struct sgl_DXVertexArray sgl_sealed
 {
     sgl_VertexArray base;
     ID3D11Buffer* vertexBuffer;
+    ID3D11Buffer* indexBuffer;
 
 } sgl_DXVertexArray;
 

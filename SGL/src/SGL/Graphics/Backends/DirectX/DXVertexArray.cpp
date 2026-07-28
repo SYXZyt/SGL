@@ -22,6 +22,9 @@ static void DXDestroy(sgl_VertexArray* va)
     if (self->vertexBuffer)
         self->vertexBuffer->Release();
 
+    if (self->indexBuffer)
+        self->indexBuffer->Release();
+
     sgl_VertexLayout_Destroy(va->layout);
     sgl::Memory::Delete(self);
 }
@@ -61,10 +64,39 @@ static void DXBind(sgl_VertexArray* va)
         va->needsVertexUpload = false;
     }
 
+    if (va->needsIndexUpload)
+    {
+        if (self->indexBuffer)
+        {
+            self->indexBuffer->Release();
+            self->indexBuffer = nullptr;
+        }
+
+        if (va->indexCount > 0)
+        {
+            D3D11_BUFFER_DESC desc = {};
+            desc.ByteWidth = (UINT)(va->indexCount * sizeof(uint32));
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+
+            D3D11_SUBRESOURCE_DATA data = {};
+            data.pSysMem = va->indexData;
+
+            HRESULT hr = device->device->CreateBuffer(&desc, &data, &self->indexBuffer);
+            if (FAILED(hr))
+                ReportHRError("Failed to create index buffer", hr);
+        }
+
+        va->needsIndexUpload = false;
+    }
+
     UINT stride = va->vertexSize;
     UINT offset = 0;
 
     device->ctx->IASetVertexBuffers(0, 1, &self->vertexBuffer, &stride, &offset);
+
+    if (self->indexBuffer)
+        device->ctx->IASetIndexBuffer(self->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
     device->ctx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
@@ -86,10 +118,16 @@ sgl_DXVertexArray* sgl_DXVertexArray_New(uint32 vertexSize, sgl_VertexLayout* la
     va->base.vertexCapacity = 0;
     va->base.vertexSize = vertexSize;
 
+    va->base.indexData = nullptr;
+    va->base.indexCount = 0;
+    va->base.indexCapacity = 0;
+
     va->base.needsVertexUpload = true;
+    va->base.needsIndexUpload = true;
     va->base.layoutDirty = true;
 
     va->vertexBuffer = nullptr;
+    va->indexBuffer = nullptr;
 
     return va;
 }
