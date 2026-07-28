@@ -107,12 +107,11 @@ void sgl_ReportError(const char* message, const char* file, int line)
 
 #ifdef SGL_PATH
         {
-            std::wstring projectPath = ToWString(SGL_PATH);
             ReplaceAll(fname, L"\\", L"/");
 
-            size_t pos = fname.find(projectPath);
+            size_t pos = fname.find(L"SGL");
             if (pos != std::wstring::npos)
-                fname = fname.substr(pos + projectPath.length());
+                fname = fname.substr(pos);
         }
 
         wMsg += L"\n\nFile: " + fname;

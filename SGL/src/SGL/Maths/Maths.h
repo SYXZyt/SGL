@@ -152,6 +152,7 @@ SGL_API extern sgl_Mat4 sgl_Maths_Mat4_OrthographicGL(sgl_Vec2i screenSize, floa
 SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Perspective(float fovY, float aspectRatio, float nearPlane, float farPlane);
 
 SGL_API extern sgl_Mat4 sgl_Maths_Mat4_View(sgl_Vec3 position, float angle);
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_LookAt(sgl_Vec3 eye, sgl_Vec3 target, sgl_Vec3 up);
 
 SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Inverse(sgl_Mat4 mat);
 SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Transpose(sgl_Mat4 mat);
@@ -327,6 +328,7 @@ namespace sgl
         inline sgl_Mat4 OrthographicGL(sgl_Vec2i screenSize, float zoom) { return sgl_Maths_Mat4_OrthographicGL(screenSize, zoom); }
         inline sgl_Mat4 Perspective(float fovY, float aspectRatio, float nearPlane, float farPlane) { return sgl_Maths_Mat4_Perspective(fovY, aspectRatio, nearPlane, farPlane); }
         inline sgl_Mat4 View(sgl_Vec3 position, float angle) { return sgl_Maths_Mat4_View(position, angle); }
+        inline sgl_Mat4 LookAt(sgl_Vec3 eye, sgl_Vec3 target, sgl_Vec3 up) { return sgl_Maths_Mat4_LookAt(eye, target, up); }
         inline sgl_Mat4 Inverse(sgl_Mat4 mat) { return sgl_Maths_Mat4_Inverse(mat); }
         inline sgl_Mat4 Transpose(sgl_Mat4 mat) { return sgl_Maths_Mat4_Transpose(mat); }
         inline sgl_Mat4 Translation(sgl_Vec3 translation) { return sgl_Maths_Mat4_Translation(translation); }

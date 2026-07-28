@@ -31,6 +31,7 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
     window->wantsClose = false;
     window->cfg = cfg;
     window->callbacks = sgl::Memory::New<std::vector<sgl_Window_Resize_Callback>>();
+    window->pendingScroll = sgl_Vec2_Zero;
 
     if (!SDL_Init(SDL_INIT_VIDEO))
     {
@@ -97,6 +98,11 @@ void sgl_Window_PollEvents(sgl_Window* window)
 
                 break;
             }
+
+            case SDL_EVENT_MOUSE_WHEEL:
+                window->pendingScroll.x += event.wheel.x;
+                window->pendingScroll.y += event.wheel.y;
+                break;
 
             case SDL_EVENT_QUIT:
                 window->wantsClose = true;

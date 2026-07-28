@@ -44,6 +44,7 @@ typedef struct sgl_Window
     SDL_GLContext glContext;
 
     void* callbacks; // std::vector<sgl_Window_Resize_Callback>
+    sgl_Vec2 pendingScroll;
 
     bool wantsClose;
 

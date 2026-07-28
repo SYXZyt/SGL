@@ -21,5 +21,4 @@ SGL_API extern bool sgl_Keyboard_IsKeyDown(sgl_Keyboard* kb, sgl_Key key);
 SGL_API extern bool sgl_Keyboard_IsKeyUp(sgl_Keyboard* kb, sgl_Key key);
 SGL_API extern bool sgl_Keyboard_IsKeyPressed(sgl_Keyboard* kb, sgl_Key key);
 
-
 SGL_END

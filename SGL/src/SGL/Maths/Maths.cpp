@@ -369,6 +369,15 @@ sgl_Mat4 sgl_Maths_Mat4_View(sgl_Vec3 position, float angle)
     return FromGLM(view);
 }
 
+sgl_Mat4 sgl_Maths_Mat4_LookAt(sgl_Vec3 eye, sgl_Vec3 target, sgl_Vec3 up)
+{
+    glm::vec3 glmEye(eye.x, eye.y, eye.z);
+    glm::vec3 glmTarget(target.x, target.y, target.z);
+    glm::vec3 glmUp(up.x, up.y, up.z);
+
+    return FromGLM(glm::lookAt(glmEye, glmTarget, glmUp));
+}
+
 sgl_Mat4 sgl_Maths_Mat4_Inverse(sgl_Mat4 mat) {
     return FromGLM(glm::inverse(ToGLM(mat)));
 }

@@ -91,7 +91,7 @@ add_library(SGL SHARED
     src/SGL/Graphics/Texture2DArray.cpp
     src/SGL/Graphics/Backends/DirectX/DXTexture2DArray.h
     src/SGL/Graphics/Backends/DirectX/DXTexture2DArray.cpp
- "src/SGL/Graphics/PostProcess.h" "src/SGL/Graphics/Backends/OpenGL/GLPostProcess.h" "src/SGL/Graphics/Backends/OpenGL/GLPostProcess.cpp" "src/SGL/Graphics/PostProcess.cpp" "src/SGL/Graphics/Backends/DirectX/DXPostProcess.h" "src/SGL/Graphics/Backends/DirectX/DXPostProcess.cpp")
+ "src/SGL/Graphics/PostProcess.h" "src/SGL/Graphics/Backends/OpenGL/GLPostProcess.h" "src/SGL/Graphics/Backends/OpenGL/GLPostProcess.cpp" "src/SGL/Graphics/PostProcess.cpp" "src/SGL/Graphics/Backends/DirectX/DXPostProcess.h" "src/SGL/Graphics/Backends/DirectX/DXPostProcess.cpp" "src/SGL/Input/MouseButton.h" "src/SGL/Input/Mouse.h" "src/SGL/Input/Mouse.cpp")
 
 include(CMake/Dependencies.cmake)
 

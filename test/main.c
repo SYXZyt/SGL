@@ -12,6 +12,7 @@
 #include <SGL/Graphics/UniformBuffer.h>
 #include <SGL/ImGui/ImGui.h>
 #include <SGL/Input/Keyboard.h>
+#include <SGL/Input/Mouse.h>
 #include <SGL/Graphics/PostProcess.h>
 #include <SGL/Graphics/Texture2D.h>
 #include <SGL/Graphics/Texture2DArray.h>
@@ -240,7 +241,7 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     cfg.enableImGui = true;
 
-    cfg.backend = sgl_Backend_DIRECTX11;
+    //cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
@@ -248,6 +249,9 @@ int main(int argc, char** argv)
     sgl_GraphicsDevice_ImGui_Init(gpu);
 
     sgl_Keyboard* kb = sgl_Keyboard_New(window);
+
+    sgl_Mouse* mouse = sgl_Mouse_New(window);
+    sgl_Mouse_SetRelativeMode(mouse, true);
 
     sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
 
@@ -331,42 +335,72 @@ int main(int argc, char** argv)
 
     sgl_Texture* texture = sgl_Texture2DArray_New_File(gpu, "stone.png", sgl_Vec2i_New_Scalar(16));
 
-    sgl_Vec3 position = sgl_Vec3_Zero;
-    position.z = 150;
+    /* FPS camera state: position + yaw/pitch (radians). Yaw is measured so
+     * that forward = (sin(yaw), ., cos(yaw)); mouse moving right should turn
+     * the camera right, which - given sgl_Maths_Mat4_LookAt's actual screen
+     * axes - means DECREASING yaw (verified empirically: at yaw=0, world -X
+     * is what renders on the right side of the screen, not +X). */
+    sgl_Vec3 position = sgl_Vec3_New_ScalarXYZ(0.f, 0.f, 150.f);
+    float yaw = sgl_Maths_ATan2(100.f - position.x, 0.f - position.z); /* start facing the cube */
+    float pitch = 0.f;
+    float moveSpeed = 1.f;
+
+    const float mouseSensitivity = 0.0025f;
+    const float pitchLimit = sgl_Maths_Rad(89.f);
+
     while (!window->wantsClose)
     {
         {
             ppUniforms.time += 0.1f;
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
 
+            sgl_Vec2 mouseDelta = sgl_Mouse_GetDelta(mouse);
+            yaw -= mouseDelta.x * mouseSensitivity;
+            pitch -= mouseDelta.y * mouseSensitivity;
+            pitch = sgl_Maths_Clamp(pitch, -pitchLimit, pitchLimit);
+
+            sgl_Vec2 scroll = sgl_Mouse_GetScroll(mouse);
+            moveSpeed = sgl_Maths_Clamp(moveSpeed + scroll.y * 0.25f, 0.1f, 10.f);
+
+            /* Full 3D facing direction, used for looking; flattened (pitch-less)
+             * forward used for movement so looking up/down doesn't fly you
+             * into the ground/sky. */
+            sgl_Vec3 forward = sgl_Vec3_New_ScalarXYZ(
+                sgl_Maths_Cos(pitch) * sgl_Maths_Sin(yaw),
+                sgl_Maths_Sin(pitch),
+                sgl_Maths_Cos(pitch) * sgl_Maths_Cos(yaw));
+
+            sgl_Vec3 flatForward = sgl_Vec3_New_ScalarXYZ(sgl_Maths_Sin(yaw), 0.f, sgl_Maths_Cos(yaw));
+            sgl_Vec3 right = sgl_Maths_Vec3_Cross(flatForward, sgl_Vec3_Up);
+
             sgl_Vec3 movement = sgl_Vec3_Zero;
 
-            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_A))
-                movement.x -= .01f;
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_W))
+                movement = sgl_Vec3_Add_Vec3(movement, flatForward);
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_S))
+                movement = sgl_Vec3_Sub_Vec3(movement, flatForward);
+
             if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_D))
-                movement.x += .01f;
+                movement = sgl_Vec3_Add_Vec3(movement, right);
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_A))
+                movement = sgl_Vec3_Sub_Vec3(movement, right);
 
             if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_SPACE))
-                movement.y += .01f;
+                movement.y += 1.f;
             if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_LCTRL))
-                movement.y -= .01f;
-
-            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_W))
-                movement.z -= .01f;
-            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_S))
-                movement.z += .01f;
+                movement.y -= 1.f;
 
             if (sgl_Maths_Vec3_Length2(movement) > 0.f)
-            {
                 movement = sgl_Maths_Vec3_Normalise(movement);
-                position = sgl_Vec3_Add_Vec3(position, movement);
 
-                ubData.view = sgl_Maths_Mat4_View(position, 0.0f);
-                sgl_UniformBuffer_Upload(ub, &ubData);
-            }
+            position = sgl_Vec3_Add_Vec3(position, sgl_Vec3_Mul_Scalar(movement, moveSpeed));
+
+            ubData.view = sgl_Maths_Mat4_LookAt(position, sgl_Vec3_Add_Vec3(position, forward), sgl_Vec3_Up);
+            sgl_UniformBuffer_Upload(ub, &ubData);
         }
 
         sgl_Window_PollEvents(window);
+        sgl_Mouse_Update(mouse);
         sgl_Keyboard_Update(kb);
 
         sgl_GraphicsDevice_ImGui_NewFrame(gpu);
@@ -387,6 +421,7 @@ int main(int argc, char** argv)
     sgl_PostProcess_Destroy(postProcessEffect);
     sgl_Texture_Destroy(texture);
     sgl_Keyboard_Destroy(kb);
+    sgl_Mouse_Destroy(mouse);
     sgl_GraphicsDevice_ImGui_Shutdown(gpu);
     sgl_UniformBuffer_Destroy(ub);
     sgl_Shader_Destroy(shader);
