@@ -17,6 +17,7 @@
 #include <SGL/Graphics/Texture2D.h>
 #include <SGL/Graphics/Texture2DArray.h>
 #include <stdio.h>
+#include <SGL/Graphics/Model.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
@@ -85,7 +86,7 @@ const char* FragmentShaderSourceGL =
 "    float ndotl = max(dot(n, normalize(lightDir)), 0.0);\n"
 "    vec3 lighting = lightColour * (ambient + (1.0 - ambient) * ndotl);\n"
 "\n"
-"    vec4 texColour = texture(tex, vec3(oUV, 3));\n"
+"    vec4 texColour = texture(tex, vec3(oUV, 0));\n"
 "    FragCol = vec4(texColour.rgb * lighting, texColour.a);\n"
 "}\n";
 
@@ -144,7 +145,7 @@ const char* PixelShaderSourceDX =
 "   float ndotl = max(dot(n, normalize(lightDir)), 0.0f);\n"
 "   float3 lighting = lightColour * (ambient + (1.0f - ambient) * ndotl);\n"
 "\n"
-"   float4 texColour = tex.Sample(texSampler, float3(input.uv, 3));\n"
+"   float4 texColour = tex.Sample(texSampler, float3(input.uv, 0));\n"
 "   return float4(texColour.rgb * lighting, texColour.a);\n"
 "}\n";
 
@@ -376,8 +377,8 @@ int main(int argc, char** argv)
     /* --- New: a 3D cube, built in its own vertex array so it can sit
      * alongside the ground quad. Placed off to the side so the two
      * don't overlap. --- */
-    sgl_VertexArray* cubeVA = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
-    AddCube(cubeVA, sgl_Vec3_New_ScalarXYZ(100.f, 0.f, 0.f), 32.f);
+    //sgl_VertexArray* cubeVA = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
+    sgl_VertexArray* suzanne = sgl_Model_Load(gpu, "suzanne.obj", sizeof(Vertex), layout);
 
     sgl_Shader* shader;
 
@@ -499,7 +500,7 @@ int main(int argc, char** argv)
 
         sgl_GraphicsDevice_BeginFrame(gpu);
         sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, frameBuffers, 2);
-        sgl_GraphicsDevice_Draw(gpu, cubeVA, shader, &texture, 1, frameBuffers, 2);
+        sgl_GraphicsDevice_Draw(gpu, suzanne, shader, &texture, 1, frameBuffers, 2);
 
         if (sgl_InputFloat("Time", &ppUniforms.time, 1, 1, 0))
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
@@ -518,7 +519,7 @@ int main(int argc, char** argv)
     sgl_UniformBuffer_Destroy(ub);
     sgl_UniformBuffer_Destroy(lightUB);
     sgl_Shader_Destroy(shader);
-    sgl_VertexArray_Destroy(cubeVA);
+    sgl_VertexArray_Destroy(suzanne);
     sgl_VertexArray_Destroy(va);
     sgl_VertexLayout_Destroy(layout);
     sgl_GraphicsDevice_Destroy(gpu);
