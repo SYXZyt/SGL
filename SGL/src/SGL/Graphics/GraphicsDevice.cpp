@@ -73,6 +73,8 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
         return nullptr;
     }
 
+    device->depthTestEnabled = true;
+
     device->screenQuadLayout = screenQuadLayout;
     device->screenQuad = sgl_VertexArray_Create(device, sizeof(PP_Vertex), device->screenQuadLayout);
 
@@ -112,6 +114,16 @@ void sgl_GraphicsDevice_Destroy(sgl_GraphicsDevice* device)
 
 void sgl_GraphicsDevice_SetClearColour(sgl_GraphicsDevice* device, sgl_Colour colour) {
     device->vtable->SetClearColour(device, colour);
+}
+
+void sgl_GraphicsDevice_SetDepthTestEnabled(sgl_GraphicsDevice* device, bool enabled)
+{
+    device->depthTestEnabled = enabled;
+    device->vtable->SetDepthTestEnabled(device, enabled);
+}
+
+bool sgl_GraphicsDevice_GetDepthTestEnabled(sgl_GraphicsDevice* device) {
+    return device->depthTestEnabled;
 }
 
 void sgl_GraphicsDevice_BeginFrame(sgl_GraphicsDevice* device) {

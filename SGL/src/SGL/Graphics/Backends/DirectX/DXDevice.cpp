@@ -126,6 +126,12 @@ static void DXDevice_SetClearColour(sgl_GraphicsDevice* dev, sgl_Colour colour) 
     dev->clearColour = colour;
 }
 
+static void DXDevice_SetDepthTestEnabled(sgl_GraphicsDevice* dev, bool enabled)
+{
+    GetSelf;
+    self->ctx->OMSetDepthStencilState(enabled ? self->depthStencilState : self->depthStencilDisabledState, 0);
+}
+
 static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 {
     GetSelf;
@@ -325,6 +331,7 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->sceneDsv);
     TryRelease(self->sceneDepthTexture);
     TryRelease(self->depthStencilState);
+    TryRelease(self->depthStencilDisabledState);
     TryRelease(self->rasterState);
     TryRelease(self->postProState);
 
@@ -398,6 +405,7 @@ static void DXDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* dev)
 static const sgl_GraphicsDeviceVTable gDxVTable =
 {
     .SetClearColour = &sgl_GraphicsDevice_SetClearColour,
+    .SetDepthTestEnabled = &DXDevice_SetDepthTestEnabled,
     .Resize = &DXDevice_Resize,
     .BeginFrame = &DXDevice_BeginFrame,
     .EndFrame = &DXDevice_EndFrame,
@@ -538,6 +546,18 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
         if (FAILED(hr))
         {
             ReportHRError("Failed to create depth-stencil state", hr);
+            return device;
+        }
+
+        D3D11_DEPTH_STENCIL_DESC depthDisabledDesc = {};
+        depthDisabledDesc.DepthEnable = false;
+        depthDisabledDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+        depthDisabledDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
+
+        hr = device->device->CreateDepthStencilState(&depthDisabledDesc, &device->depthStencilDisabledState);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create disabled depth-stencil state", hr);
             return device;
         }
 

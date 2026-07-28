@@ -241,7 +241,7 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     cfg.enableImGui = true;
 
-    //cfg.backend = sgl_Backend_DIRECTX11;
+    //cfg.backend = sgl_Backend_DIRECTX;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
@@ -292,8 +292,8 @@ int main(int argc, char** argv)
     const float x = 64.f * scale;
     const float y = 64.f * scale;
 
-    sgl_Vec3 qtl = sgl_Vec3_New_ScalarXYZ(-x,  y, 0);
-    sgl_Vec3 qtr = sgl_Vec3_New_ScalarXYZ(x,  y, 0);
+    sgl_Vec3 qtl = sgl_Vec3_New_ScalarXYZ(-x, y, 0);
+    sgl_Vec3 qtr = sgl_Vec3_New_ScalarXYZ(x, y, 0);
     sgl_Vec3 qbl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
     sgl_Vec3 qbr = sgl_Vec3_New_ScalarXYZ(x, -y, 0);
 
@@ -318,7 +318,7 @@ int main(int argc, char** argv)
     /* --- New: a 3D cube, built in its own vertex array so it can sit
      * alongside the ground quad. Placed off to the side so the two
      * don't overlap. --- */
-    //sgl_VertexArray* cubeVA = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
+     //sgl_VertexArray* cubeVA = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
     sgl_VertexArray* suzanne = sgl_Model_Load(gpu, "suzanne.obj", sizeof(Vertex), layout);
 
     sgl_Shader* shader;
@@ -367,11 +367,6 @@ int main(int argc, char** argv)
 
     sgl_Texture* texture = sgl_Texture2DArray_New_File(gpu, "stone.png", sgl_Vec2i_New_Scalar(16));
 
-    /* FPS camera state: position + yaw/pitch (radians). Yaw is measured so
-     * that forward = (sin(yaw), ., cos(yaw)); mouse moving right should turn
-     * the camera right, which - given sgl_Maths_Mat4_LookAt's actual screen
-     * axes - means DECREASING yaw (verified empirically: at yaw=0, world -X
-     * is what renders on the right side of the screen, not +X). */
     sgl_Vec3 position = sgl_Vec3_New_ScalarXYZ(0.f, 0.f, 150.f);
     float yaw = sgl_Maths_ATan2(100.f - position.x, 0.f - position.z); /* start facing the cube */
     float pitch = 0.f;
@@ -379,6 +374,7 @@ int main(int argc, char** argv)
 
     const float mouseSensitivity = 0.0025f;
     const float pitchLimit = sgl_Maths_Rad(89.f);
+    bool useMouse = true;
 
     while (!window->wantsClose)
     {
@@ -386,13 +382,16 @@ int main(int argc, char** argv)
             ppUniforms.time += 0.1f;
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
 
-            sgl_Vec2 mouseDelta = sgl_Mouse_GetDelta(mouse);
-            yaw -= mouseDelta.x * mouseSensitivity;
-            pitch -= mouseDelta.y * mouseSensitivity;
-            pitch = sgl_Maths_Clamp(pitch, -pitchLimit, pitchLimit);
+            if (useMouse)
+            {
+                sgl_Vec2 mouseDelta = sgl_Mouse_GetDelta(mouse);
+                yaw -= mouseDelta.x * mouseSensitivity;
+                pitch -= mouseDelta.y * mouseSensitivity;
+                pitch = sgl_Maths_Clamp(pitch, -pitchLimit, pitchLimit);
 
-            sgl_Vec2 scroll = sgl_Mouse_GetScroll(mouse);
-            moveSpeed = sgl_Maths_Clamp(moveSpeed + scroll.y * 0.25f, 0.1f, 10.f);
+                sgl_Vec2 scroll = sgl_Mouse_GetScroll(mouse);
+                moveSpeed = sgl_Maths_Clamp(moveSpeed + scroll.y * 0.25f, 0.1f, 10.f);
+            }
 
             /* Full 3D facing direction, used for looking; flattened (pitch-less)
              * forward used for movement so looking up/down doesn't fly you
@@ -422,6 +421,12 @@ int main(int argc, char** argv)
             if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_LCTRL))
                 movement.y -= 1.f;
 
+            if (sgl_Keyboard_IsKeyPressed(kb, sgl_Key_ESCAPE))
+            {
+                useMouse = !useMouse;
+                sgl_Mouse_SetRelativeMode(mouse, useMouse);
+            }
+
             if (sgl_Maths_Vec3_Length2(movement) > 0.f)
                 movement = sgl_Maths_Vec3_Normalise(movement);
 
@@ -440,11 +445,17 @@ int main(int argc, char** argv)
         sgl_UniformBuffer* frameBuffers[] = { ub, lightUB };
 
         sgl_GraphicsDevice_BeginFrame(gpu);
-        sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, frameBuffers, 2);
         sgl_GraphicsDevice_Draw(gpu, suzanne, shader, &texture, 1, frameBuffers, 2);
+        sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, frameBuffers, 2);
 
         if (sgl_InputFloat("Time", &ppUniforms.time, 1, 1, 0))
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
+
+        {
+            bool depthTestEnabled = sgl_GraphicsDevice_GetDepthTestEnabled(gpu);
+            if (sgl_Checkbox("Depth Test", &depthTestEnabled))
+                sgl_GraphicsDevice_SetDepthTestEnabled(gpu, depthTestEnabled);
+        }
 
         sgl_GraphicsDevice_EndFrame(gpu);
         sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);

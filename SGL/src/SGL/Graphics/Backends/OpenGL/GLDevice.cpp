@@ -25,6 +25,14 @@ static void GLDevice_SetClearColour(sgl_GraphicsDevice* dev, sgl_Colour colour)
     glClearColor(colour.r, colour.g, colour.b, colour.a);
 }
 
+static void GLDevice_SetDepthTestEnabled(sgl_GraphicsDevice* dev, bool enabled)
+{
+    if (enabled)
+        glEnable(GL_DEPTH_TEST);
+    else
+        glDisable(GL_DEPTH_TEST);
+}
+
 static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 {
     GetSelf;
@@ -126,7 +134,9 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glEnable(GL_CULL_FACE);
-    glEnable(GL_DEPTH_TEST);
+
+    if (dev->depthTestEnabled)
+        glEnable(GL_DEPTH_TEST);
 }
 
 static void GLDevice_SwapBuffer(sgl_GraphicsDevice* dev) {
@@ -201,6 +211,7 @@ static void GLDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* dev)
 static const sgl_GraphicsDeviceVTable gGlVTable =
 {
     .SetClearColour = &GLDevice_SetClearColour,
+    .SetDepthTestEnabled = &GLDevice_SetDepthTestEnabled,
     .Resize = &GLDevice_Resize,
     .BeginFrame = &GLDevice_BeginFrame,
     .EndFrame = &GLDevice_EndFrame,

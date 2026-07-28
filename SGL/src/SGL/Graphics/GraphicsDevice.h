@@ -17,6 +17,7 @@ struct sgl_GraphicsDevice;
 typedef struct sgl_GraphicsDeviceVTable sgl_sealed
 {
     void (*SetClearColour)(struct sgl_GraphicsDevice* self, sgl_Colour clearColour);
+    void (*SetDepthTestEnabled)(struct sgl_GraphicsDevice* self, bool enabled);
     void (*Resize)(struct sgl_GraphicsDevice* self, sgl_Vec2i newSize);
     void (*BeginFrame)(struct sgl_GraphicsDevice* self);
     void (*EndFrame)(struct sgl_GraphicsDevice* self);
@@ -40,12 +41,16 @@ typedef struct sgl_GraphicsDevice sgl_sealed
     sgl_Colour clearColour;
     uint32 width;
     uint32 height;
+    bool depthTestEnabled;
 } sgl_GraphicsDevice;
 
 SGL_API extern sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window);
 SGL_API extern void sgl_GraphicsDevice_Destroy(sgl_GraphicsDevice* device);
 
 SGL_API extern void sgl_GraphicsDevice_SetClearColour(sgl_GraphicsDevice* device, sgl_Colour colour);
+
+SGL_API extern void sgl_GraphicsDevice_SetDepthTestEnabled(sgl_GraphicsDevice* device, bool enabled);
+SGL_API extern bool sgl_GraphicsDevice_GetDepthTestEnabled(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_BeginFrame(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_EndFrame(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_SwapBuffer(sgl_GraphicsDevice* device);
