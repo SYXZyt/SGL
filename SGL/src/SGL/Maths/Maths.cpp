@@ -190,6 +190,134 @@ float sgl_Maths_Vec2i_AspectRatio(sgl_Vec2i v)
     return (float)v.width / v.height;
 }
 
+float sgl_Maths_Vec3_Dist(sgl_Vec3 a, sgl_Vec3 b) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec3_Dist2(a, b));
+}
+
+float sgl_Maths_Vec3_Dist2(sgl_Vec3 a, sgl_Vec3 b)
+{
+    const float dx = b.x - a.x;
+    const float dy = b.y - a.y;
+    const float dz = b.z - a.z;
+
+    return sgl_Maths_Sq(dx) + sgl_Maths_Sq(dy) + sgl_Maths_Sq(dz);
+}
+
+float sgl_Maths_Vec3_Angle(sgl_Vec3 a, sgl_Vec3 b)
+{
+    const float dot = sgl_Maths_Vec3_Dot(a, b);
+    const float lengths = sgl_Maths_Vec3_Length(a) * sgl_Maths_Vec3_Length(b);
+
+    return sgl_Maths_ACos(dot / lengths);
+}
+
+float sgl_Maths_Vec3_Length(sgl_Vec3 v) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec3_Length2(v));
+}
+
+float sgl_Maths_Vec3_Length2(sgl_Vec3 v) {
+    return sgl_Maths_Sq(v.x) + sgl_Maths_Sq(v.y) + sgl_Maths_Sq(v.z);
+}
+
+float sgl_Maths_Vec3_Dot(sgl_Vec3 a, sgl_Vec3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+sgl_Vec3 sgl_Maths_Vec3_Cross(sgl_Vec3 a, sgl_Vec3 b)
+{
+    return sgl_Vec3_New_ScalarXYZ(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    );
+}
+
+sgl_Vec3 sgl_Maths_Vec3_Normalise(sgl_Vec3 v)
+{
+    float length = sgl_Maths_Vec3_Length(v);
+    if (length == 0)
+        return sgl_Vec3_Zero;
+
+    return sgl_Vec3_New_ScalarXYZ(v.x / length, v.y / length, v.z / length);
+}
+
+float sgl_Maths_Vec3i_Dist(sgl_Vec3i a, sgl_Vec3i b) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec3i_Dist2(a, b));
+}
+
+float sgl_Maths_Vec3i_Dist2(sgl_Vec3i a, sgl_Vec3i b)
+{
+    const int dx = b.x - a.x;
+    const int dy = b.y - a.y;
+    const int dz = b.z - a.z;
+
+    return (float)(sgl_Maths_Sq(dx) + sgl_Maths_Sq(dy) + sgl_Maths_Sq(dz));
+}
+
+float sgl_Maths_Vec3i_Angle(sgl_Vec3i a, sgl_Vec3i b)
+{
+    const float dot = sgl_Maths_Vec3i_Dot(a, b);
+    const float lengths = sgl_Maths_Vec3i_Length(a) * sgl_Maths_Vec3i_Length(b);
+
+    return sgl_Maths_ACos(dot / lengths);
+}
+
+float sgl_Maths_Vec3i_Length(sgl_Vec3i v) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec3i_Length2(v));
+}
+
+float sgl_Maths_Vec3i_Length2(sgl_Vec3i v) {
+    return (float)(sgl_Maths_Sq(v.x) + sgl_Maths_Sq(v.y) + sgl_Maths_Sq(v.z));
+}
+
+float sgl_Maths_Vec3i_Dot(sgl_Vec3i a, sgl_Vec3i b) {
+    return (float)(a.x * b.x + a.y * b.y + a.z * b.z);
+}
+
+sgl_Vec3i sgl_Maths_Vec3i_Cross(sgl_Vec3i a, sgl_Vec3i b)
+{
+    return sgl_Vec3i_New_ScalarXYZ(
+        a.y * b.z - a.z * b.y,
+        a.z * b.x - a.x * b.z,
+        a.x * b.y - a.y * b.x
+    );
+}
+
+float sgl_Maths_Vec4_Dist(sgl_Vec4 a, sgl_Vec4 b) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec4_Dist2(a, b));
+}
+
+float sgl_Maths_Vec4_Dist2(sgl_Vec4 a, sgl_Vec4 b)
+{
+    const float dx = b.x - a.x;
+    const float dy = b.y - a.y;
+    const float dz = b.z - a.z;
+    const float dw = b.w - a.w;
+
+    return sgl_Maths_Sq(dx) + sgl_Maths_Sq(dy) + sgl_Maths_Sq(dz) + sgl_Maths_Sq(dw);
+}
+
+float sgl_Maths_Vec4_Length(sgl_Vec4 v) {
+    return sgl_Maths_Sqrt(sgl_Maths_Vec4_Length2(v));
+}
+
+float sgl_Maths_Vec4_Length2(sgl_Vec4 v) {
+    return sgl_Maths_Sq(v.x) + sgl_Maths_Sq(v.y) + sgl_Maths_Sq(v.z) + sgl_Maths_Sq(v.w);
+}
+
+float sgl_Maths_Vec4_Dot(sgl_Vec4 a, sgl_Vec4 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z + a.w * b.w;
+}
+
+sgl_Vec4 sgl_Maths_Vec4_Normalise(sgl_Vec4 v)
+{
+    float length = sgl_Maths_Vec4_Length(v);
+    if (length == 0)
+        return sgl_Vec4_Zero;
+
+    return sgl_Vec4_New_ScalarXYZW(v.x / length, v.y / length, v.z / length, v.w / length);
+}
+
 static sgl_Mat4 FromGLM(const glm::mat4& glmMat) {
     return sgl_Mat4_New_Floats(glm::value_ptr(glmMat));
 }
