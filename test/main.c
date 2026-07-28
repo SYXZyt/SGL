@@ -232,65 +232,6 @@ typedef struct sgl_alignas(16) PostProcessEffectUniforms
     sgl_Vec3 __pad;
 } PostProcessEffectUniforms;
 
-/* ---------------------------------------------------------------------
- * Cube helpers
- *
- * 4 unique vertices per face, indexed as two triangles, 6 faces.
- * Faces can't share vertices with each other even though their corner
- * positions coincide in 3D space: each face needs its own UV at that
- * corner (a cube's per-face 0-1 texture tiling requires it), so this is
- * 24 unique (pos, uv) vertices + 36 indices, not 8 vertices + 36 indices.
- * Position convention follows the original quad (tl/tr have +Y, bl/br
- * have -Y) so it matches how the rest of this file lays out geometry.
- * --------------------------------------------------------------------- */
-
-static void AddCubeFace(sgl_VertexArray* va, sgl_Vec3 tl, sgl_Vec3 tr, sgl_Vec3 bl, sgl_Vec3 br)
-{
-    /* Flat-shaded: every vertex on this face shares the same outward-facing
-     * normal. Matches the winding fixed earlier: outward = Cross(tl-tr, bl-tr). */
-    sgl_Vec3 normal = sgl_Maths_Vec3_Normalise(sgl_Maths_Vec3_Cross(sgl_Vec3_Sub_Vec3(tl, tr), sgl_Vec3_Sub_Vec3(bl, tr)));
-
-    Vertex vtl = { .pos = tl, .normal = normal, .uv = sgl_Vec2_Up };
-    Vertex vtr = { .pos = tr, .normal = normal, .uv = sgl_Vec2_One };
-    Vertex vbl = { .pos = bl, .normal = normal, .uv = sgl_Vec2_Zero };
-    Vertex vbr = { .pos = br, .normal = normal, .uv = sgl_Vec2_Right };
-
-    uint32 base = va->vertexCount;
-
-    sgl_VertexArray_AddVertex(va, &vtl);
-    sgl_VertexArray_AddVertex(va, &vtr);
-    sgl_VertexArray_AddVertex(va, &vbl);
-    sgl_VertexArray_AddVertex(va, &vbr);
-
-    /* Same winding as sgl_Triangulate() would've produced via AddQuad with
-     * the diagonal-swapped {tl=vtr, tr=vtl, bl=vbr, br=vbl} that fixed the
-     * inward-facing cube: t0=(vtr,vtl,vbl), t1=(vtr,vbl,vbr). */
-    sgl_VertexArray_AddTriIndices(va, base + 1, base + 0, base + 2);
-    sgl_VertexArray_AddTriIndices(va, base + 1, base + 2, base + 3);
-}
-
-static void AddCube(sgl_VertexArray* va, sgl_Vec3 center, float halfSize)
-{
-    const float hs = halfSize;
-
-    sgl_Vec3 ftl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y + hs, center.z + hs);
-    sgl_Vec3 ftr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y + hs, center.z + hs);
-    sgl_Vec3 fbl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y - hs, center.z + hs);
-    sgl_Vec3 fbr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y - hs, center.z + hs);
-
-    sgl_Vec3 btl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y + hs, center.z - hs);
-    sgl_Vec3 btr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y + hs, center.z - hs);
-    sgl_Vec3 bbl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y - hs, center.z - hs);
-    sgl_Vec3 bbr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y - hs, center.z - hs);
-
-    AddCubeFace(va, ftl, ftr, fbl, fbr); /* front  (+Z) */
-    AddCubeFace(va, btr, btl, bbr, bbl); /* back   (-Z) */
-    AddCubeFace(va, btl, ftl, bbl, fbl); /* left   (-X) */
-    AddCubeFace(va, ftr, btr, fbr, bbr); /* right  (+X) */
-    AddCubeFace(va, btl, btr, ftl, ftr); /* top    (+Y) */
-    AddCubeFace(va, fbl, fbr, bbl, bbr); /* bottom (-Y) */
-}
-
 int main(int argc, char** argv)
 {
     sgl_Runtime_Init();
@@ -300,7 +241,7 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     cfg.enableImGui = true;
 
-    cfg.backend = sgl_Backend_DIRECTX11;
+    //cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);

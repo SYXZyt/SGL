@@ -141,6 +141,9 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     TryRelease(self->sceneRtv);
     TryRelease(self->sceneTexture);
 
+    TryRelease(self->sceneDsv);
+    TryRelease(self->sceneDepthTexture);
+
     HRESULT hr = self->swapchain->ResizeBuffers(
         0,
         dev->width,
@@ -205,6 +208,30 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
         return;
     }
 
+    D3D11_TEXTURE2D_DESC depthDesc = {};
+    depthDesc.Width = dev->width;
+    depthDesc.Height = dev->height;
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    hr = self->device->CreateTexture2D(&depthDesc, nullptr, &self->sceneDepthTexture);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene depth texture", hr);
+        return;
+    }
+
+    hr = self->device->CreateDepthStencilView(self->sceneDepthTexture, nullptr, &self->sceneDsv);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene DSV", hr);
+        return;
+    }
+
     D3D11_VIEWPORT viewport =
     {
         .Width = (FLOAT)dev->width,
@@ -220,12 +247,14 @@ static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
 {
     GetSelf;
 
-    self->ctx->OMSetRenderTargets(1, &self->sceneRtv, nullptr);
+    self->ctx->OMSetRenderTargets(1, &self->sceneRtv, self->sceneDsv);
 
     self->ctx->ClearRenderTargetView(
         self->sceneRtv,
         &dev->clearColour.r
     );
+
+    self->ctx->ClearDepthStencilView(self->sceneDsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
 static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
@@ -293,6 +322,9 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->sceneRtv);
     TryRelease(self->sceneSrv);
     TryRelease(self->sceneTexture);
+    TryRelease(self->sceneDsv);
+    TryRelease(self->sceneDepthTexture);
+    TryRelease(self->depthStencilState);
     TryRelease(self->rasterState);
     TryRelease(self->postProState);
 
@@ -472,6 +504,44 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
             nullptr,
             &device->sceneSrv
         );
+
+        D3D11_TEXTURE2D_DESC depthDesc = {};
+        depthDesc.Width = device->base.width;
+        depthDesc.Height = device->base.height;
+        depthDesc.MipLevels = 1;
+        depthDesc.ArraySize = 1;
+        depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthDesc.SampleDesc.Count = 1;
+        depthDesc.Usage = D3D11_USAGE_DEFAULT;
+        depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+        hr = device->device->CreateTexture2D(&depthDesc, nullptr, &device->sceneDepthTexture);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create scene depth texture", hr);
+            return device;
+        }
+
+        hr = device->device->CreateDepthStencilView(device->sceneDepthTexture, nullptr, &device->sceneDsv);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create scene DSV", hr);
+            return device;
+        }
+
+        D3D11_DEPTH_STENCIL_DESC depthStateDesc = {};
+        depthStateDesc.DepthEnable = true;
+        depthStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        depthStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+        hr = device->device->CreateDepthStencilState(&depthStateDesc, &device->depthStencilState);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create depth-stencil state", hr);
+            return device;
+        }
+
+        device->ctx->OMSetDepthStencilState(device->depthStencilState, 0);
     }
 #pragma endregion
 

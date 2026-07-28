@@ -38,6 +38,7 @@ static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     glViewport(0, 0, dev->width, dev->height);
 
     glDeleteTextures(1, &self->sceneTexture);
+    glDeleteTextures(1, &self->sceneDepth);
 
     glCreateTextures(GL_TEXTURE_2D, 1, &self->sceneTexture);
     glTextureStorage2D(
@@ -54,6 +55,22 @@ static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
         self->sceneTexture,
         0
     );
+
+    glCreateTextures(GL_TEXTURE_2D, 1, &self->sceneDepth);
+    glTextureStorage2D(
+        self->sceneDepth,
+        1,
+        GL_DEPTH_COMPONENT24,
+        (GLsizei)dev->width,
+        (GLsizei)dev->height
+    );
+
+    glNamedFramebufferTexture(
+        self->sceneFBO,
+        GL_DEPTH_ATTACHMENT,
+        self->sceneDepth,
+        0
+    );
 }
 
 static void GLDevice_BeginFrame(sgl_GraphicsDevice* dev)
@@ -61,7 +78,7 @@ static void GLDevice_BeginFrame(sgl_GraphicsDevice* dev)
     GetSelf;
     glBindFramebuffer(GL_FRAMEBUFFER, self->sceneFBO);
 
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
@@ -75,6 +92,7 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
     gluint currentFbo = self->sceneFBO;
 
     glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
 
     for (size_t i = 0; i < effectCount; ++i)
     {
@@ -108,6 +126,7 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glEnable(GL_CULL_FACE);
+    glEnable(GL_DEPTH_TEST);
 }
 
 static void GLDevice_SwapBuffer(sgl_GraphicsDevice* dev) {
@@ -210,14 +229,21 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     glCullFace(GL_BACK);
     glFrontFace(GL_CCW);
 
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glCreateTextures(GL_TEXTURE_2D, 1, &device->sceneTexture);
     glTextureStorage2D(device->sceneTexture, 1, GL_RGBA8, (GLsizei)window->screenSize.width, (GLsizei)window->screenSize.height);
 
+    glCreateTextures(GL_TEXTURE_2D, 1, &device->sceneDepth);
+    glTextureStorage2D(device->sceneDepth, 1, GL_DEPTH_COMPONENT24, (GLsizei)window->screenSize.width, (GLsizei)window->screenSize.height);
+
     glCreateFramebuffers(1, &device->sceneFBO);
     glNamedFramebufferTexture(device->sceneFBO, GL_COLOR_ATTACHMENT0, device->sceneTexture, 0);
+    glNamedFramebufferTexture(device->sceneFBO, GL_DEPTH_ATTACHMENT, device->sceneDepth, 0);
 
     std::stringstream ss;
 

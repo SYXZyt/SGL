@@ -18,6 +18,10 @@ typedef struct sgl_DXDevice sgl_sealed
     ID3D11RenderTargetView* sceneRtv;
     ID3D11ShaderResourceView* sceneSrv;
 
+    ID3D11Texture2D* sceneDepthTexture;
+    ID3D11DepthStencilView* sceneDsv;
+    ID3D11DepthStencilState* depthStencilState;
+
     ID3D11RasterizerState* rasterState;
     ID3D11RasterizerState* postProState;
 
