@@ -15,11 +15,6 @@ static const char* sgl_ANSI_Colours_Magenta = "\033[35m";
 static const char* sgl_ANSI_Colours_Cyan = "\033[36m";
 static const char* sgl_ANSI_Colours_White = "\033[37m";
 
-static const char* sgl_ANSI_Logger_Error = "\033[38;2;247;121;121m";
-static const char* sgl_ANSI_Logger_Warning = "\033[38;2;247;214;114m";
-static const char* sgl_ANSI_Logger_Info = "\033[38;2;159;146;240m";
-static const char* sgl_ANSI_Logger_Success = "\033[38;2;145;255;128m";
-
 static const char* sgl_ANSI_Effect_Bold = "\033[1m";
 static const char* sgl_ANSI_Effect_Underline = "\033[4m";
 static const char* sgl_ANSI_Effect_Italic = "\033[3m";

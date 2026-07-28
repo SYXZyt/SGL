@@ -1,5 +1,4 @@
 #include "Logger.h"
-#include <osbridge.h>
 #include <print>
 #include <thread>
 #include <mutex>
@@ -26,6 +25,9 @@ static std::jthread gThread;
 static std::mutex gMutex;
 static std::queue<Message> gMessages;
 static bool gIsRunning = false;
+
+static sgl_Logger_Callback_ptr gCallback = nullptr;
+static void* gCallbackUserdata = nullptr;
 
 #ifdef _WIN32
 static std::wstring ToWString(const std::string& str)
@@ -61,51 +63,47 @@ static const char* GetLogTypeString(LogType type)
     }
 }
 
-static const char* GetColour(const LogType type)
+static sgl_LogLevel ToLogLevel(LogType type)
 {
-    if (!sgl_os_SupportAnsi())
-        return "";
-
     switch (type)
     {
         case LogType::INFO:
-            return sgl_ANSI_Logger_Info;
+            return sgl_LogLevel_INFO;
         case LogType::SUCCESS:
-            return sgl_ANSI_Logger_Success;
+            return sgl_LogLevel_SUCCESS;
         case LogType::WARNING:
-            return sgl_ANSI_Logger_Warning;
+            return sgl_LogLevel_WARNING;
         case LogType::ERR:
-            return sgl_ANSI_Logger_Error;
+            return sgl_LogLevel_ERROR;
         default:
-            return "";
+            return sgl_LogLevel_INFO;
     }
-}
-
-static const char* ResetColour() {
-    return sgl_os_SupportAnsi() ? sgl_ANSI_Reset : "";
 }
 
 static void LogMessage()
 {
     std::lock_guard lock(gMutex);
-    
+
     if (gMessages.empty())
         return;
 
     const auto& [message, type] = gMessages.front();
-    const char* typeStr = GetLogTypeString(type);
 
-    std::string colouredOutput = GetColour(type) + std::string("[") + typeStr + "] " + ResetColour() + message;
-    std::string whiteOutput = std::string("[") + typeStr + "]" + message;
-
-    std::println("{}", colouredOutput);
+    if (gCallback)
+    {
+        gCallback(message.c_str(), ToLogLevel(type), gCallbackUserdata);
+    }
+    else
+    {
+        std::println("[{}] {}", GetLogTypeString(type), message);
 
 #ifdef _WIN32
-    std::wstring wide = ToWString(message);
+        std::wstring wide = ToWString(message);
 
-    OutputDebugStringW(wide.c_str());
-    OutputDebugStringW(L"\r\n");
+        OutputDebugStringW(wide.c_str());
+        OutputDebugStringW(L"\r\n");
 #endif
+    }
 
     gMessages.pop();
 }
@@ -146,6 +144,13 @@ void sgl_Logger_Shutdown()
 
 bool sgl_Logger_IsLogging() {
     return gIsRunning;
+}
+
+void sgl_Logger_SetCallback(sgl_Logger_Callback_ptr callback, void* userdata)
+{
+    std::lock_guard lock(gMutex);
+    gCallback = callback;
+    gCallbackUserdata = userdata;
 }
 
 void sgl_Log(const char* message)
