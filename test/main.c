@@ -43,189 +43,6 @@ typedef struct sgl_alignas(16) LightUB
     float __pad;
 } LightUB;
 
-const char* VertexShaderSourceGL =
-"#version 460 core\n"
-"layout(location=0) in vec3 aPos;\n"
-"layout(location=1) in vec3 aNormal;\n"
-"layout(location=2) in vec2 aUV;\n"
-"\n"
-"out vec2 oUV;\n"
-"out vec3 oNormal;\n"
-"\n"
-"layout(std140, binding=0) uniform CameraBuffer\n"
-"{\n"
-"    mat4 view;\n"
-"    mat4 proj;\n"
-"};\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = proj * view * vec4(aPos, 1.0);\n"
-"    oUV = aUV;\n"
-"    oNormal = aNormal;\n"
-"}\n";
-
-const char* FragmentShaderSourceGL =
-"#version 460 core\n"
-"in vec2 oUV;\n"
-"in vec3 oNormal;\n"
-"out vec4 FragCol;\n"
-"\n"
-"layout(binding = 0) uniform sampler2DArray tex;\n"
-"\n"
-"layout(std140, binding=1) uniform LightBuffer\n"
-"{\n"
-"    vec3 lightDir;\n"
-"    float ambient;\n"
-"    vec3 lightColour;\n"
-"};\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec3 n = normalize(oNormal);\n"
-"    float ndotl = max(dot(n, normalize(lightDir)), 0.0);\n"
-"    vec3 lighting = lightColour * (ambient + (1.0 - ambient) * ndotl);\n"
-"\n"
-"    vec4 texColour = texture(tex, vec3(oUV, 0));\n"
-"    FragCol = vec4(texColour.rgb * lighting, texColour.a);\n"
-"}\n";
-
-const char* VertexShaderSourceDX =
-"struct VSInput\n"
-"{\n"
-"    float3 pos : POSITION;\n"
-"    float3 normal : NORMAL;\n"
-"    float2 uv : TEXCOORD;\n"
-"};\n"
-"\n"
-"struct VSOutput\n"
-"{\n"
-"    float4 pos : SV_POSITION;\n"
-"    float3 normal : NORMAL;\n"
-"    float2 uv : TEXCOORD;\n"
-"};\n"
-"\n"
-"cbuffer CameraMatrices : register(b0)\n"
-"{\n"
-"    float4x4 View;\n"
-"    float4x4 Proj;\n"
-"};\n"
-"\n"
-"VSOutput main(VSInput input)\n"
-"{\n"
-"    VSOutput output;\n"
-"    output.pos = mul(Proj, mul(View, float4(input.pos, 1.0f)));\n"
-"    output.normal = input.normal;\n"
-"    output.uv = input.uv;\n"
-"    return output;\n"
-"}\n";
-
-const char* PixelShaderSourceDX =
-"struct PSInput\n"
-"{\n"
-"    float4 pos : SV_POSITION;\n"
-"    float3 normal : NORMAL;\n"
-"    float2 uv : TEXCOORD;\n"
-"};\n"
-"\n"
-"Texture2DArray tex : register(t0);\n"
-"SamplerState texSampler : register(s0);\n"
-"\n"
-"cbuffer LightBuffer : register(b1)\n"
-"{\n"
-"    float3 lightDir;\n"
-"    float ambient;\n"
-"    float3 lightColour;\n"
-"    float _pad;\n"
-"};\n"
-"\n"
-"float4 main(PSInput input) : SV_TARGET\n"
-"{\n"
-"   float3 n = normalize(input.normal);\n"
-"   float ndotl = max(dot(n, normalize(lightDir)), 0.0f);\n"
-"   float3 lighting = lightColour * (ambient + (1.0f - ambient) * ndotl);\n"
-"\n"
-"   float4 texColour = tex.Sample(texSampler, float3(input.uv, 0));\n"
-"   return float4(texColour.rgb * lighting, texColour.a);\n"
-"}\n";
-
-const char* PostProcessEffectVertexGL =
-"#version 460 core\n"
-"layout(location=0) in vec3 aPos;\n"
-"layout(location=1) in vec2 aUV;\n"
-"\n"
-"out vec2 oUV;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = vec4(aPos, 1.0);\n"
-"    oUV = aUV;\n"
-"}\n";
-
-const char* PostProcessEffectFragmentGL =
-"#version 460 core\n"
-"in vec2 oUV;\n"
-"out vec4 FragCol;\n"
-"\n"
-"layout(std140, binding=0) uniform TimeBuffer\n"
-"{\n"
-"    float time;\n"
-"    vec3 _pad;\n"
-"};\n"
-"layout(binding = 0) uniform sampler2D frametexture;"
-"void main()\n"
-"{\n"
-"   FragCol = texture(frametexture, oUV);\n"
-"   vec3 rgb = FragCol.rgb;\n"
-"   vec3 inv_rgb = 1 - FragCol.rgb;\n"
-"   FragCol.rgb = mix(rgb, inv_rgb, sin(time * 0.2));"
-"}\n";
-
-const char* PostProcessEffectVertexHLSL =
-"struct VSInput\n"
-"{\n"
-"    float3 Pos : POSITION;\n"
-"    float2 UV : TEXCOORD0;\n"
-"};\n"
-"\n"
-"struct PSInput\n"
-"{\n"
-"    float4 Pos : SV_POSITION;\n"
-"    float2 UV : TEXCOORD0;\n"
-"};\n"
-"\n"
-"PSInput main(VSInput input)\n"
-"{\n"
-"    PSInput output;\n"
-"    output.Pos = float4(input.Pos, 1.0f);\n"
-"    output.UV = input.UV;\n"
-"    return output;\n"
-"}\n";
-
-const char* PostProcessEffectPixelHLSL =
-"Texture2D FrameTexture : register(t0);\n"
-"SamplerState FrameSampler : register(s0);\n"
-"\n"
-"struct PSInput\n"
-"{\n"
-"    float4 Pos : SV_POSITION;\n"
-"    float2 UV : TEXCOORD0;\n"
-"};\n"
-"\n"
-"cbuffer TimeBuffer : register(b0)\n"
-"{\n"
-"   float time;\n"
-"   float3 __pad;\n"
-"};\n"
-"float4 main(PSInput input) : SV_TARGET\n"
-"{\n"
-"   float4 colour = FrameTexture.Sample(FrameSampler, input.UV);\n"
-"   float3 rgb = colour.rgb;\n"
-"   float3 inv_rgb = 1 - colour.rgb;\n"
-"   float3 finalColour = lerp(rgb, inv_rgb, sin(time * 0.2));\n"
-"   return float4(finalColour, 1);\n"
-"}\n";
-
 typedef struct sgl_alignas(16) PostProcessEffectUniforms
 {
     float time;
@@ -241,7 +58,7 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     cfg.enableImGui = true;
 
-    //cfg.backend = sgl_Backend_DIRECTX;
+    cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
@@ -297,7 +114,6 @@ int main(int argc, char** argv)
     sgl_Vec3 qbl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
     sgl_Vec3 qbr = sgl_Vec3_New_ScalarXYZ(x, -y, 0);
 
-    /* Matches this quad's (unswapped) winding: t0=(tl,tr,br). */
     sgl_Vec3 quadNormal = sgl_Maths_Vec3_Normalise(sgl_Maths_Vec3_Cross(sgl_Vec3_Sub_Vec3(qtr, qtl), sgl_Vec3_Sub_Vec3(qbr, qtl)));
 
     Vertex tl = { .pos = qtl, .normal = quadNormal, .uv = sgl_Vec2_Up };
@@ -310,15 +126,9 @@ int main(int argc, char** argv)
     sgl_VertexArray_AddVertex(va, &bl);
     sgl_VertexArray_AddVertex(va, &br);
 
-    /* Same winding sgl_Triangulate() would've produced via AddQuad(tl,tr,bl,br):
-     * t0=(tl,tr,br), t1=(tl,br,bl). */
     sgl_VertexArray_AddTriIndices(va, 0, 1, 3);
     sgl_VertexArray_AddTriIndices(va, 0, 3, 2);
 
-    /* --- New: a 3D cube, built in its own vertex array so it can sit
-     * alongside the ground quad. Placed off to the side so the two
-     * don't overlap. --- */
-     //sgl_VertexArray* cubeVA = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
     sgl_VertexArray* suzanne = sgl_Model_Load(gpu, "suzanne.obj", sizeof(Vertex), layout);
 
     sgl_Shader* shader;
@@ -331,22 +141,12 @@ int main(int argc, char** argv)
     sgl_UniformBuffer* ubPp = sgl_UniformBuffer_Create(gpu, sizeof(PostProcessEffectUniforms));
     sgl_PostProcess_AddUniformBuffer(postProcessEffect, ubPp, 0);
 
-    if (cfg.backend == sgl_Backend_DIRECTX11)
-    {
-        shader = sgl_Shader_Create(gpu, layout);
-        sgl_Shader_Load_Source(shader, VertexShaderSourceDX, PixelShaderSourceDX);
+    shader = sgl_Shader_Create(gpu, layout);
+    sgl_Shader_Load_Slang_File(shader, "Object.slang", "vertexMain", "fragmentMain");
 
-        sgl_Shader_Load_Source(postProcessEffect->shader, PostProcessEffectVertexHLSL, PostProcessEffectPixelHLSL);
-    }
-    else
-    {
-        shader = sgl_Shader_Create(gpu, layout);
-        sgl_Shader_Load_Source(shader, VertexShaderSourceGL, FragmentShaderSourceGL);
+    sgl_Shader_Load_Slang_File(postProcessEffect->shader, "PostProcess.slang", "vertexMain", "fragmentMain");
 
-        sgl_Shader_Load_Source(postProcessEffect->shader, PostProcessEffectVertexGL, PostProcessEffectFragmentGL);
-    }
-
-    //sgl_GraphicsDevice_AddEffect(gpu, postProcessEffect);
+    sgl_GraphicsDevice_AddEffect(gpu, postProcessEffect);
 
     UB ubData;
 
@@ -393,9 +193,6 @@ int main(int argc, char** argv)
                 moveSpeed = sgl_Maths_Clamp(moveSpeed + scroll.y * 0.25f, 0.1f, 10.f);
             }
 
-            /* Full 3D facing direction, used for looking; flattened (pitch-less)
-             * forward used for movement so looking up/down doesn't fly you
-             * into the ground/sky. */
             sgl_Vec3 forward = sgl_Vec3_New_ScalarXYZ(
                 sgl_Maths_Cos(pitch) * sgl_Maths_Sin(yaw),
                 sgl_Maths_Sin(pitch),

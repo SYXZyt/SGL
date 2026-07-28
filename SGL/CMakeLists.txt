@@ -92,9 +92,18 @@ add_library(SGL SHARED
     src/SGL/Graphics/Texture2DArray.cpp
     src/SGL/Graphics/Backends/DirectX/DXTexture2DArray.h
     src/SGL/Graphics/Backends/DirectX/DXTexture2DArray.cpp
- "src/SGL/Graphics/PostProcess.h" "src/SGL/Graphics/Backends/OpenGL/GLPostProcess.h" "src/SGL/Graphics/Backends/OpenGL/GLPostProcess.cpp" "src/SGL/Graphics/PostProcess.cpp" "src/SGL/Graphics/Backends/DirectX/DXPostProcess.h" "src/SGL/Graphics/Backends/DirectX/DXPostProcess.cpp" "src/SGL/Input/MouseButton.h" "src/SGL/Input/Mouse.h" "src/SGL/Input/Mouse.cpp"
+    src/SGL/Graphics/PostProcess.h
+    src/SGL/Graphics/Backends/OpenGL/GLPostProcess.h
+    src/SGL/Graphics/Backends/OpenGL/GLPostProcess.cpp
+    src/SGL/Graphics/PostProcess.cpp
+    src/SGL/Graphics/Backends/DirectX/DXPostProcess.h
+    src/SGL/Graphics/Backends/DirectX/DXPostProcess.cpp
+    src/SGL/Input/MouseButton.h
+    src/SGL/Input/Mouse.h
+    src/SGL/Input/Mouse.cpp
     src/SGL/Graphics/Model.h
-    src/SGL/Graphics/Model.cpp)
+    src/SGL/Graphics/Model.cpp
+)
 
 include(CMake/Dependencies.cmake)
 
@@ -102,7 +111,7 @@ if (WIN32)
     target_link_libraries(SGL PRIVATE d3d11.lib d3dcompiler.lib)
 endif ()
 
-target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm)
+target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm slang::gfx slang::slang)
 
 target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
 target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)

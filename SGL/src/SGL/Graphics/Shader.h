@@ -22,11 +22,17 @@ typedef struct sgl_Shader sgl_sealed
     struct sgl_GraphicsDevice* gpu;
     struct sgl_VertexLayout* layout;
     bool contentsLoaded;
+
+    char vertexEntryName[64];
+    char fragmentEntryName[64];
 } sgl_Shader;
 
 SGL_API extern sgl_Shader* sgl_Shader_Create(struct sgl_GraphicsDevice* gpu, struct sgl_VertexLayout* layout);
 SGL_API extern void sgl_Shader_Load_Source(sgl_Shader* shader, const char* vSrc, const char* fSrc);
 SGL_API extern void sgl_Shader_Load_Filename(sgl_Shader* shader, const char* vFile, const char* fFile);
+
+SGL_API extern void sgl_Shader_Load_Slang_File(sgl_Shader* shader, const char* file, const char* vertexEntry, const char* fragmentEntry);
+SGL_API extern void sgl_Shader_Load_Slang_Source(sgl_Shader* shader, const char* slangSource, const char* vertexEntry, const char* fragmentEntry);
 
 SGL_API extern bool sgl_Shader_Contents_Loaded(sgl_Shader* shader);
 
