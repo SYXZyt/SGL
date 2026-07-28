@@ -344,9 +344,15 @@ sgl_Mat4 sgl_Maths_Mat4_OrthographicGL(sgl_Vec2i screenSize, float zoom)
     return FromGLM(ortho);
 }
 
-sgl_Mat4 sgl_Maths_Mat4_View(sgl_Vec2 position, float angle)
+sgl_Mat4 sgl_Maths_Mat4_Perspective(float fovY, float aspectRatio, float nearPlane, float farPlane)
 {
-    glm::mat4 translation = glm::translate(glm::mat4(1.f), glm::vec3(-position.x, -position.y, 0.f));
+    glm::mat4 perspective = glm::perspective(fovY, aspectRatio, nearPlane, farPlane);
+    return FromGLM(perspective);
+}
+
+sgl_Mat4 sgl_Maths_Mat4_View(sgl_Vec3 position, float angle)
+{
+    glm::mat4 translation = glm::translate(glm::mat4(1.f), glm::vec3(-position.x, -position.y, -position.z));
 
     float c = sgl_Maths_Cos(-angle);
     float s = sgl_Maths_Sin(-angle);

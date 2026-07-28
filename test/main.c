@@ -130,7 +130,7 @@ const char* PostProcessEffectFragmentGL =
 "   FragCol = texture(frametexture, oUV);\n"
 "   vec3 rgb = FragCol.rgb;\n"
 "   vec3 inv_rgb = 1 - FragCol.rgb;\n"
-"   FragCol.rgb = mix(rgb, inv_rgb, sin(time));"
+"   FragCol.rgb = mix(rgb, inv_rgb, sin(time * 0.2));"
 "}\n";
 
 const char* PostProcessEffectVertexHLSL =
@@ -174,7 +174,7 @@ const char* PostProcessEffectPixelHLSL =
 "   float4 colour = FrameTexture.Sample(FrameSampler, input.UV);\n"
 "   float3 rgb = colour.rgb;\n"
 "   float3 inv_rgb = 1 - colour.rgb;\n"
-"   float3 finalColour = lerp(rgb, inv_rgb, sin(time));\n"
+"   float3 finalColour = lerp(rgb, inv_rgb, sin(time * 0.2));\n"
 "   return float4(finalColour, 1);\n"
 "}\n";
 
@@ -200,7 +200,12 @@ static void AddCubeFace(sgl_VertexArray* va, sgl_Vec3 tl, sgl_Vec3 tr, sgl_Vec3 
     Vertex vbl = { .pos = bl, .uv = sgl_Vec2_Up };
     Vertex vbr = { .pos = br, .uv = sgl_Vec2_One };
 
-    sgl_VertexArray_Quad q = { .tl = &vtl, .tr = &vtr, .bl = &vbl, .br = &vbr };
+    /* Reusing the flat ground-quad's tl/tr/bl/br order on each of the 6 cube
+     * faces produces a triangle winding that faces inward on every face, so
+     * back-face culling removes the whole cube. Swapping the diagonal pairs
+     * here only reorders the two triangles (fixing the winding); it doesn't
+     * touch which UV is attached to which physical corner. */
+    sgl_VertexArray_Quad q = { .tl = &vtr, .tr = &vtl, .bl = &vbr, .br = &vbl };
     sgl_VertexArray_AddQuad(va, q);
 }
 
@@ -317,37 +322,44 @@ int main(int argc, char** argv)
 
     UB ubData;
 
-    ubData.view = sgl_Maths_Mat4_View(sgl_Vec2_One, 0.0f);
+    ubData.view = sgl_Maths_Mat4_View(sgl_Vec3_One, 0.0f);
     ubData.proj = sgl_Maths_Mat4_OrthographicGL(window->screenSize, 1.0f);
+    ubData.proj = sgl_Maths_Mat4_Perspective(45.f, (float)window->screenSize.width / window->screenSize.height, 0.1, 1000);
 
     sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
     sgl_UniformBuffer_Upload(ub, &ubData);
 
     sgl_Texture* texture = sgl_Texture2DArray_New_File(gpu, "stone.png", sgl_Vec2i_New_Scalar(16));
 
-    sgl_Vec2 position = sgl_Vec2_Zero;
+    sgl_Vec3 position = sgl_Vec3_Zero;
+    position.z = 150;
     while (!window->wantsClose)
     {
         {
             ppUniforms.time += 0.1f;
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
 
-            sgl_Vec2 movement = sgl_Vec2_Zero;
+            sgl_Vec3 movement = sgl_Vec3_Zero;
 
             if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_A))
                 movement.x -= .01f;
             if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_D))
                 movement.x += .01f;
 
-            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_W))
-                movement.y -= .01f;
-            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_S))
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_SPACE))
                 movement.y += .01f;
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_LCTRL))
+                movement.y -= .01f;
 
-            if (sgl_Maths_Vec2_Length2(movement) > 0.f)
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_W))
+                movement.z -= .01f;
+            if (sgl_Keyboard_IsKeyDown(kb, sgl_Key_S))
+                movement.z += .01f;
+
+            if (sgl_Maths_Vec3_Length2(movement) > 0.f)
             {
-                movement = sgl_Maths_Vec2_Normalise(movement);
-                position = sgl_Vec2_Add_Vec2(position, movement);
+                movement = sgl_Maths_Vec3_Normalise(movement);
+                position = sgl_Vec3_Add_Vec3(position, movement);
 
                 ubData.view = sgl_Maths_Mat4_View(position, 0.0f);
                 sgl_UniformBuffer_Upload(ub, &ubData);
