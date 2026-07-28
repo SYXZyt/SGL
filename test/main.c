@@ -184,6 +184,48 @@ typedef struct sgl_alignas(16) PostProcessEffectUniforms
     sgl_Vec3 __pad;
 } PostProcessEffectUniforms;
 
+/* ---------------------------------------------------------------------
+ * Cube helpers
+ *
+ * These build on the same sgl_VertexArray_AddQuad() pattern the existing
+ * ground quad uses: 4 verts per face, 6 faces, no index buffer.
+ * Position convention follows the original quad (tl/tr have +Y, bl/br
+ * have -Y) so it matches how the rest of this file lays out geometry.
+ * --------------------------------------------------------------------- */
+
+static void AddCubeFace(sgl_VertexArray* va, sgl_Vec3 tl, sgl_Vec3 tr, sgl_Vec3 bl, sgl_Vec3 br)
+{
+    Vertex vtl = { .pos = tl, .uv = sgl_Vec2_Zero };
+    Vertex vtr = { .pos = tr, .uv = sgl_Vec2_Right };
+    Vertex vbl = { .pos = bl, .uv = sgl_Vec2_Up };
+    Vertex vbr = { .pos = br, .uv = sgl_Vec2_One };
+
+    sgl_VertexArray_Quad q = { .tl = &vtl, .tr = &vtr, .bl = &vbl, .br = &vbr };
+    sgl_VertexArray_AddQuad(va, q);
+}
+
+static void AddCube(sgl_VertexArray* va, sgl_Vec3 center, float halfSize)
+{
+    const float hs = halfSize;
+
+    sgl_Vec3 ftl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y + hs, center.z + hs);
+    sgl_Vec3 ftr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y + hs, center.z + hs);
+    sgl_Vec3 fbl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y - hs, center.z + hs);
+    sgl_Vec3 fbr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y - hs, center.z + hs);
+
+    sgl_Vec3 btl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y + hs, center.z - hs);
+    sgl_Vec3 btr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y + hs, center.z - hs);
+    sgl_Vec3 bbl = sgl_Vec3_New_ScalarXYZ(center.x - hs, center.y - hs, center.z - hs);
+    sgl_Vec3 bbr = sgl_Vec3_New_ScalarXYZ(center.x + hs, center.y - hs, center.z - hs);
+
+    AddCubeFace(va, ftl, ftr, fbl, fbr); /* front  (+Z) */
+    AddCubeFace(va, btr, btl, bbr, bbl); /* back   (-Z) */
+    AddCubeFace(va, btl, ftl, bbl, fbl); /* left   (-X) */
+    AddCubeFace(va, ftr, btr, fbr, bbr); /* right  (+X) */
+    AddCubeFace(va, btl, btr, ftl, ftr); /* top    (+Y) */
+    AddCubeFace(va, fbl, fbr, bbl, bbr); /* bottom (-Y) */
+}
+
 int main(int argc, char** argv)
 {
     sgl_Runtime_Init();
@@ -193,7 +235,7 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     cfg.enableImGui = true;
 
-    //cfg.backend = sgl_Backend_DIRECTX11;
+    cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
@@ -239,6 +281,12 @@ int main(int argc, char** argv)
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
     sgl_VertexArray_AddQuad(va, q);
+
+    /* --- New: a 3D cube, built in its own vertex array so it can sit
+     * alongside the ground quad. Placed off to the side so the two
+     * don't overlap. --- */
+    sgl_VertexArray* cubeVA = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
+    AddCube(cubeVA, sgl_Vec3_New_ScalarXYZ(100.f, 0.f, 0.f), 32.f);
 
     sgl_Shader* shader;
 
@@ -313,6 +361,7 @@ int main(int argc, char** argv)
 
         sgl_GraphicsDevice_BeginFrame(gpu);
         sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, &ub, 1);
+        sgl_GraphicsDevice_Draw(gpu, cubeVA, shader, &texture, 1, &ub, 1);
 
         if (sgl_InputFloat("Time", &ppUniforms.time, 1, 1, 0))
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
@@ -329,6 +378,7 @@ int main(int argc, char** argv)
     sgl_GraphicsDevice_ImGui_Shutdown(gpu);
     sgl_UniformBuffer_Destroy(ub);
     sgl_Shader_Destroy(shader);
+    sgl_VertexArray_Destroy(cubeVA);
     sgl_VertexArray_Destroy(va);
     sgl_VertexLayout_Destroy(layout);
     sgl_GraphicsDevice_Destroy(gpu);

@@ -254,3 +254,7 @@ sgl_Mat4 sgl_Maths_Mat4_Rotation(float angle, sgl_Vec3 axis)
     glm::vec3 glmAxis(axis.x, axis.y, axis.z);
     return FromGLM(glm::rotate(glm::mat4(1.f), angle, glmAxis));
 }
+
+sgl_Mat4 sgl_Maths_Mat4_Scale(sgl_Vec3 scale) {
+    return FromGLM(glm::scale(glm::mat4(1.f), glm::vec3(scale.x, scale.y, scale.z)));
+}

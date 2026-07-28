@@ -12,8 +12,8 @@ SGL_API extern const float sgl_Maths_HALF_PI;
 SGL_API extern const float sgl_Maths_TWO_PI;
 #define sgl_Maths_TAU sgl_Maths_TWO_PI
 
-#define sgl_Maths_DEG2RAD PI / 180.f
-#define sgl_Maths_RAD2DEG 180.f / PI
+#define sgl_Maths_DEG2RAD (sgl_Maths_PI / 180.f)
+#define sgl_Maths_RAD2DEG (180.f / sgl_Maths_PI)
 
 SGL_API extern const float sgl_Maths_EPS;
 SGL_API extern const float sgl_Maths_INF;
@@ -40,7 +40,7 @@ SGL_API extern float sgl_Maths_Sqrt(float x);
 #define sgl_Maths_Trunc(f) ((f) < 0 ? (float)(int)((f) + 1.f) : (float)(int)((f)))
 
 #define sgl_Maths_Rad(deg) ((deg) * sgl_Maths_DEG2RAD)
-#define sgl_Maths_Deg(rad) ((deg) * sgl_Maths_RAD2DEG)
+#define sgl_Maths_Deg(rad) ((rad) * sgl_Maths_RAD2DEG)
 
 #define sgl_Maths_Normalise(f, min, max) ((f) - (min)) / ((max) - (min))
 #define sgl_Maths_IsNan(f) ((f) != (f))
@@ -116,6 +116,7 @@ SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Transpose(sgl_Mat4 mat);
 
 SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Translation(sgl_Vec3 translation);
 SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Rotation(float angle, sgl_Vec3 axis);
+SGL_API extern sgl_Mat4 sgl_Maths_Mat4_Scale(sgl_Vec3 scale);
 #pragma endregion
 
 SGL_END
