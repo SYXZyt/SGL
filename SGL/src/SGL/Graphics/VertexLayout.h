@@ -29,6 +29,7 @@ enum
     sgl_POSITION,
     sgl_COLOUR,
     sgl_TEXCOORD,
+    sgl_NORMAL,
 };
 
 typedef struct sgl_VertexElement sgl_sealed

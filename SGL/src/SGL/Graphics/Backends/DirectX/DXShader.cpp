@@ -58,6 +58,9 @@ static const char* ToSemanticName(sgl_VertexElementSemantic semantic)
 
         case sgl_TEXCOORD:
             return "TEXCOORD";
+
+        case sgl_NORMAL:
+            return "NORMAL";
     }
 
     return "";

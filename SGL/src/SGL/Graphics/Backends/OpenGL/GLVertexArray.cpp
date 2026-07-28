@@ -154,12 +154,6 @@ sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* la
     va->base.needsIndexUpload = true;
     va->base.layoutDirty = true;
 
-    // glCreateBuffers/glCreateVertexArrays (not glGenBuffers/glGenVertexArrays):
-    // glGen* only reserves a name - the object isn't "real" until it's bound
-    // or written to at least once, so glVertexArrayElementBuffer() below
-    // would reject a glGenBuffers-named ebo that's never been touched yet
-    // (GL_INVALID_OPERATION: "Buffer name does not refer to a buffer object").
-    // glCreateBuffers/glCreateVertexArrays materialize the object immediately.
     glCreateVertexArrays(1, &va->vao);
     glCreateBuffers(1, &va->vbo);
     glCreateBuffers(1, &va->ebo);

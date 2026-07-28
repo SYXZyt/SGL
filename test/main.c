@@ -21,6 +21,7 @@
 typedef struct sgl_alignas(16) Vertex
 {
     sgl_Vec3 pos;
+    sgl_Vec3 normal;
     sgl_Vec2 uv;
     sgl_Vec2 __pad;
 } Vertex;
@@ -31,12 +32,24 @@ typedef struct sgl_alignas(16) UB
     sgl_Mat4 proj;
 } UB;
 
+/* Directional light. Vertices are already in world space (no model matrix
+ * in this demo), so normals need no extra transform - straight through. */
+typedef struct sgl_alignas(16) LightUB
+{
+    sgl_Vec3 direction; /* world-space direction FROM a surface TOWARD the light */
+    float ambient;
+    sgl_Vec3 colour;
+    float __pad;
+} LightUB;
+
 const char* VertexShaderSourceGL =
 "#version 460 core\n"
 "layout(location=0) in vec3 aPos;\n"
-"layout(location=1) in vec2 aUV;\n"
+"layout(location=1) in vec3 aNormal;\n"
+"layout(location=2) in vec2 aUV;\n"
 "\n"
 "out vec2 oUV;\n"
+"out vec3 oNormal;\n"
 "\n"
 "layout(std140, binding=0) uniform CameraBuffer\n"
 "{\n"
@@ -48,29 +61,46 @@ const char* VertexShaderSourceGL =
 "{\n"
 "    gl_Position = proj * view * vec4(aPos, 1.0);\n"
 "    oUV = aUV;\n"
+"    oNormal = aNormal;\n"
 "}\n";
 
 const char* FragmentShaderSourceGL =
 "#version 460 core\n"
 "in vec2 oUV;\n"
+"in vec3 oNormal;\n"
 "out vec4 FragCol;\n"
 "\n"
-"layout(binding = 0) uniform sampler2DArray tex;"
+"layout(binding = 0) uniform sampler2DArray tex;\n"
+"\n"
+"layout(std140, binding=1) uniform LightBuffer\n"
+"{\n"
+"    vec3 lightDir;\n"
+"    float ambient;\n"
+"    vec3 lightColour;\n"
+"};\n"
+"\n"
 "void main()\n"
 "{\n"
-"    FragCol = texture(tex, vec3(oUV, 3));\n"
+"    vec3 n = normalize(oNormal);\n"
+"    float ndotl = max(dot(n, normalize(lightDir)), 0.0);\n"
+"    vec3 lighting = lightColour * (ambient + (1.0 - ambient) * ndotl);\n"
+"\n"
+"    vec4 texColour = texture(tex, vec3(oUV, 3));\n"
+"    FragCol = vec4(texColour.rgb * lighting, texColour.a);\n"
 "}\n";
 
 const char* VertexShaderSourceDX =
 "struct VSInput\n"
 "{\n"
 "    float3 pos : POSITION;\n"
+"    float3 normal : NORMAL;\n"
 "    float2 uv : TEXCOORD;\n"
 "};\n"
 "\n"
 "struct VSOutput\n"
 "{\n"
 "    float4 pos : SV_POSITION;\n"
+"    float3 normal : NORMAL;\n"
 "    float2 uv : TEXCOORD;\n"
 "};\n"
 "\n"
@@ -84,6 +114,7 @@ const char* VertexShaderSourceDX =
 "{\n"
 "    VSOutput output;\n"
 "    output.pos = mul(Proj, mul(View, float4(input.pos, 1.0f)));\n"
+"    output.normal = input.normal;\n"
 "    output.uv = input.uv;\n"
 "    return output;\n"
 "}\n";
@@ -92,14 +123,29 @@ const char* PixelShaderSourceDX =
 "struct PSInput\n"
 "{\n"
 "    float4 pos : SV_POSITION;\n"
+"    float3 normal : NORMAL;\n"
 "    float2 uv : TEXCOORD;\n"
 "};\n"
 "\n"
 "Texture2DArray tex : register(t0);\n"
-"SamplerState texSampler : register(s0);"
+"SamplerState texSampler : register(s0);\n"
+"\n"
+"cbuffer LightBuffer : register(b1)\n"
+"{\n"
+"    float3 lightDir;\n"
+"    float ambient;\n"
+"    float3 lightColour;\n"
+"    float _pad;\n"
+"};\n"
+"\n"
 "float4 main(PSInput input) : SV_TARGET\n"
 "{\n"
-"   return tex.Sample(texSampler, float3(input.uv, 3));\n"
+"   float3 n = normalize(input.normal);\n"
+"   float ndotl = max(dot(n, normalize(lightDir)), 0.0f);\n"
+"   float3 lighting = lightColour * (ambient + (1.0f - ambient) * ndotl);\n"
+"\n"
+"   float4 texColour = tex.Sample(texSampler, float3(input.uv, 3));\n"
+"   return float4(texColour.rgb * lighting, texColour.a);\n"
 "}\n";
 
 const char* PostProcessEffectVertexGL =
@@ -199,10 +245,14 @@ typedef struct sgl_alignas(16) PostProcessEffectUniforms
 
 static void AddCubeFace(sgl_VertexArray* va, sgl_Vec3 tl, sgl_Vec3 tr, sgl_Vec3 bl, sgl_Vec3 br)
 {
-    Vertex vtl = { .pos = tl, .uv = sgl_Vec2_Up };
-    Vertex vtr = { .pos = tr, .uv = sgl_Vec2_One };
-    Vertex vbl = { .pos = bl, .uv = sgl_Vec2_Zero };
-    Vertex vbr = { .pos = br, .uv = sgl_Vec2_Right };
+    /* Flat-shaded: every vertex on this face shares the same outward-facing
+     * normal. Matches the winding fixed earlier: outward = Cross(tl-tr, bl-tr). */
+    sgl_Vec3 normal = sgl_Maths_Vec3_Normalise(sgl_Maths_Vec3_Cross(sgl_Vec3_Sub_Vec3(tl, tr), sgl_Vec3_Sub_Vec3(bl, tr)));
+
+    Vertex vtl = { .pos = tl, .normal = normal, .uv = sgl_Vec2_Up };
+    Vertex vtr = { .pos = tr, .normal = normal, .uv = sgl_Vec2_One };
+    Vertex vbl = { .pos = bl, .normal = normal, .uv = sgl_Vec2_Zero };
+    Vertex vbr = { .pos = br, .normal = normal, .uv = sgl_Vec2_Right };
 
     uint32 base = va->vertexCount;
 
@@ -249,7 +299,7 @@ int main(int argc, char** argv)
     sgl_EngineConfig cfg = sgl_EngineConfig_Default;
     cfg.enableImGui = true;
 
-    //cfg.backend = sgl_Backend_DIRECTX11;
+    cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
     sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
@@ -272,6 +322,14 @@ int main(int argc, char** argv)
             .perInstance = false,
         };
 
+        sgl_VertexElement normal =
+        {
+            .semantic = sgl_NORMAL,
+            .offset = offsetof(Vertex, normal),
+            .type = sgl_VertexElementType_VEC3,
+            .perInstance = false,
+        };
+
         sgl_VertexElement uv =
         {
             .semantic = sgl_TEXCOORD,
@@ -281,6 +339,7 @@ int main(int argc, char** argv)
         };
 
         sgl_VertexLayout_Add(layout, pos);
+        sgl_VertexLayout_Add(layout, normal);
         sgl_VertexLayout_Add(layout, uv);
     }
 
@@ -291,10 +350,18 @@ int main(int argc, char** argv)
     const float x = 64.f * scale;
     const float y = 64.f * scale;
 
-    Vertex tl = { .pos = sgl_Vec3_New_ScalarXYZ(-x,  y, 0), .uv = sgl_Vec2_Up };
-    Vertex tr = { .pos = sgl_Vec3_New_ScalarXYZ(x,  y, 0), .uv = sgl_Vec2_One };
-    Vertex bl = { .pos = sgl_Vec3_New_ScalarXYZ(-x, -y, 0), .uv = sgl_Vec2_Zero };
-    Vertex br = { .pos = sgl_Vec3_New_ScalarXYZ(x, -y, 0), .uv = sgl_Vec2_Right };
+    sgl_Vec3 qtl = sgl_Vec3_New_ScalarXYZ(-x,  y, 0);
+    sgl_Vec3 qtr = sgl_Vec3_New_ScalarXYZ(x,  y, 0);
+    sgl_Vec3 qbl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
+    sgl_Vec3 qbr = sgl_Vec3_New_ScalarXYZ(x, -y, 0);
+
+    /* Matches this quad's (unswapped) winding: t0=(tl,tr,br). */
+    sgl_Vec3 quadNormal = sgl_Maths_Vec3_Normalise(sgl_Maths_Vec3_Cross(sgl_Vec3_Sub_Vec3(qtr, qtl), sgl_Vec3_Sub_Vec3(qbr, qtl)));
+
+    Vertex tl = { .pos = qtl, .normal = quadNormal, .uv = sgl_Vec2_Up };
+    Vertex tr = { .pos = qtr, .normal = quadNormal, .uv = sgl_Vec2_One };
+    Vertex bl = { .pos = qbl, .normal = quadNormal, .uv = sgl_Vec2_Zero };
+    Vertex br = { .pos = qbr, .normal = quadNormal, .uv = sgl_Vec2_Right };
 
     sgl_VertexArray_AddVertex(va, &tl);
     sgl_VertexArray_AddVertex(va, &tr);
@@ -337,7 +404,7 @@ int main(int argc, char** argv)
         sgl_Shader_Load_Source(postProcessEffect->shader, PostProcessEffectVertexGL, PostProcessEffectFragmentGL);
     }
 
-    sgl_GraphicsDevice_AddEffect(gpu, postProcessEffect);
+    //sgl_GraphicsDevice_AddEffect(gpu, postProcessEffect);
 
     UB ubData;
 
@@ -347,6 +414,14 @@ int main(int argc, char** argv)
 
     sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
     sgl_UniformBuffer_Upload(ub, &ubData);
+
+    LightUB lightData;
+    lightData.direction = sgl_Maths_Vec3_Normalise(sgl_Vec3_New_ScalarXYZ(-0.4f, 1.0f, 0.3f));
+    lightData.ambient = 0.15f;
+    lightData.colour = sgl_Vec3_One;
+
+    sgl_UniformBuffer* lightUB = sgl_UniformBuffer_Create(gpu, sizeof(LightUB));
+    sgl_UniformBuffer_Upload(lightUB, &lightData);
 
     sgl_Texture* texture = sgl_Texture2DArray_New_File(gpu, "stone.png", sgl_Vec2i_New_Scalar(16));
 
@@ -420,9 +495,11 @@ int main(int argc, char** argv)
 
         sgl_GraphicsDevice_ImGui_NewFrame(gpu);
 
+        sgl_UniformBuffer* frameBuffers[] = { ub, lightUB };
+
         sgl_GraphicsDevice_BeginFrame(gpu);
-        sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, &ub, 1);
-        sgl_GraphicsDevice_Draw(gpu, cubeVA, shader, &texture, 1, &ub, 1);
+        sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, frameBuffers, 2);
+        sgl_GraphicsDevice_Draw(gpu, cubeVA, shader, &texture, 1, frameBuffers, 2);
 
         if (sgl_InputFloat("Time", &ppUniforms.time, 1, 1, 0))
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
@@ -439,6 +516,7 @@ int main(int argc, char** argv)
     sgl_Mouse_Destroy(mouse);
     sgl_GraphicsDevice_ImGui_Shutdown(gpu);
     sgl_UniformBuffer_Destroy(ub);
+    sgl_UniformBuffer_Destroy(lightUB);
     sgl_Shader_Destroy(shader);
     sgl_VertexArray_Destroy(cubeVA);
     sgl_VertexArray_Destroy(va);
