@@ -24,6 +24,11 @@ static const char* sgl_ANSI_Effect_Reverse = "\033[7m";
 static const char* sgl_ANSI_Effect_Hidden = "\033[8m";
 static const char* sgl_ANSI_Effect_Strike = "\033[9m";
 
+/// @brief Convert an rgb colour to an ansi code
+/// @param r The red value
+/// @param g The green value
+/// @param b The blue value
+/// @return An ansi escape code. Remember to free the result
 SGL_API extern sgl_String sgl_ANSI_MakeRGB(uint8 r, uint8 g, uint8 b);
 
 SGL_END

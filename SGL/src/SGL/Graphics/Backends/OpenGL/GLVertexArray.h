@@ -5,6 +5,7 @@
 
 SGL_BEGIN
 
+/// @brief OpenGL vertex array
 typedef struct sgl_GLVertexArray sgl_sealed
 {
     sgl_VertexArray base;
@@ -12,6 +13,7 @@ typedef struct sgl_GLVertexArray sgl_sealed
 
 } sgl_GLVertexArray;
 
+/// @brief Create an OpenGL vertex array
 SGL_API extern sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout);
 
 SGL_END

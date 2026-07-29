@@ -3,6 +3,7 @@
 
 SGL_BEGIN
 
+/// @brief A button on the mouse
 typedef uint8 sgl_MouseButton;
 enum
 {

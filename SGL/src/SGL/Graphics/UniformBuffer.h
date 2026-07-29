@@ -4,6 +4,7 @@
 
 SGL_BEGIN
 
+/// @brief Data type of a uniform
 typedef uint8 sgl_UniformType;
 enum
 {
@@ -23,6 +24,7 @@ typedef struct sgl_UniformBufferVTable sgl_sealed
 
 } sgl_UniformBufferVTable;
 
+/// @brief Handles constant buffer in a shader
 typedef struct sgl_UniformBuffer sgl_sealed
 {
     sgl_UniformBufferVTable* vtable;
@@ -30,10 +32,24 @@ typedef struct sgl_UniformBuffer sgl_sealed
     size_t size;
 } sgl_UniformBuffer;
 
+/// @brief Create a new uniform buffer
+/// @param gpu The device to use
+/// @param size How large in bytes, is the constant buffer
+/// @return The uniform buffer
 SGL_API extern sgl_UniformBuffer* sgl_UniformBuffer_Create(sgl_GraphicsDevice* gpu, size_t size);
+
+/// @brief Delete a constant buffer
+/// @param ub The buffer to delete
 SGL_API extern void sgl_UniformBuffer_Destroy(sgl_UniformBuffer* ub);
 
+/// @brief Bind a buffer to the current bound shader
+/// @param ub The buffer to bind
+/// @param slot The slot to bind into
 SGL_API extern void sgl_UniformBuffer_Bind(sgl_UniformBuffer* ub, uint32 slot);
+
+/// @brief Blit a CPU constant buffer to a GPU constant buffer
+/// @param ub The buffer to blit to
+/// @param data A pointer to the CPU data to blit
 SGL_API extern void sgl_UniformBuffer_Upload(sgl_UniformBuffer* ub, void* data);
 
 SGL_END
@@ -42,7 +58,7 @@ SGL_END
 
 template <typename T>
 inline void sgl_UniformBuffer_Upload(sgl_UniformBuffer* ub, T& t) {
-    sgl_UniformBuffer_Upload(ub, &t, sizeof(T));
+    sgl_UniformBuffer_Upload(ub, &t);
 }
 
 #endif

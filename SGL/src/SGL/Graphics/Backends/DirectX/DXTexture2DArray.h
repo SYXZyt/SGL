@@ -6,6 +6,7 @@
 
 SGL_BEGIN
 
+/// @brief DirectX texture array
 typedef struct sgl_DXTexture2DArray sgl_sealed
 {
     sgl_Texture2DArray base;
@@ -13,6 +14,7 @@ typedef struct sgl_DXTexture2DArray sgl_sealed
     ID3D11ShaderResourceView* textureView;
 } sgl_DXTexture2DArray;
 
+/// @brief Create a DirectX texture array
 SGL_API extern sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(sgl_GraphicsDevice* device, void* data, sgl_Vec2i atlasSize, sgl_Vec2i frameSize);
 
 SGL_END

@@ -6,6 +6,7 @@
 
 SGL_BEGIN
 
+/// @brief DirectX vertex array
 typedef struct sgl_DXVertexArray sgl_sealed
 {
     sgl_VertexArray base;
@@ -14,6 +15,7 @@ typedef struct sgl_DXVertexArray sgl_sealed
 
 } sgl_DXVertexArray;
 
+/// @brief Create a DirectX vertex array
 SGL_API extern sgl_DXVertexArray* sgl_DXVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout);
 
 SGL_END

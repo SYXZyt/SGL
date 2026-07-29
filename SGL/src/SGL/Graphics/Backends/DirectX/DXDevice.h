@@ -5,6 +5,7 @@
 
 SGL_BEGIN
 
+/// @brief DirectX graphics device
 typedef struct sgl_DXDevice sgl_sealed
 {
     sgl_GraphicsDevice base;
@@ -31,6 +32,7 @@ typedef struct sgl_DXDevice sgl_sealed
     ID3D11RenderTargetView* backBufferRtv;
 } sgl_DXDevice;
 
+/// @brief Create a new DirectX device
 SGL_API extern sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQuadLayout);
 
 SGL_END

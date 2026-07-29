@@ -7,24 +7,64 @@
 
 SGL_BEGIN
 
+/// @brief A rgba colour packed into a u32. Format: 0xrrggbbaa
 typedef uint32 sgl_PackedColour;
 
+/// @brief An RGBA colour
 typedef struct sgl_Colour sgl_sealed
 {
     float r, g, b, a;
 } sgl_Colour;
 
+/// @brief Convert a colour to a vec3, dropping the alpha component
+/// @param c The colour to convert
+/// @return The vec3 representation
 SGL_API extern sgl_Vec3 sgl_Colour_ToVec3(sgl_Colour c);
+
+/// @brief Convert a colour to a vec4
+/// @param c The colour to convert
+/// @return The vec4 representation
 SGL_API extern sgl_Vec4 sgl_Colour_ToVec4(sgl_Colour c);
 
+/// @brief Pack a colour
+/// @param colour The colour to pack
+/// @return The packed colour
 SGL_API extern sgl_PackedColour sgl_Colour_Pack(sgl_Colour colour);
+
+/// @brief Unpack an int to a colour
+/// @param colour The packed colour
+/// @return The unpacked colour
 SGL_API extern sgl_Colour sgl_Colour_Unpack(sgl_PackedColour colour);
 
-SGL_API extern sgl_Colour sgl_Colour_Float(float r, float g, float b); // Assumes a = 1
+/// @brief Create a colour from 3 floats, using 1 for the alpha
+/// @param r Red component
+/// @param g Green component
+/// @param b Blue component
+SGL_API extern sgl_Colour sgl_Colour_Float(float r, float g, float b);
+
+/// @brief Create a colour from 4 floats
+/// @param r Red component
+/// @param g Green component
+/// @param b Blue component
+/// @param a Alpha component
 SGL_API extern sgl_Colour sgl_Colour_FloatA(float r, float g, float b, float a);
-SGL_API extern sgl_Colour sgl_Colour_Byte(uint8 r, uint8 g, uint8 b); // Assumes a = 255
+
+/// @brief Create a colour from 3 bytes, using 255 for the alpha
+/// @param r Red component
+/// @param g Green component
+/// @param b Blue component
+SGL_API extern sgl_Colour sgl_Colour_Byte(uint8 r, uint8 g, uint8 b);
+
+/// @brief Create a colour from 4 bytes
+/// @param r Red compoment
+/// @param g Green component
+/// @param b Blue component
+/// @param a Alpha component
 SGL_API extern sgl_Colour sgl_Colour_ByteA(uint8 r, uint8 g, uint8 b, uint8 a);
 
+/// @brief Convert a colour from HSVA
+/// @param hsvColour A colour using R = H, G = S, B = V, A = A
+/// @return The converted RGBA colour
 SGL_API extern sgl_Colour sgl_Colour_FromHSV(sgl_Colour hsvColour);
 
 // Colours taken from https://www.w3.org/TR/css-color-4/#named-colors
