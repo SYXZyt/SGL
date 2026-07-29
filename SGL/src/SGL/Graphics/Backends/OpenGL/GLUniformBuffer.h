@@ -4,12 +4,14 @@
 
 SGL_BEGIN
 
+/// @brief OpenGL uniform buffer
 typedef struct sgl_GLUniformBuffer sgl_sealed
 {
     sgl_UniformBuffer base;
     gluint buffer;
 } sgl_GLUniformBuffer;
 
+/// @brief Create an OpenGL uniform buffer
 SGL_API extern sgl_GLUniformBuffer* sgl_GLUniformBuffer_New(sgl_GraphicsDevice* gpu, size_t size);
 
 SGL_END

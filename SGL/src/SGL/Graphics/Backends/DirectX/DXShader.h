@@ -6,6 +6,7 @@
 
 SGL_BEGIN
 
+/// @brief DirectX shader 
 typedef struct sgl_DXShader sgl_sealed
 {
     sgl_Shader base;
@@ -18,7 +19,8 @@ typedef struct sgl_DXShader sgl_sealed
     ID3DBlob* pixelBlob;
 } sgl_DXShader;
 
-SGL_API extern sgl_DXShader* sgl_DXShader_Create(const char* vsrc, const char* fsrc, sgl_VertexLayout* vertexLayout);
+/// @brief Create a DirectX shader
+SGL_API extern sgl_DXShader* sgl_DXShader_Create();
 
 SGL_END
 

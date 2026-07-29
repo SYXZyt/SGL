@@ -2,7 +2,7 @@
 #include <SGL/Maths/Maths.h>
 
 const sgl_Vec3 sgl_Vec3_Zero = { {{ 0.0f, 0.0f, 0.f }} };
-const sgl_Vec3 sgl_Vec3_One = { {{ 1.f, 1.f, 0.f }} };
+const sgl_Vec3 sgl_Vec3_One = { {{ 1.f, 1.f, 1.f }} };
 const sgl_Vec3 sgl_Vec3_Left = { {{ -1.f, 0.f, 0.f }} };
 const sgl_Vec3 sgl_Vec3_Right = { {{ 1.f, 0.f, 0.f }} };
 const sgl_Vec3 sgl_Vec3_Up = { {{ 0.f, 1.f, 0.f }} };
@@ -55,7 +55,7 @@ bool sgl_Vec3_Compare(sgl_Vec3 a, sgl_Vec3 b) {
 
 
 const sgl_Vec3i sgl_Vec3i_Zero = { {{ 0, 0, 0 }} };
-const sgl_Vec3i sgl_Vec3i_One = { {{ 1, 1, 0 }} };
+const sgl_Vec3i sgl_Vec3i_One = { {{ 1, 1, 1 }} };
 const sgl_Vec3i sgl_Vec3i_Left = { {{ -1, 0, 0 }} };
 const sgl_Vec3i sgl_Vec3i_Right = { {{ 1, 0, 0 }} };
 const sgl_Vec3i sgl_Vec3i_Up = { {{ 0, 1, 0 }} };

@@ -5,13 +5,62 @@
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/UniformBuffer.h>
+#include <SGL/Graphics/Texture2D.h>
+#include <SGL/Graphics/Backends/DirectX/DXPostProcess.h>
 #include <SGL/Util/Logger.h>
 #include <SGL/Util/Error.h>
 #include <sstream>
 #include <wrl/client.h>
 #include <dxgi.h>
+#include <imgui.h>
+#include <backends/imgui_impl_dx11.h>
+#include <backends/imgui_impl_sdl3.h>
 
 #define GetSelf sgl_DXDevice* self = (sgl_DXDevice*)dev
+
+const char* BlitVertex =
+"struct VSInput\n"
+"{\n"
+"    float3 Pos : POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"struct PSInput\n"
+"{\n"
+"    float4 Pos : SV_POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"PSInput main(VSInput input)\n"
+"{\n"
+"    PSInput output;\n"
+"    output.Pos = float4(input.Pos, 1.0f);\n"
+"    output.UV = input.UV;\n"
+"    return output;\n"
+"}\n";
+
+const char* BlitFragment =
+"Texture2D FrameTexture : register(t0);\n"
+"SamplerState FrameSampler : register(s0);\n"
+"\n"
+"struct PSInput\n"
+"{\n"
+"    float4 Pos : SV_POSITION;\n"
+"    float2 UV : TEXCOORD0;\n"
+"};\n"
+"\n"
+"float4 main(PSInput input) : SV_TARGET\n"
+"{\n"
+"    float4 colour = FrameTexture.Sample(FrameSampler, input.UV);\n"
+"    return colour;\n"
+"}\n";
+
+template <typename T>
+static void TryRelease(T* t)
+{
+    if (t)
+        t->Release();
+}
 
 static const char* FeatureLevelToString(D3D_FEATURE_LEVEL level)
 {
@@ -59,7 +108,7 @@ static void RecreateBackbuffer(sgl_DXDevice* self)
         ReportHRError("Failed to get buffer", hr);
         return;
     }
-    
+
 
     hr = self->device->CreateRenderTargetView(backBuffer, nullptr, &self->backBufferRtv);
     if (FAILED(hr))
@@ -77,6 +126,12 @@ static void DXDevice_SetClearColour(sgl_GraphicsDevice* dev, sgl_Colour colour) 
     dev->clearColour = colour;
 }
 
+static void DXDevice_SetDepthTestEnabled(sgl_GraphicsDevice* dev, bool enabled)
+{
+    GetSelf;
+    self->ctx->OMSetDepthStencilState(enabled ? self->depthStencilState : self->depthStencilDisabledState, 0);
+}
+
 static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 {
     GetSelf;
@@ -86,10 +141,23 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     self->ctx->OMSetRenderTargets(0, nullptr, nullptr);
 
-    if (self->backBufferRtv)
-        self->backBufferRtv->Release();
+    TryRelease(self->backBufferRtv);
 
-    HRESULT hr = self->swapchain->ResizeBuffers(0, dev->width, dev->height, DXGI_FORMAT_R8G8B8A8_UNORM, 0);
+    TryRelease(self->sceneSrv);
+    TryRelease(self->sceneRtv);
+    TryRelease(self->sceneTexture);
+
+    TryRelease(self->sceneDsv);
+    TryRelease(self->sceneDepthTexture);
+
+    HRESULT hr = self->swapchain->ResizeBuffers(
+        0,
+        dev->width,
+        dev->height,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        0
+    );
+
     if (FAILED(hr))
     {
         ReportHRError("Failed to resize swapchain", hr);
@@ -98,34 +166,154 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     RecreateBackbuffer(self);
 
+    D3D11_TEXTURE2D_DESC sceneDesc = {};
+    sceneDesc.Width = dev->width;
+    sceneDesc.Height = dev->height;
+    sceneDesc.MipLevels = 1;
+    sceneDesc.ArraySize = 1;
+    sceneDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    sceneDesc.SampleDesc.Count = 1;
+    sceneDesc.Usage = D3D11_USAGE_DEFAULT;
+    sceneDesc.BindFlags =
+        D3D11_BIND_RENDER_TARGET |
+        D3D11_BIND_SHADER_RESOURCE;
+
+    hr = self->device->CreateTexture2D(
+        &sceneDesc,
+        nullptr,
+        &self->sceneTexture
+    );
+
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene texture", hr);
+        return;
+    }
+
+    hr = self->device->CreateRenderTargetView(
+        self->sceneTexture,
+        nullptr,
+        &self->sceneRtv
+    );
+
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene RTV", hr);
+        return;
+    }
+
+    hr = self->device->CreateShaderResourceView(
+        self->sceneTexture,
+        nullptr,
+        &self->sceneSrv
+    );
+
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene SRV", hr);
+        return;
+    }
+
+    D3D11_TEXTURE2D_DESC depthDesc = {};
+    depthDesc.Width = dev->width;
+    depthDesc.Height = dev->height;
+    depthDesc.MipLevels = 1;
+    depthDesc.ArraySize = 1;
+    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    depthDesc.SampleDesc.Count = 1;
+    depthDesc.Usage = D3D11_USAGE_DEFAULT;
+    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+    hr = self->device->CreateTexture2D(&depthDesc, nullptr, &self->sceneDepthTexture);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene depth texture", hr);
+        return;
+    }
+
+    hr = self->device->CreateDepthStencilView(self->sceneDepthTexture, nullptr, &self->sceneDsv);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create scene DSV", hr);
+        return;
+    }
+
     D3D11_VIEWPORT viewport =
     {
         .Width = (FLOAT)dev->width,
         .Height = (FLOAT)dev->height,
-        .MinDepth = 0.f,
-        .MaxDepth = 1.f,
+        .MinDepth = 0.0f,
+        .MaxDepth = 1.0f,
     };
 
     self->ctx->RSSetViewports(1, &viewport);
 }
 
-static void DXDevice_Clear(sgl_GraphicsDevice* dev)
+static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
 {
     GetSelf;
-    self->ctx->ClearRenderTargetView(self->backBufferRtv, &dev->clearColour.r);
+
+    self->ctx->OMSetRenderTargets(1, &self->sceneRtv, self->sceneDsv);
+
+    self->ctx->ClearRenderTargetView(
+        self->sceneRtv,
+        &dev->clearColour.r
+    );
+
+    self->ctx->ClearDepthStencilView(self->sceneDsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
 }
 
-static void DXDevice_Present(sgl_GraphicsDevice* dev)
+static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
+{
+    GetSelf;
+
+    self->ctx->RSSetState(self->postProState);
+
+    sgl_PostProcess** effects;
+    size_t effectCount = sgl_GraphicsDevice_GetEffects(dev, &effects);
+
+    ID3D11ShaderResourceView* currentSrv = self->sceneSrv;
+
+    for (size_t i = 0; i < effectCount; ++i)
+    {
+        sgl_DXPostProcess* effect = (sgl_DXPostProcess*)effects[i];
+
+        if (!effect->base.enabled)
+            continue;
+
+        self->ctx->OMSetRenderTargets(1, &effect->renderTargetView, nullptr);
+
+        sgl_PostProcess_Bind(effects[i]);
+
+        self->ctx->PSSetShaderResources(0, 1, &currentSrv);
+
+        sgl_VertexArray_Bind(dev->screenQuad);
+
+        self->ctx->Draw(dev->screenQuad->vertexCount, 0);
+
+        ID3D11ShaderResourceView* nullSrv = nullptr;
+        self->ctx->PSSetShaderResources(0, 1, &nullSrv);
+
+        currentSrv = effect->shaderResourceView;
+    }
+
+    self->ctx->OMSetRenderTargets(1, &self->backBufferRtv, nullptr);
+    sgl_Shader_Bind(self->blitShader);
+    self->ctx->PSSetShaderResources(0, 1, &currentSrv);
+    sgl_VertexArray_Bind(dev->screenQuad);
+
+    self->ctx->Draw(dev->screenQuad->vertexCount, 0);
+
+    ID3D11ShaderResourceView* nullSrv = nullptr;
+    self->ctx->PSSetShaderResources(0, 1, &nullSrv);
+
+    self->ctx->RSSetState(self->rasterState);
+}
+
+static void DXDevice_SwapBuffer(sgl_GraphicsDevice* dev)
 {
     GetSelf;
     self->swapchain->Present(1, 0);
-}
-
-template <typename T>
-static void TryRelease(T* t)
-{
-    if (t)
-        t->Release();
 }
 
 static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
@@ -136,38 +324,110 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->ctx);
     TryRelease(self->device);
     TryRelease(self->swapchain);
+    TryRelease(self->sampler);
+    TryRelease(self->sceneRtv);
+    TryRelease(self->sceneSrv);
+    TryRelease(self->sceneTexture);
+    TryRelease(self->sceneDsv);
+    TryRelease(self->sceneDepthTexture);
+    TryRelease(self->depthStencilState);
+    TryRelease(self->depthStencilDisabledState);
+    TryRelease(self->rasterState);
+    TryRelease(self->postProState);
+
+    sgl_Shader_Destroy(self->blitShader);
 
     sgl::Memory::Delete(self);
 }
 
-static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, struct sgl_UniformBuffer** buffers, size_t count)
+static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount)
 {
     GetSelf;
 
     sgl_Shader_Bind(shr);
     sgl_VertexArray_Bind(va);
 
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < textureCount; ++i)
+        sgl_Texture_Bind(textures[i], (uint32)i);
+
+    for (size_t i = 0; i < bufferCount; ++i)
         sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
 
-    self->ctx->Draw(va->vertexCount, 0);
+    if (va->indexCount > 0)
+        self->ctx->DrawIndexed(va->indexCount, 0, 0);
+    else
+        self->ctx->Draw(va->vertexCount, 0);
+}
+
+static void DXDevice_ImGui_Init(sgl_GraphicsDevice* dev)
+{
+    GetSelf;
+
+    if (dev->window->cfg.enableImGui)
+    {
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        ImGui_ImplSDL3_InitForD3D(dev->window->window);
+        ImGui_ImplDX11_Init(self->device, self->ctx);
+    }
+}
+
+static void DXDevice_ImGui_Shutdown(sgl_GraphicsDevice* dev)
+{
+    if (dev->window->cfg.enableImGui)
+    {
+        ImGui_ImplDX11_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
+    }
+}
+
+static void DXDevice_ImGui_NewFrame(sgl_GraphicsDevice* dev)
+{
+    if (dev->window->cfg.enableImGui)
+    {
+        ImGui_ImplDX11_NewFrame();
+        ImGui_ImplSDL3_NewFrame();
+        ImGui::NewFrame();
+    }
+}
+
+static void DXDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* dev)
+{
+    if (dev->window->cfg.enableImGui)
+    {
+        ImGui::Render();
+        ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+    }
 }
 
 static const sgl_GraphicsDeviceVTable gDxVTable =
 {
     .SetClearColour = &sgl_GraphicsDevice_SetClearColour,
+    .SetDepthTestEnabled = &DXDevice_SetDepthTestEnabled,
     .Resize = &DXDevice_Resize,
-    .Clear = &DXDevice_Clear,
-    .Present = &DXDevice_Present,
+    .BeginFrame = &DXDevice_BeginFrame,
+    .EndFrame = &DXDevice_EndFrame,
     .Destroy = &DXDevice_Destroy,
+    .SwapBuffer = &DXDevice_SwapBuffer,
     .Draw = &DXDevice_Draw,
+
+    .ImGui_Init = &DXDevice_ImGui_Init,
+    .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
+    .ImGui_NewFrame = &DXDevice_ImGui_NewFrame,
+    .ImGui_RenderDrawData = &DXDevice_ImGui_RenderDrawData,
 };
 
-#endif
 
-sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
+sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQuadLayout)
 {
     sgl_DXDevice* device = sgl::Memory::New<sgl_DXDevice>();
+
+    UINT deviceFlags = 0;
+#ifdef _DEBUG
+    deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
+#endif
 
     device->base.clearColour = sgl_Col_CornflowerBlue;
     device->base.window = window;
@@ -185,7 +445,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     swapDesc.SampleDesc.Count = 1;
     swapDesc.Windowed = TRUE;
 
-    HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, 0, nullptr, 0, D3D11_SDK_VERSION, &swapDesc, &device->swapchain, &device->device, nullptr, &device->ctx);
+    HRESULT hr = D3D11CreateDeviceAndSwapChain(nullptr, D3D_DRIVER_TYPE_HARDWARE, nullptr, deviceFlags, nullptr, 0, D3D11_SDK_VERSION, &swapDesc, &device->swapchain, &device->device, nullptr, &device->ctx);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create device and swapchain", hr);
@@ -207,19 +467,151 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
     D3D11_RASTERIZER_DESC raster = {};
     raster.FillMode = D3D11_FILL_SOLID;
     raster.CullMode = D3D11_CULL_BACK;
-    raster.FrontCounterClockwise = false;
+    raster.FrontCounterClockwise = true;
 
-    ID3D11RasterizerState* rasterState = nullptr;
-
-    hr = device->device->CreateRasterizerState(&raster, &rasterState);
+    hr = device->device->CreateRasterizerState(&raster, &device->rasterState);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create rasteriser state", hr);
         return device;
     }
 
-    device->ctx->RSSetState(rasterState);
-    rasterState->Release();
+    device->ctx->RSSetState(device->rasterState);
+
+    raster.CullMode = D3D11_CULL_NONE;
+    hr = device->device->CreateRasterizerState(&raster, &device->postProState);
+
+#pragma region Framebuffer
+    {
+        D3D11_TEXTURE2D_DESC desc = {};
+        desc.Width = device->base.width;
+        desc.Height = device->base.height;
+        desc.MipLevels = 1;
+        desc.ArraySize = 1;
+        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+        desc.Usage = D3D11_USAGE_DEFAULT;
+        desc.BindFlags =
+            D3D11_BIND_RENDER_TARGET |
+            D3D11_BIND_SHADER_RESOURCE;
+
+        device->device->CreateTexture2D(
+            &desc,
+            nullptr,
+            &device->sceneTexture
+        );
+
+        device->device->CreateRenderTargetView(
+            device->sceneTexture,
+            nullptr,
+            &device->sceneRtv
+        );
+
+        device->device->CreateShaderResourceView(
+            device->sceneTexture,
+            nullptr,
+            &device->sceneSrv
+        );
+
+        D3D11_TEXTURE2D_DESC depthDesc = {};
+        depthDesc.Width = device->base.width;
+        depthDesc.Height = device->base.height;
+        depthDesc.MipLevels = 1;
+        depthDesc.ArraySize = 1;
+        depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+        depthDesc.SampleDesc.Count = 1;
+        depthDesc.Usage = D3D11_USAGE_DEFAULT;
+        depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+
+        hr = device->device->CreateTexture2D(&depthDesc, nullptr, &device->sceneDepthTexture);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create scene depth texture", hr);
+            return device;
+        }
+
+        hr = device->device->CreateDepthStencilView(device->sceneDepthTexture, nullptr, &device->sceneDsv);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create scene DSV", hr);
+            return device;
+        }
+
+        D3D11_DEPTH_STENCIL_DESC depthStateDesc = {};
+        depthStateDesc.DepthEnable = true;
+        depthStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+        depthStateDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+        hr = device->device->CreateDepthStencilState(&depthStateDesc, &device->depthStencilState);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create depth-stencil state", hr);
+            return device;
+        }
+
+        D3D11_DEPTH_STENCIL_DESC depthDisabledDesc = {};
+        depthDisabledDesc.DepthEnable = false;
+        depthDisabledDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+        depthDisabledDesc.DepthFunc = D3D11_COMPARISON_ALWAYS;
+
+        hr = device->device->CreateDepthStencilState(&depthDisabledDesc, &device->depthStencilDisabledState);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create disabled depth-stencil state", hr);
+            return device;
+        }
+
+        device->ctx->OMSetDepthStencilState(device->depthStencilState, 0);
+    }
+#pragma endregion
+
+#pragma region Blend State
+    D3D11_BLEND_DESC blendDesc{};
+    blendDesc.RenderTarget[0].BlendEnable = true;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
+    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+    ID3D11BlendState* blendState = nullptr;
+    hr = device->device->CreateBlendState(&blendDesc, &blendState);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create blend state", hr);
+        return device;
+    }
+
+    float blendFactor[4] = { 0, 0, 0, 0 };
+    device->ctx->OMSetBlendState(blendState, blendFactor, 0xffffffff);
+    blendState->Release();
+
+#pragma endregion
+
+#pragma region Sampler State
+    D3D11_SAMPLER_DESC sampDesc{};
+    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+    sampDesc.MinLOD = 0;
+    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+
+    hr = device->device->CreateSamplerState(&sampDesc, &device->sampler);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create sampler state", hr);
+        return device;
+    }
+
+    device->ctx->PSSetSamplers(0, 1, &device->sampler);
+#pragma endregion
+
+    device->blitShader = sgl_Shader_Create((sgl_GraphicsDevice*)device, screenQuadLayout);
+    sgl_Shader_Load_Source(device->blitShader, BlitVertex, BlitFragment);
 
     std::stringstream ss;
 
@@ -272,3 +664,5 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window)
 ret:
     return device;
 }
+
+#endif

@@ -5,6 +5,7 @@
 
 SGL_BEGIN
 
+/// @brief What data type is this element
 typedef uint8 sgl_VertexElementType;
 enum
 {
@@ -23,14 +24,17 @@ enum
     sgl_VertexElementType_VEC4,
 };
 
+/// @brief What this element is storing
 typedef uint8 sgl_VertexElementSemantic;
 enum
 {
     sgl_POSITION,
     sgl_COLOUR,
     sgl_TEXCOORD,
+    sgl_NORMAL,
 };
 
+/// @brief Description of one element for a vertex
 typedef struct sgl_VertexElement sgl_sealed
 {
     sgl_VertexElementSemantic semantic;
@@ -39,6 +43,7 @@ typedef struct sgl_VertexElement sgl_sealed
     bool perInstance; // Unused for now    
 } sgl_VertexElement;
 
+/// @brief List of element descriptions for a vertex
 typedef struct sgl_VertexLayout sgl_sealed
 {
     sgl_GraphicsDevice* gpu;
@@ -48,9 +53,22 @@ typedef struct sgl_VertexLayout sgl_sealed
     uint32 elementCapacity;
 } sgl_VertexLayout;
 
+/// @brief Create a new vertex layout
+/// @param gpu The device to use
 SGL_API extern sgl_VertexLayout* sgl_VertexLayout_New(sgl_GraphicsDevice* gpu);
+
+/// @brief Create a copy of an existing layout
+/// @param layout The layout to copy
+/// @return The copy
 SGL_API extern sgl_VertexLayout* sgl_VertexLayout_DeepCopy(sgl_VertexLayout* layout);
+
+/// @brief Add a new element to the layout
+/// @param layout The layout to use
+/// @param element The element to add
 SGL_API extern void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElement element);
+
+/// @brief Destroy a vertex layout
+/// @param layout The layout to destroy
 SGL_API extern void sgl_VertexLayout_Destroy(sgl_VertexLayout* layout);
 
 SGL_END

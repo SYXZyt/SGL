@@ -17,7 +17,7 @@ sgl_UniformBuffer* sgl_UniformBuffer_Create(sgl_GraphicsDevice* gpu, size_t size
         buffer = (sgl_UniformBuffer*)sgl_DXUniformBuffer_New(gpu, size);
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
-        return 
+        return nullptr;
 #endif
     }
     else

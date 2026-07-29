@@ -10,9 +10,6 @@ static void GLInitialise(sgl_Shader* shr)
 {
     GetSelf;
 
-    if (self->base.resource.isInitialised)
-        return;
-
     const char* v = shr->data_vcode.str;
     const char* f = shr->data_fcode.str;
 
@@ -59,8 +56,7 @@ static void GLInitialise(sgl_Shader* shr)
     glDeleteShader(vertex);
     glDeleteShader(fragment);
 
-    self->base.resource.initState = sgl_InitState_INITIALISED;
-    self->base.resource.isInitialised = true;
+    self->base.contentsLoaded = true;
 
     sgl_FreeString(shr->data_vcode);
     sgl_FreeString(shr->data_fcode);
@@ -69,10 +65,6 @@ static void GLInitialise(sgl_Shader* shr)
 static void GLBind(sgl_Shader* shr)
 {
     GetSelf;
-
-    if (shr->resource.initState != sgl_InitState_INITIALISED)
-        shr->vtable->Initialise(shr);
-
     glUseProgram(self->shaderId);
 }
 
@@ -83,21 +75,33 @@ static void GLDestroy(sgl_Shader* shr)
     sgl::Memory::Delete(self);
 }
 
+/// @todo Move the string set to be in the base, and then Load can be a one line call to Init (or put Init into the vtable)
+static void GLLoad(sgl_Shader* shr, const char* vSrc, const char* fSrc)
+{
+    if (shr->contentsLoaded)
+    {
+        SGL_REPORT_ERROR("Shader already loaded");
+        return;
+    }
+
+    shr->data_vcode = sgl_MakeString(vSrc);
+    shr->data_fcode = sgl_MakeString(fSrc);
+
+    GLInitialise(shr);
+}
+
 static const sgl_ShaderVTable gGLVTable =
 {
-    .Initialise = &GLInitialise,
     .Bind = &GLBind,
     .Destroy = &GLDestroy,
+    .Load = &GLLoad,
 };
 
-sgl_GLShader* sgl_GLShader_Create(const char* vsrc, const char* fsrc)
+sgl_GLShader* sgl_GLShader_Create()
 {
     sgl_GLShader* shader = sgl::Memory::New<sgl_GLShader>();
 
-    shader->base.resource.initState = sgl_InitState_LOADED;
-    shader->base.resource.isInitialised = false;
-    shader->base.data_vcode = sgl_MakeString(vsrc);
-    shader->base.data_fcode = sgl_MakeString(fsrc);
+    shader->base.contentsLoaded = false;
     shader->base.vtable = &gGLVTable;
 
     return shader;
