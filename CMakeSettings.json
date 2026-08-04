@@ -9,7 +9,12 @@
       "installRoot": "${projectDir}\\out\\install\\${name}",
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
-      "ctestCommandArgs": ""
+      "ctestCommandArgs": "",
+      "environments": [
+        {
+          "VCPKG_ROOT": "${env.VCPKG_ROOT}"
+        }
+      ]
     },
     {
       "name": "x64-Release",
@@ -20,7 +25,12 @@
       "cmakeCommandArgs": "",
       "buildCommandArgs": "",
       "ctestCommandArgs": "",
-      "inheritEnvironments": [ "msvc_x64_x64" ]
+      "inheritEnvironments": [ "msvc_x64_x64" ],
+      "environments": [
+        {
+          "VCPKG_ROOT": "${env.VCPKG_ROOT}"
+        }
+      ]
     }
   ]
 }

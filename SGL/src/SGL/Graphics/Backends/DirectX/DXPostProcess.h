@@ -5,6 +5,7 @@
 
 SGL_BEGIN
 
+/// @brief DirectX post processing effect
 typedef struct sgl_DXPostProcess
 {
     sgl_PostProcess base;
@@ -13,6 +14,7 @@ typedef struct sgl_DXPostProcess
     ID3D11ShaderResourceView* shaderResourceView;
 } sgl_DXPostProcess;
 
+/// @brief Create a DirectX post processing effect
 SGL_API extern sgl_DXPostProcess* sgl_DXPostProcess_Create(sgl_GraphicsDevice* device);
 
 SGL_END

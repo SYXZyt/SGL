@@ -3,6 +3,7 @@
 
 SGL_BEGIN
 
+/// @brief A key identifier
 typedef int sgl_Key;
 enum
 {
