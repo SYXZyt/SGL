@@ -19,6 +19,7 @@
 #include <stdio.h>
 #include <SGL/Graphics/Model.h>
 #include <threads.h>
+#include <time.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
@@ -56,9 +57,21 @@ static sgl_Shader* gShader = NULL;
 
 static volatile bool gHasLoadingBeenDone = false;
 
-static void LoadingThread()
+static sgl_GraphicsDevice* gGPU;
+static sgl_VertexLayout* gLayout;
+
+typedef struct timespec timespec;
+
+static int LoadingThread(void* arg)
 {
+    gShader = sgl_Shader_Create(gGPU, gLayout);
+    sgl_Shader_Load_Slang_File(gShader, "Object.slang", "vertexMain", "fragmentMain");
+
+    gSuzanne = sgl_Model_Load(gGPU, "suzanne.obj", sizeof(Vertex), gLayout);
+    gTexture = sgl_Texture2DArray_New_File(gGPU, "stone.png", sgl_Vec2i_New_Scalar(16));
+
     gHasLoadingBeenDone = true;
+    return 0;
 }
 
 int main(int argc, char** argv)
@@ -73,17 +86,17 @@ int main(int argc, char** argv)
     cfg.backend = sgl_Backend_DIRECTX11;
 
     sgl_Window* window = sgl_Window_Create(cfg);
-    sgl_GraphicsDevice* gpu = sgl_GraphicsDevice_Create(window);
+    gGPU = sgl_GraphicsDevice_Create(window);
 
-    sgl_GraphicsDevice_ImGui_Init(gpu);
+    sgl_GraphicsDevice_ImGui_Init(gGPU);
 
     sgl_Keyboard* kb = sgl_Keyboard_New(window);
 
     sgl_Mouse* mouse = sgl_Mouse_New(window);
     sgl_Mouse_SetRelativeMode(mouse, true);
 
-    sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
-
+    sgl_VertexLayout* layout = sgl_VertexLayout_New(gGPU);
+    gLayout = layout;
     {
         sgl_VertexElement pos =
         {
@@ -114,59 +127,52 @@ int main(int argc, char** argv)
         sgl_VertexLayout_Add(layout, uv);
     }
 
+    thrd_t thread;
 
-    sgl_VertexArray* va = sgl_VertexArray_Create(gpu, sizeof(Vertex), layout);
+    timespec start;
+    timespec end;
 
-    const float scale = 0.5f;
-    const float x = 64.f * scale;
-    const float y = 64.f * scale;
+    int _ = timespec_get(&start, TIME_UTC);
+    thrd_create(&thread, LoadingThread, NULL);
 
-    sgl_Vec3 qtl = sgl_Vec3_New_ScalarXYZ(-x, y, 0);
-    sgl_Vec3 qtr = sgl_Vec3_New_ScalarXYZ(x, y, 0);
-    sgl_Vec3 qbl = sgl_Vec3_New_ScalarXYZ(-x, -y, 0);
-    sgl_Vec3 qbr = sgl_Vec3_New_ScalarXYZ(x, -y, 0);
+    // Busy wait while waiting for resource loading
+    sgl_Log("Waiting for resource loading");
+    while (!gHasLoadingBeenDone)
+        thrd_yield();
 
-    sgl_Vec3 quadNormal = sgl_Maths_Vec3_Normalise(sgl_Maths_Vec3_Cross(sgl_Vec3_Sub_Vec3(qtr, qtl), sgl_Vec3_Sub_Vec3(qbr, qtl)));
+    thrd_join(thread, NULL);
 
-    Vertex tl = { .pos = qtl, .normal = quadNormal, .uv = sgl_Vec2_Up };
-    Vertex tr = { .pos = qtr, .normal = quadNormal, .uv = sgl_Vec2_One };
-    Vertex bl = { .pos = qbl, .normal = quadNormal, .uv = sgl_Vec2_Zero };
-    Vertex br = { .pos = qbr, .normal = quadNormal, .uv = sgl_Vec2_Right };
+    _ = timespec_get(&end, TIME_UTC);
 
-    sgl_VertexArray_AddVertex(va, &tl);
-    sgl_VertexArray_AddVertex(va, &tr);
-    sgl_VertexArray_AddVertex(va, &bl);
-    sgl_VertexArray_AddVertex(va, &br);
 
-    sgl_VertexArray_AddTriIndices(va, 0, 1, 3);
-    sgl_VertexArray_AddTriIndices(va, 0, 3, 2);
+    double elapsed =
+        (double)(end.tv_sec - start.tv_sec) +
+        (double)(end.tv_nsec - start.tv_nsec) / 1000000000.0;
 
-    sgl_VertexArray* suzanne = sgl_Model_Load(gpu, "suzanne.obj", sizeof(Vertex), layout);
+    char time[128];
+    memset(time, '\0', 128);
+    sprintf(time, "Resource loading done in %.3f seconds", elapsed);
+    sgl_Log(time);
 
-    sgl_Shader* shader;
-
-    sgl_PostProcess* postProcessEffect = sgl_PostProcess_Create(gpu, 1);
+    sgl_PostProcess* postProcessEffect = sgl_PostProcess_Create(gGPU, 1);
 
     PostProcessEffectUniforms ppUniforms;
     ppUniforms.time = 0;
 
-    sgl_UniformBuffer* ubPp = sgl_UniformBuffer_Create(gpu, sizeof(PostProcessEffectUniforms));
+    sgl_UniformBuffer* ubPp = sgl_UniformBuffer_Create(gGPU, sizeof(PostProcessEffectUniforms));
     sgl_PostProcess_AddUniformBuffer(postProcessEffect, ubPp, 0);
-
-    shader = sgl_Shader_Create(gpu, layout);
-    sgl_Shader_Load_Slang_File(shader, "Object.slang", "vertexMain", "fragmentMain");
 
     sgl_Shader_Load_Slang_File(postProcessEffect->shader, "PostProcess.slang", "vertexMain", "fragmentMain");
 
-    sgl_GraphicsDevice_AddEffect(gpu, postProcessEffect);
+    sgl_GraphicsDevice_AddEffect(gGPU, postProcessEffect);
 
     UB ubData;
 
     ubData.view = sgl_Maths_Mat4_View(sgl_Vec3_One, 0.0f);
     ubData.proj = sgl_Maths_Mat4_OrthographicGL(window->screenSize, 1.0f);
-    ubData.proj = sgl_Maths_Mat4_Perspective(45.f, (float)window->screenSize.width / window->screenSize.height, 0.1, 1000);
+    ubData.proj = sgl_Maths_Mat4_Perspective(45.f, (float)window->screenSize.width / window->screenSize.height, 0.1f, 1000);
 
-    sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gpu, sizeof(UB));
+    sgl_UniformBuffer* ub = sgl_UniformBuffer_Create(gGPU, sizeof(UB));
     sgl_UniformBuffer_Upload(ub, &ubData);
 
     LightUB lightData;
@@ -174,10 +180,8 @@ int main(int argc, char** argv)
     lightData.ambient = 0.15f;
     lightData.colour = sgl_Vec3_One;
 
-    sgl_UniformBuffer* lightUB = sgl_UniformBuffer_Create(gpu, sizeof(LightUB));
+    sgl_UniformBuffer* lightUB = sgl_UniformBuffer_Create(gGPU, sizeof(LightUB));
     sgl_UniformBuffer_Upload(lightUB, &lightData);
-
-    sgl_Texture* texture = sgl_Texture2DArray_New_File(gpu, "stone.png", sgl_Vec2i_New_Scalar(16));
 
     sgl_Vec3 position = sgl_Vec3_New_ScalarXYZ(0.f, 0.f, 150.f);
     float yaw = sgl_Maths_ATan2(100.f - position.x, 0.f - position.z); /* start facing the cube */
@@ -249,41 +253,39 @@ int main(int argc, char** argv)
         sgl_Mouse_Update(mouse);
         sgl_Keyboard_Update(kb);
 
-        sgl_GraphicsDevice_ImGui_NewFrame(gpu);
+        sgl_GraphicsDevice_ImGui_NewFrame(gGPU);
 
         sgl_UniformBuffer* frameBuffers[] = { ub, lightUB };
 
-        sgl_GraphicsDevice_BeginFrame(gpu);
-        sgl_GraphicsDevice_Draw(gpu, suzanne, shader, &texture, 1, frameBuffers, 2);
-        sgl_GraphicsDevice_Draw(gpu, va, shader, &texture, 1, frameBuffers, 2);
+        sgl_GraphicsDevice_BeginFrame(gGPU);
+        sgl_GraphicsDevice_Draw(gGPU, gSuzanne, gShader, &gTexture, 1, frameBuffers, 2);
 
         if (sgl_InputFloat("Time", &ppUniforms.time, 1, 1, 0))
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
 
         {
-            bool depthTestEnabled = sgl_GraphicsDevice_GetDepthTestEnabled(gpu);
+            bool depthTestEnabled = sgl_GraphicsDevice_GetDepthTestEnabled(gGPU);
             if (sgl_Checkbox("Depth Test", &depthTestEnabled))
-                sgl_GraphicsDevice_SetDepthTestEnabled(gpu, depthTestEnabled);
+                sgl_GraphicsDevice_SetDepthTestEnabled(gGPU, depthTestEnabled);
         }
 
-        sgl_GraphicsDevice_EndFrame(gpu);
-        sgl_GraphicsDevice_ImGui_RenderDrawData(gpu);
-        sgl_GraphicsDevice_SwapBuffer(gpu);
+        sgl_GraphicsDevice_EndFrame(gGPU);
+        sgl_GraphicsDevice_ImGui_RenderDrawData(gGPU);
+        sgl_GraphicsDevice_SwapBuffer(gGPU);
     }
 
     sgl_UniformBuffer_Destroy(ubPp);
     sgl_PostProcess_Destroy(postProcessEffect);
-    sgl_Texture_Destroy(texture);
+    sgl_Texture_Destroy(gTexture);
     sgl_Keyboard_Destroy(kb);
     sgl_Mouse_Destroy(mouse);
-    sgl_GraphicsDevice_ImGui_Shutdown(gpu);
+    sgl_GraphicsDevice_ImGui_Shutdown(gGPU);
     sgl_UniformBuffer_Destroy(ub);
     sgl_UniformBuffer_Destroy(lightUB);
-    sgl_Shader_Destroy(shader);
-    sgl_VertexArray_Destroy(suzanne);
-    sgl_VertexArray_Destroy(va);
+    sgl_Shader_Destroy(gShader);
+    sgl_VertexArray_Destroy(gSuzanne);
     sgl_VertexLayout_Destroy(layout);
-    sgl_GraphicsDevice_Destroy(gpu);
+    sgl_GraphicsDevice_Destroy(gGPU);
     sgl_Window_Destroy(window);
 
     sgl_Logger_Shutdown();

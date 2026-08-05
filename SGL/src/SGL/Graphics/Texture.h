@@ -18,6 +18,9 @@ typedef struct sgl_Texture sgl_sealed
     const sgl_TextureVTable* vtable;
     sgl_GraphicsDevice* gpu;
     sgl_Vec2i size;
+
+    /// @brief Checks if the data has been created on the GPU. Bind (which must run on main thread) will upload data
+    bool gpuLoaded;
 } sgl_Texture;
 
 /// @brief Destroy a texture

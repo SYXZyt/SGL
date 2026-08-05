@@ -9,6 +9,9 @@ typedef struct sgl_Texture2DArray sgl_sealed
     sgl_Texture base;
     sgl_Vec2i frameSize;
     uint32 textureCount;
+
+    /// @brief CPU-side decoded pixel data. Waiting for GPU upload
+    void* pixels;
 } sgl_Texture2DArray;
 
 /// @brief Create a new 2D texture array from a file

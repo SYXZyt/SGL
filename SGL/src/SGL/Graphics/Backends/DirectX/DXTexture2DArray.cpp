@@ -2,6 +2,7 @@
 #ifdef SGL_DIRECTX
 #include <SGL/Util/Error.h>
 #include <SGL/Util/Memory.h>
+#include <stb/stb_image.h>
 #include <sstream>
 #include <SGL/Graphics/Backends/DirectX/DXDevice.h>
 #include <vector>
@@ -25,34 +26,21 @@ static void DXDestroy(sgl_Texture* tex)
     if (self->textureView)
         self->textureView->Release();
 
+    if (self->base.pixels)
+        stbi_image_free(self->base.pixels);
+
     sgl::Memory::Delete(self);
 }
 
-static void DXBind(sgl_Texture* tex, uint32 unit)
+static void DXEnsureGPUResources(sgl_DXTexture2DArray* self)
 {
-    GetSelf;
-
-    sgl_DXDevice* device = (sgl_DXDevice*)tex->gpu;
-    device->ctx->PSSetShaderResources(unit, 1, &self->textureView);
-}
-
-static sgl_TextureVTable gDXVTable =
-{
-    .Destroy = &DXDestroy,
-    .Bind = &DXBind,
-};
-
-sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(sgl_GraphicsDevice* device, void* data, sgl_Vec2i atlasSize, sgl_Vec2i frameSize)
-{
-    sgl_DXTexture2DArray* texture = sgl::Memory::New<sgl_DXTexture2DArray>();
-    texture->base.base.size = atlasSize;
-    texture->base.frameSize = frameSize;
-    texture->base.base.vtable = &gDXVTable;
+    sgl_Texture* tex = &self->base.base;
+    sgl_Vec2i atlasSize = tex->size;
+    sgl_Vec2i frameSize = self->base.frameSize;
+    uint32 sliceCount = self->base.textureCount;
 
     uint32 cols = atlasSize.width / frameSize.width;
     uint32 rows = atlasSize.height / frameSize.height;
-    uint32 sliceCount = cols * rows;
-    texture->base.textureCount = sliceCount;
 
     D3D11_TEXTURE2D_DESC desc{};
     desc.Width = frameSize.width;
@@ -64,7 +52,7 @@ sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(sgl_GraphicsDevice* device, vo
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 
-    const byte* bytes = (const byte*)data;
+    const byte* bytes = (const byte*)self->base.pixels;
     std::vector<D3D11_SUBRESOURCE_DATA> initData(sliceCount);
     for (uint32 y = 0; y < rows; ++y)
     {
@@ -84,17 +72,21 @@ sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(sgl_GraphicsDevice* device, vo
         }
     }
 
-    sgl_DXDevice* dxDevice = (sgl_DXDevice*)device;
+    sgl_DXDevice* dxDevice = (sgl_DXDevice*)tex->gpu;
 
-    HRESULT hr = dxDevice->device->CreateTexture2D(&desc, initData.data(), &texture->texture);
+    HRESULT hr = dxDevice->device->CreateTexture2D(&desc, initData.data(), &self->texture);
+
+    for (auto& d : initData)
+        sgl_Free(const_cast<void*>(d.pSysMem));
+
+    stbi_image_free(self->base.pixels);
+    self->base.pixels = nullptr;
+
     if (FAILED(hr))
     {
         ReportHRError("Failed to create texture", hr);
-
-        for (auto& data : initData)
-            sgl_Free(const_cast<void*>(data.pSysMem));
-
-        return texture;
+        tex->gpuLoaded = true;
+        return;
     }
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -105,14 +97,47 @@ sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(sgl_GraphicsDevice* device, vo
     srvDesc.Texture2DArray.FirstArraySlice = 0;
     srvDesc.Texture2DArray.MostDetailedMip = 0;
 
-    hr = dxDevice->device->CreateShaderResourceView(texture->texture, &srvDesc, &texture->textureView);
-    if (FAILED(hr) || !texture->textureView)
+    hr = dxDevice->device->CreateShaderResourceView(self->texture, &srvDesc, &self->textureView);
+    if (FAILED(hr) || !self->textureView)
         ReportHRError("Failed to create shader resource view", hr);
+    else
+        dxDevice->ctx->GenerateMips(self->textureView);
 
-    dxDevice->ctx->GenerateMips(texture->textureView);
+    tex->gpuLoaded = true;
+}
 
-    for (auto& data : initData)
-        sgl_Free(const_cast<void*>(data.pSysMem));
+static void DXBind(sgl_Texture* tex, uint32 unit)
+{
+    GetSelf;
+
+    if (!tex->gpuLoaded)
+        DXEnsureGPUResources(self);
+
+    sgl_DXDevice* device = (sgl_DXDevice*)tex->gpu;
+    device->ctx->PSSetShaderResources(unit, 1, &self->textureView);
+}
+
+static sgl_TextureVTable gDXVTable =
+{
+    .Destroy = &DXDestroy,
+    .Bind = &DXBind,
+};
+
+sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(void* data, sgl_Vec2i atlasSize, sgl_Vec2i frameSize)
+{
+    sgl_DXTexture2DArray* texture = sgl::Memory::New<sgl_DXTexture2DArray>();
+    texture->base.base.size = atlasSize;
+    texture->base.frameSize = frameSize;
+    texture->base.base.vtable = &gDXVTable;
+    texture->base.base.gpuLoaded = false;
+    texture->base.pixels = data;
+
+    uint32 cols = atlasSize.width / frameSize.width;
+    uint32 rows = atlasSize.height / frameSize.height;
+    texture->base.textureCount = cols * rows;
+
+    texture->texture = nullptr;
+    texture->textureView = nullptr;
 
     return texture;
 }

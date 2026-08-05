@@ -2,6 +2,9 @@
 #include <vector>
 #include <osbridge.h>
 #include <print>
+#include <algorithm>
+#include <atomic>
+#include <mutex>
 
 #if defined(_WIN32)
 #include <DbgHelp.h>
@@ -11,8 +14,9 @@
 #endif
 
 static std::vector<sgl_MemoryTrack> gTracks;
-static size_t gTotalAllocated = 0;
+static std::atomic<size_t> gTotalAllocated = 0;
 static bool gStackTrace = false;
+static std::mutex gMemoryMutex;
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
 #include <unordered_set>
@@ -63,11 +67,13 @@ void sgl_Memory_StackTrace(bool enable) {
 }
 
 size_t sgl_Memory_GetTotalAllocated() {
-    return gTotalAllocated;
+    return gTotalAllocated.load();
 }
 
 void sgl_Memory_ReportLeaks()
 {
+    std::lock_guard lock(gMemoryMutex);
+
     for (const sgl_MemoryTrack& t : gTracks)
     {
         std::println("Memory Leak Detected: Ptr = {}, Size = {}, Type = '{}'", t.ptr, t.size, t.T);
@@ -92,14 +98,20 @@ void sgl_Memory_AddTrack(void* ptr, size_t size, const char* T)
 
     if (gStackTrace)
         track.stackSize = CaptureStack(track.stack, SGL_MEMORY_MAX_STACKFRAMES);
-            
+
+    std::lock_guard lock(gMemoryMutex);
     gTracks.push_back(track);
 }
 
-void sgl_Memory_PopTrack()
+void sgl_Memory_RetagTrack(void* ptr, const char* T)
 {
-    if (!gTracks.empty())
-        gTracks.pop_back();
+    std::lock_guard lock(gMemoryMutex);
+
+    auto it = std::find_if(gTracks.begin(), gTracks.end(),
+        [ptr](const sgl_MemoryTrack& t) { return t.ptr == ptr; });
+
+    if (it != gTracks.end())
+        it->T = T;
 }
 
 void* sgl_Malloc(size_t size)
@@ -112,7 +124,10 @@ void* sgl_Malloc(size_t size)
         return nullptr;
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
-    gOwnedPointers.insert(ptr);
+    {
+        std::lock_guard lock(gMemoryMutex);
+        gOwnedPointers.insert(ptr);
+    }
 #endif
 
 #ifdef SGL_MEMORY_TRACK
@@ -142,6 +157,8 @@ void* sgl_Realloc(void* ptr, size_t newSize)
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
     if (newPtr != ptr)
     {
+        std::lock_guard lock(gMemoryMutex);
+
         auto it = gOwnedPointers.find(ptr);
         if (it != gOwnedPointers.end())
         {
@@ -153,6 +170,8 @@ void* sgl_Realloc(void* ptr, size_t newSize)
 
 #ifdef SGL_MEMORY_TRACK
     {
+        std::lock_guard lock(gMemoryMutex);
+
         auto it = std::find_if(gTracks.begin(), gTracks.end(),
             [ptr](const sgl_MemoryTrack& t) { return t.ptr == ptr; });
 
@@ -174,6 +193,8 @@ void sgl_Free(void* ptr)
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
     {
+        std::lock_guard lock(gMemoryMutex);
+
         auto it = gOwnedPointers.find(ptr);
 
         if (it == gOwnedPointers.end())
@@ -188,6 +209,8 @@ void sgl_Free(void* ptr)
 
 #ifdef SGL_MEMORY_TRACK
     {
+        std::lock_guard lock(gMemoryMutex);
+
         auto it = std::find_if(gTracks.begin(), gTracks.end(), [ptr](const sgl_MemoryTrack& track) { return ptr == track.ptr; });
 
         if (it != gTracks.end())

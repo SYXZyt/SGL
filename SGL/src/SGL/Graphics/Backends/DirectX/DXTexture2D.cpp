@@ -2,6 +2,7 @@
 #include <SGL/Util/Memory.h>
 #include <SGL/Graphics/Backends/DirectX/DXDevice.h>
 #include <SGL/Util/Error.h>
+#include <stb/stb_image.h>
 #include <sstream>
 
 static void ReportHRError(const char* message, HRESULT hr)
@@ -20,32 +21,23 @@ static void DXTexture_Destroy(sgl_Texture* tex)
     if (self->texture)
         self->texture->Release();
 
+    if (self->textureView)
+        self->textureView->Release();
+
+    if (self->base.pixels)
+        stbi_image_free(self->base.pixels);
+
     sgl::Memory::Delete(self);
 }
 
-static void DXTexture_Bind(sgl_Texture* tex, uint32 unit)
+static void DXEnsureGPUResources(sgl_DXTexture2D* self)
 {
-    GetSelf;
+    sgl_Texture* tex = &self->base.base;
     sgl_DXDevice* device = (sgl_DXDevice*)tex->gpu;
 
-    device->ctx->PSSetShaderResources(unit, 1, &self->textureView);
-}
-
-static sgl_TextureVTable gDXVTable =
-{
-    .Destroy = &DXTexture_Destroy,
-    .Bind = &DXTexture_Bind,
-};
-
-sgl_DXTexture2D* sgl_DXTexture2D_Create(sgl_GraphicsDevice* device, void* data, sgl_Vec2i size)
-{
-    sgl_DXTexture2D* texture = sgl::Memory::New<sgl_DXTexture2D>();
-    texture->base.base.size = size;
-    texture->base.base.vtable = &gDXVTable;
-
     D3D11_TEXTURE2D_DESC desc{};
-    desc.Width = size.width;
-    desc.Height = size.height;
+    desc.Width = tex->size.width;
+    desc.Height = tex->size.height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -56,19 +48,22 @@ sgl_DXTexture2D* sgl_DXTexture2D_Create(sgl_GraphicsDevice* device, void* data, 
     desc.MiscFlags = 0;
 
     D3D11_SUBRESOURCE_DATA initData{};
-    initData.pSysMem = data;
-    initData.SysMemPitch = size.width * 4;
+    initData.pSysMem = self->base.pixels;
+    initData.SysMemPitch = tex->size.width * 4;
 
-    sgl_DXDevice* dxDevice = (sgl_DXDevice*)device;
-    HRESULT hr = dxDevice->device->CreateTexture2D(
+    HRESULT hr = device->device->CreateTexture2D(
         &desc,
         &initData,
-        &texture->texture);
+        &self->texture);
+
+    stbi_image_free(self->base.pixels);
+    self->base.pixels = nullptr;
 
     if (FAILED(hr))
     {
         ReportHRError("Failed to create texture", hr);
-        return texture;
+        tex->gpuLoaded = true;
+        return;
     }
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
@@ -77,18 +72,49 @@ sgl_DXTexture2D* sgl_DXTexture2D_Create(sgl_GraphicsDevice* device, void* data, 
     srvDesc.Texture2D.MostDetailedMip = 0;
     srvDesc.Texture2D.MipLevels = 1;
 
-    hr = dxDevice->device->CreateShaderResourceView(
-        texture->texture,
+    hr = device->device->CreateShaderResourceView(
+        self->texture,
         &srvDesc,
-        &texture->textureView);
+        &self->textureView);
 
     if (FAILED(hr))
     {
         ReportHRError("Failed to create shader resource view", hr);
-        return texture;
+        tex->gpuLoaded = true;
+        return;
     }
 
-    dxDevice->ctx->GenerateMips(texture->textureView);
+    device->ctx->GenerateMips(self->textureView);
+
+    tex->gpuLoaded = true;
+}
+
+static void DXTexture_Bind(sgl_Texture* tex, uint32 unit)
+{
+    GetSelf;
+
+    if (!tex->gpuLoaded)
+        DXEnsureGPUResources(self);
+
+    sgl_DXDevice* device = (sgl_DXDevice*)tex->gpu;
+    device->ctx->PSSetShaderResources(unit, 1, &self->textureView);
+}
+
+static sgl_TextureVTable gDXVTable =
+{
+    .Destroy = &DXTexture_Destroy,
+    .Bind = &DXTexture_Bind,
+};
+
+sgl_DXTexture2D* sgl_DXTexture2D_Create(void* data, sgl_Vec2i size)
+{
+    sgl_DXTexture2D* texture = sgl::Memory::New<sgl_DXTexture2D>();
+    texture->base.base.size = size;
+    texture->base.base.vtable = &gDXVTable;
+    texture->base.base.gpuLoaded = false;
+    texture->base.pixels = data;
+    texture->texture = nullptr;
+    texture->textureView = nullptr;
 
     return texture;
 }

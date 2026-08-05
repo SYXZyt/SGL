@@ -14,7 +14,7 @@ typedef struct sgl_DXTexture2D sgl_sealed
 } sgl_DXTexture2D;
 
 /// @brief Create a new directx texture
-SGL_API extern sgl_DXTexture2D* sgl_DXTexture2D_Create(sgl_GraphicsDevice* device, void* data, sgl_Vec2i size);
+SGL_API extern sgl_DXTexture2D* sgl_DXTexture2D_Create(void* data, sgl_Vec2i size);
 
 SGL_END
 

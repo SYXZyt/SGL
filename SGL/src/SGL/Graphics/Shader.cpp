@@ -23,11 +23,17 @@ static slang::IGlobalSession* GetSlangGlobalSession()
     static Slang::ComPtr<slang::IGlobalSession> session;
     if (!session)
         slang::createGlobalSession(session.writeRef());
+
     return session.get();
 }
 
-void sgl_Shader_Load_Source(sgl_Shader* shader, const char* vSrc, const char* fSrc) {
-    shader->vtable->Load(shader, vSrc, fSrc);
+void sgl_Shader_Load_Source(sgl_Shader* shader, const char* vSrc, const char* fSrc)
+{
+    if (shader->data_fcode.len || shader->data_vcode.len)
+        SGL_REPORT_ERROR("Shader already has already had contents assigned");
+
+    shader->data_vcode = sgl_MakeString(vSrc);
+    shader->data_fcode = sgl_MakeString(fSrc);
 }
 
 void sgl_Shader_Load_Slang_File(sgl_Shader* shader, const char* file, const char* vertexEntry, const char* fragmentEntry)
@@ -154,10 +160,6 @@ void sgl_Shader_Load_File(sgl_Shader* shader, const char* vFile, const char* fFi
     fs << f.rdbuf();
 
     sgl_Shader_Load_Source(shader, vs.str().c_str(), fs.str().c_str());
-}
-
-bool sgl_Shader_Contents_Loaded(sgl_Shader* shader) {
-    return shader->contentsLoaded;
 }
 
 sgl_Shader* sgl_Shader_Create(sgl_GraphicsDevice* gpu, sgl_VertexLayout* layout)
