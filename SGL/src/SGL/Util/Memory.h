@@ -47,8 +47,10 @@ SGL_API extern void sgl_Memory_ReportLeaks();
 /// @param T The type name
 SGL_API extern void sgl_Memory_AddTrack(void* ptr, size_t size, const char* T);
 
-/// @brief Pop a track off from the allocator
-SGL_API extern void sgl_Memory_PopTrack();
+/// @brief Update the type name of an existing track
+/// @param ptr The address to retag
+/// @param T The type name to apply
+SGL_API extern void sgl_Memory_RetagTrack(void* ptr, const char* T);
 
 /// @brief Allocate memory
 /// @param size How many bytes to allocate
@@ -91,9 +93,8 @@ namespace sgl
                 return nullptr;
 
 #ifdef SGL_MEMORY_TRACK
-            // Malloc will have added a track, so we can remove that and add one with the correct type name
-            sgl_Memory_PopTrack();
-            sgl_Memory_AddTrack(ptr, sizeof(T), typeid(T).name());
+            // Malloc will have added a track tagged "RawMemory" so we need to retag it with the real type name.
+            sgl_Memory_RetagTrack(ptr, typeid(T).name());
 #endif
 
             return new (ptr) T(std::forward<Args>(args)...);

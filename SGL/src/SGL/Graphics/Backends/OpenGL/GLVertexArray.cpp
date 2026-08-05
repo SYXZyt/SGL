@@ -16,12 +16,29 @@ static void GLDestroy(sgl_VertexArray* va)
     sgl::Memory::Delete(self);
 }
 
+static void ApplyVertexLayout(GLuint vbo, GLuint vao, sgl_VertexLayout* layout, uint32 vertexSize);
+
+static void GLEnsureGPUResources(sgl_GLVertexArray* self, sgl_VertexArray* va)
+{
+    if (self->gpuLoaded)
+        return;
+
+    glCreateVertexArrays(1, &self->vao);
+    glCreateBuffers(1, &self->vbo);
+    glCreateBuffers(1, &self->ebo);
+
+    ApplyVertexLayout(self->vbo, self->vao, va->layout, va->vertexSize);
+    glVertexArrayElementBuffer(self->vao, self->ebo);
+
+    self->gpuLoaded = true;
+}
+
 static void GLBind(sgl_VertexArray* va)
 {
     GetSelf;
 
-    if (self->vbo == 0 || self->vao == 0)
-        return;
+    if (!self->gpuLoaded)
+        GLEnsureGPUResources(self, va);
 
     glBindVertexArray(self->vao);
 
@@ -154,12 +171,10 @@ sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* la
     va->base.needsIndexUpload = true;
     va->base.layoutDirty = true;
 
-    glCreateVertexArrays(1, &va->vao);
-    glCreateBuffers(1, &va->vbo);
-    glCreateBuffers(1, &va->ebo);
-
-    ApplyVertexLayout(va->vbo, va->vao, layout, vertexSize);
-    glVertexArrayElementBuffer(va->vao, va->ebo);
+    va->vao = 0;
+    va->vbo = 0;
+    va->ebo = 0;
+    va->gpuLoaded = false;
 
     return va;
 }

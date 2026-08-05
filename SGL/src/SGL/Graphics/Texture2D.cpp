@@ -28,7 +28,13 @@ sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, si
     stbi_set_flip_vertically_on_load_thread(true);
 
     void* bytes = stbi_load_from_memory((const stbi_uc*)data, (int)dataSize, &width, &height, nullptr, 4);
+    if (!bytes)
+    {
+        SGL_REPORT_ERROR("Failed to decode texture data");
+        return nullptr;
+    }
 
+    // Ownership of 'bytes' passes to the backend texture, which uploads it to the GPU on first Bind
     if (device->window->cfg.backend == sgl_Backend_OPENGL)
     {
         texture = (sgl_Texture*)sgl_GLTexture2D_Create(bytes, { {{width, height}} });
@@ -36,15 +42,17 @@ sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, si
     else if (device->window->cfg.backend == sgl_Backend_DIRECTX11)
     {
 #ifdef SGL_DIRECTX
-        texture = (sgl_Texture*)sgl_DXTexture2D_Create(device, bytes, { {{width, height}} });
+        texture = (sgl_Texture*)sgl_DXTexture2D_Create(bytes, { {{width, height}} });
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        stbi_image_free(bytes);
         return nullptr;
 #endif
     }
     else
     {
         SGL_REPORT_ERROR("Unsupported backend");
+        stbi_image_free(bytes);
         return nullptr;
     }
 

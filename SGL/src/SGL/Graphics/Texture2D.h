@@ -9,6 +9,9 @@ SGL_BEGIN
 typedef struct sgl_Texture2D sgl_sealed
 {
     sgl_Texture base;
+
+    /// @brief CPU-side decoded pixel data. Waiting for GPU upload
+    void* pixels;
 } sgl_Texture2D;
 
 /// @brief Create a new 2D texture from a file

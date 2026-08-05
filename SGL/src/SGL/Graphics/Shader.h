@@ -11,7 +11,6 @@ typedef struct sgl_ShaderVTable sgl_sealed
 {
     void (*Bind)(struct sgl_Shader* self);
     void (*Destroy)(struct sgl_Shader* self);
-    void (*Load)(struct sgl_Shader* self, const char* vSrc, const char* fSrc);
 } sgl_ShaderVTable;
 
 /// @brief A shader
@@ -22,7 +21,9 @@ typedef struct sgl_Shader sgl_sealed
     sgl_String data_fcode;
     struct sgl_GraphicsDevice* gpu;
     struct sgl_VertexLayout* layout;
-    bool contentsLoaded;
+
+    /// @brief Checks if the data has been created on the GPU. Bind (which must run on main thread) will upload data
+    bool gpuLoaded;
 
     char vertexEntryName[64];
     char fragmentEntryName[64];
@@ -59,8 +60,6 @@ SGL_API extern void sgl_Shader_Load_Slang_File(sgl_Shader* shader, const char* f
 /// @param vertexEntry The name of the vertex entry point
 /// @param fragmentEntry The name of the fragment entry point
 SGL_API extern void sgl_Shader_Load_Slang_Source(sgl_Shader* shader, const char* slangSource, const char* vertexEntry, const char* fragmentEntry);
-
-SGL_API extern bool sgl_Shader_Contents_Loaded(sgl_Shader* shader);
 
 /// @brief Destroy a shader
 /// @param shader The shader to destroy

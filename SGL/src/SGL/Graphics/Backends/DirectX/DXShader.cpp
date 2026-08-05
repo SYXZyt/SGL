@@ -172,12 +172,16 @@ static void DXInitialise(sgl_Shader* shr)
     sgl_FreeString(shr->data_vcode);
     sgl_FreeString(shr->data_fcode);
 
-    shr->contentsLoaded = true;
+    shr->gpuLoaded = true;
 }
 
 static void DXBind(sgl_Shader* shr)
 {
     GetSelf;
+
+    if (!shr->gpuLoaded)
+        DXInitialise(shr);
+
     sgl_DXDevice* device = (sgl_DXDevice*)shr->gpu;
 
     device->ctx->VSSetShader(
@@ -211,35 +215,23 @@ static void DXDestroy(sgl_Shader* shr)
     if (self->pixelBlob)
         self->pixelBlob->Release();
 
+    if (self->inputLayout)
+        self->inputLayout->Release();
+
     sgl::Memory::Delete(self);
-}
-
-static void DXLoad(sgl_Shader* shr, const char* vSrc, const char* fSrc)
-{
-    if (shr->contentsLoaded)
-    {
-        SGL_REPORT_ERROR("Shader already loaded");
-        return;
-    }
-
-    shr->data_vcode = sgl_MakeString(vSrc);
-    shr->data_fcode = sgl_MakeString(fSrc);
-
-    DXInitialise(shr);
 }
 
 static const sgl_ShaderVTable gDXVTable =
 {
     .Bind = &DXBind,
     .Destroy = &DXDestroy,
-    .Load = &DXLoad,
 };
 
 sgl_DXShader* sgl_DXShader_Create()
 {
     sgl_DXShader* shader = sgl::Memory::New<sgl_DXShader>();
 
-    shader->base.contentsLoaded = false;
+    shader->base.gpuLoaded = false;
     shader->base.data_vcode = { .str = nullptr, .len = 0, .capacity = 0 };
     shader->base.data_fcode = { .str = nullptr, .len = 0, .capacity = 0 };
     shader->base.vtable = &gDXVTable;

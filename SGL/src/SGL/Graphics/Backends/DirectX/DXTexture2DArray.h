@@ -15,7 +15,7 @@ typedef struct sgl_DXTexture2DArray sgl_sealed
 } sgl_DXTexture2DArray;
 
 /// @brief Create a DirectX texture array
-SGL_API extern sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(sgl_GraphicsDevice* device, void* data, sgl_Vec2i atlasSize, sgl_Vec2i frameSize);
+SGL_API extern sgl_DXTexture2DArray* sgl_DXTexture2DArray_Create(void* data, sgl_Vec2i atlasSize, sgl_Vec2i frameSize);
 
 SGL_END
 

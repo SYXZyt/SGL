@@ -24,7 +24,7 @@ typedef struct sgl_UniformBufferVTable sgl_sealed
 
 } sgl_UniformBufferVTable;
 
-/// @brief Handles constant buffer in a shader
+///@brief Handles constant buffer in a shader. Must be created on the main thread
 typedef struct sgl_UniformBuffer sgl_sealed
 {
     sgl_UniformBufferVTable* vtable;
@@ -32,7 +32,7 @@ typedef struct sgl_UniformBuffer sgl_sealed
     size_t size;
 } sgl_UniformBuffer;
 
-/// @brief Create a new uniform buffer
+/// @brief Create a new uniform buffer. This is thread unsafe and must be called on the main thread
 /// @param gpu The device to use
 /// @param size How large in bytes, is the constant buffer
 /// @return The uniform buffer

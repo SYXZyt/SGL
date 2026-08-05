@@ -11,6 +11,8 @@ typedef struct sgl_GLVertexArray sgl_sealed
     sgl_VertexArray base;
     gluint vao, vbo, ebo;
 
+    bool gpuLoaded;
+
 } sgl_GLVertexArray;
 
 /// @brief Create an OpenGL vertex array
