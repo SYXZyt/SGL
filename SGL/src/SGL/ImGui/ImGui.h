@@ -254,4 +254,6 @@ SGL_API extern bool sgl_CollapsableHeader(const char* text);
 SGL_API extern bool sgl_TreeNode(const char* text);
 SGL_API extern void sgl_TreePop();
 
+SGL_API extern void* sgl_ImGuiContext();
+
 SGL_END

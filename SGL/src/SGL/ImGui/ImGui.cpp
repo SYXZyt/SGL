@@ -434,3 +434,7 @@ bool sgl_TreeNode(const char* text) {
 void sgl_TreePop() {
     ImGui::TreePop();
 }
+
+void* sgl_ImGuiContext() {
+    return ImGui::GetCurrentContext();
+}
