@@ -45,7 +45,7 @@ typedef struct sgl_GraphicsDevice sgl_sealed
     bool depthTestEnabled;
 } sgl_GraphicsDevice;
 
-/// @brief Create a new graphics device
+/// @brief Create a new graphics device. This is thread unsafe and must be called on the main thread
 /// @param window The window to render to
 /// @return A pointer to the created device
 SGL_API extern sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window);

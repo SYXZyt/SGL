@@ -53,7 +53,7 @@ typedef struct sgl_VertexLayout sgl_sealed
     uint32 elementCapacity;
 } sgl_VertexLayout;
 
-/// @brief Create a new vertex layout
+/// @brief Create a new vertex layout. This is thread unsafe and must be called on the main thread
 /// @param gpu The device to use
 SGL_API extern sgl_VertexLayout* sgl_VertexLayout_New(sgl_GraphicsDevice* gpu);
 

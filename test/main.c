@@ -18,6 +18,7 @@
 #include <SGL/Graphics/Texture2DArray.h>
 #include <stdio.h>
 #include <SGL/Graphics/Model.h>
+#include <threads.h>
 
 typedef struct sgl_alignas(16) Vertex
 {
@@ -48,6 +49,17 @@ typedef struct sgl_alignas(16) PostProcessEffectUniforms
     float time;
     sgl_Vec3 __pad;
 } PostProcessEffectUniforms;
+
+static sgl_Texture* gTexture = NULL;
+static sgl_VertexArray* gSuzanne = NULL;
+static sgl_Shader* gShader = NULL;
+
+static volatile bool gHasLoadingBeenDone = false;
+
+static void LoadingThread()
+{
+    gHasLoadingBeenDone = true;
+}
 
 int main(int argc, char** argv)
 {
