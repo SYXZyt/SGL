@@ -38,39 +38,36 @@ static void DXEnsureGPUResources(sgl_DXTexture2D* self)
     D3D11_TEXTURE2D_DESC desc{};
     desc.Width = tex->size.width;
     desc.Height = tex->size.height;
-    desc.MipLevels = 1;
+    desc.MipLevels = 0;
     desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
     desc.CPUAccessFlags = 0;
-    desc.MiscFlags = 0;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
 
-    D3D11_SUBRESOURCE_DATA initData{};
-    initData.pSysMem = self->base.pixels;
-    initData.SysMemPitch = tex->size.width * 4;
-
-    HRESULT hr = device->device->CreateTexture2D(
-        &desc,
-        &initData,
-        &self->texture);
-
-    stbi_image_free(self->base.pixels);
-    self->base.pixels = nullptr;
+    HRESULT hr = device->device->CreateTexture2D(&desc, nullptr, &self->texture);
 
     if (FAILED(hr))
     {
         ReportHRError("Failed to create texture", hr);
+        stbi_image_free(self->base.pixels);
+        self->base.pixels = nullptr;
         tex->gpuLoaded = true;
         return;
     }
+
+    device->ctx->UpdateSubresource(self->texture, 0, nullptr, self->base.pixels, tex->size.width * 4, 0);
+
+    stbi_image_free(self->base.pixels);
+    self->base.pixels = nullptr;
 
     D3D11_SHADER_RESOURCE_VIEW_DESC srvDesc{};
     srvDesc.Format = desc.Format;
     srvDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     srvDesc.Texture2D.MostDetailedMip = 0;
-    srvDesc.Texture2D.MipLevels = 1;
+    srvDesc.Texture2D.MipLevels = (UINT)-1;
 
     hr = device->device->CreateShaderResourceView(
         self->texture,
