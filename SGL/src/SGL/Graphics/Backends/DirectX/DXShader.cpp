@@ -215,6 +215,9 @@ static void DXDestroy(sgl_Shader* shr)
     if (self->pixelBlob)
         self->pixelBlob->Release();
 
+    if (self->inputLayout)
+        self->inputLayout->Release();
+
     sgl::Memory::Delete(self);
 }
 
