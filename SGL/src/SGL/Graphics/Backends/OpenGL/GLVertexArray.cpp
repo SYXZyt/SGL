@@ -1,6 +1,7 @@
 #include "GLVertexArray.h"
 #include <glad/glad.h>
 #include <SGL/Util/Memory.h>
+#include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
 
 #define GetSelf sgl_GLVertexArray* self = (sgl_GLVertexArray*)va
 
@@ -8,9 +9,9 @@ static void GLDestroy(sgl_VertexArray* va)
 {
     GetSelf;
 
-    glDeleteBuffers(1, &self->vbo);
-    glDeleteBuffers(1, &self->ebo);
-    glDeleteVertexArrays(1, &self->vao);
+    sgl_OpenGLThreadSync_DeleteVBO(self->vbo);
+    sgl_OpenGLThreadSync_DeleteEBO(self->ebo);
+    sgl_OpenGLThreadSync_DeleteVAO(self->vao);
 
     sgl_VertexLayout_Destroy(va->layout);
     sgl::Memory::Delete(self);

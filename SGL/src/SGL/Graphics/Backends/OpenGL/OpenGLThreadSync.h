@@ -19,6 +19,18 @@ extern void sgl_OpenGLThreadSync_DeleteEBO(gluint ebo);
 /// @param id The shader to delete
 extern void sgl_OpenGLThreadSync_DeleteShader(gluint id);
 
+/// @brief Queue a texture for deletion
+/// @param id The texture to delete
+extern void sgl_OpenGLThreadSync_DeleteTexture(gluint id);
+
+/// @brief Queue a framebuffer for deletion
+/// @param id The framebuffer to delete
+extern void sgl_OpenGLThreadSync_DeleteFramebuffer(gluint id);
+
+/// @brief Queue a generic buffer object for deletion
+/// @param id The buffer to delete
+extern void sgl_OpenGLThreadSync_DeleteBuffer(gluint id);
+
 /// @brief Delete all queued items and clear the queues
 extern void sgl_OpenGLThreadSync_Update();
 

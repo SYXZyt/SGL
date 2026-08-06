@@ -11,6 +11,7 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <SGL/Graphics/Backends/OpenGL/GLPostProcess.h>
+#include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
 
 template <typename T>
 T* GetBackend(void* ptr) {
@@ -137,6 +138,8 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
 
     if (dev->depthTestEnabled)
         glEnable(GL_DEPTH_TEST);
+
+    sgl_OpenGLThreadSync_Update();
 }
 
 static void GLDevice_SwapBuffer(sgl_GraphicsDevice* dev) {

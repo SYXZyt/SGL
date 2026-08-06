@@ -1,6 +1,7 @@
 #include "GLTexture2D.h"
 #include <SGL/Util/Memory.h>
 #include <stb/stb_image.h>
+#include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
 
 #define GetSelf sgl_GLTexture2D* self = (sgl_GLTexture2D*)tex
 
@@ -9,7 +10,7 @@ static void GLTexture_Destroy(sgl_Texture* tex)
     GetSelf;
 
     if (tex->gpuLoaded)
-        glDeleteTextures(1, &self->texture);
+        sgl_OpenGLThreadSync_DeleteTexture(self->texture);
 
     if (self->base.pixels)
         stbi_image_free(self->base.pixels);
