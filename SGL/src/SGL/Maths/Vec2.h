@@ -16,14 +16,14 @@ typedef struct sgl_Vec2 sgl_sealed
     };
 
 #ifdef __cplusplus
-    static sgl_Vec2 Zero;
-    static sgl_Vec2 One;
-    static sgl_Vec2 Left;
-    static sgl_Vec2 Right;
-    static sgl_Vec2 Up;
-    static sgl_Vec2 Down;
-    static sgl_Vec2 Inf;
-    static sgl_Vec2 NegativeInf;
+    SGL_API static sgl_Vec2 Zero;
+    SGL_API static sgl_Vec2 One;
+    SGL_API static sgl_Vec2 Left;
+    SGL_API static sgl_Vec2 Right;
+    SGL_API static sgl_Vec2 Up;
+    SGL_API static sgl_Vec2 Down;
+    SGL_API static sgl_Vec2 Inf;
+    SGL_API static sgl_Vec2 NegativeInf;
 #endif
 } sgl_Vec2;
 
@@ -66,14 +66,14 @@ typedef struct sgl_Vec2i
     };
 
 #ifdef __cplusplus
-    static sgl_Vec2i Zero;
-    static sgl_Vec2i One;
-    static sgl_Vec2i Left;
-    static sgl_Vec2i Right;
-    static sgl_Vec2i Up;
-    static sgl_Vec2i Down;
-    static sgl_Vec2i Inf;
-    static sgl_Vec2i NegativeInf;
+    SGL_API static sgl_Vec2i Zero;
+    SGL_API static sgl_Vec2i One;
+    SGL_API static sgl_Vec2i Left;
+    SGL_API static sgl_Vec2i Right;
+    SGL_API static sgl_Vec2i Up;
+    SGL_API static sgl_Vec2i Down;
+    SGL_API static sgl_Vec2i Inf;
+    SGL_API static sgl_Vec2i NegativeInf;
 #endif
 } sgl_Vec2i;
 

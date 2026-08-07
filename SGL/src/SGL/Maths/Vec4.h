@@ -13,16 +13,16 @@ typedef struct sgl_Vec4 sgl_sealed
     };
 
 #ifdef __cplusplus
-    static sgl_Vec4 Zero;
-    static sgl_Vec4 One;
-    static sgl_Vec4 Left;
-    static sgl_Vec4 Right;
-    static sgl_Vec4 Up;
-    static sgl_Vec4 Down;
-    static sgl_Vec4 Forward;
-    static sgl_Vec4 Backward;
-    static sgl_Vec4 Inf;
-    static sgl_Vec4 NegativeInf;
+    SGL_API static sgl_Vec4 Zero;
+    SGL_API static sgl_Vec4 One;
+    SGL_API static sgl_Vec4 Left;
+    SGL_API static sgl_Vec4 Right;
+    SGL_API static sgl_Vec4 Up;
+    SGL_API static sgl_Vec4 Down;
+    SGL_API static sgl_Vec4 Forward;
+    SGL_API static sgl_Vec4 Backward;
+    SGL_API static sgl_Vec4 Inf;
+    SGL_API static sgl_Vec4 NegativeInf;
 #endif
 } sgl_Vec4;
 

@@ -17,16 +17,16 @@ typedef struct sgl_Vec3 sgl_sealed
     };
 
 #ifdef __cplusplus
-    static sgl_Vec3 Zero;
-    static sgl_Vec3 One;
-    static sgl_Vec3 Left;
-    static sgl_Vec3 Right;
-    static sgl_Vec3 Up;
-    static sgl_Vec3 Down;
-    static sgl_Vec3 Forward;
-    static sgl_Vec3 Backward;
-    static sgl_Vec3 Inf;
-    static sgl_Vec3 NegativeInf;
+    SGL_API static sgl_Vec3 Zero;
+    SGL_API static sgl_Vec3 One;
+    SGL_API static sgl_Vec3 Left;
+    SGL_API static sgl_Vec3 Right;
+    SGL_API static sgl_Vec3 Up;
+    SGL_API static sgl_Vec3 Down;
+    SGL_API static sgl_Vec3 Forward;
+    SGL_API static sgl_Vec3 Backward;
+    SGL_API static sgl_Vec3 Inf;
+    SGL_API static sgl_Vec3 NegativeInf;
 #endif
 } sgl_Vec3;
 
@@ -72,16 +72,16 @@ typedef struct sgl_Vec3i sgl_sealed
     };
 
 #ifdef __cplusplus
-    static sgl_Vec3i Zero;
-    static sgl_Vec3i One;
-    static sgl_Vec3i Left;
-    static sgl_Vec3i Right;
-    static sgl_Vec3i Up;
-    static sgl_Vec3i Down;
-    static sgl_Vec3i Forward;
-    static sgl_Vec3i Backward;
-    static sgl_Vec3i Inf;
-    static sgl_Vec3i NegativeInf;
+    SGL_API static sgl_Vec3i Zero;
+    SGL_API static sgl_Vec3i One;
+    SGL_API static sgl_Vec3i Left;
+    SGL_API static sgl_Vec3i Right;
+    SGL_API static sgl_Vec3i Up;
+    SGL_API static sgl_Vec3i Down;
+    SGL_API static sgl_Vec3i Forward;
+    SGL_API static sgl_Vec3i Backward;
+    SGL_API static sgl_Vec3i Inf;
+    SGL_API static sgl_Vec3i NegativeInf;
 #endif
 } sgl_Vec3i;
 
