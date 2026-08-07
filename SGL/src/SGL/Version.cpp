@@ -4,7 +4,7 @@
 const char* SGL_VERSION_ID = "Beta";
 uint32 SGL_VERSION_MAJOR = 0;
 uint32 SGL_VERSION_MINOR = 5;
-uint32 SGL_VERSION_PATCH = 2;
+uint32 SGL_VERSION_PATCH = 3;
 static std::string gVersionString = std::string(SGL_VERSION_ID) + " " + std::to_string(SGL_VERSION_MAJOR) + "." + std::to_string(SGL_VERSION_MINOR) + "." + std::to_string(SGL_VERSION_PATCH);
 
 const char* sgl_VersionString() {

@@ -144,6 +144,53 @@ inline bool operator!=(sgl_Vec2 a, sgl_Vec2 b) {
     return !(a == b);
 }
 
+inline sgl_Vec2& operator+=(sgl_Vec2& self, sgl_Vec2 other)
+{
+    self.x += other.x;
+    self.y += other.y;
+
+    return self;
+}
+
+inline sgl_Vec2& operator+=(sgl_Vec2& self, float scalar)
+{
+    self.x += scalar;
+    self.y += scalar;
+
+    return self;
+}
+
+inline sgl_Vec2& operator-=(sgl_Vec2& self, sgl_Vec2 other)
+{
+    self.x -= other.x;
+    self.y -= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2& operator-=(sgl_Vec2& self, float scalar)
+{
+    self.x -= scalar;
+    self.y -= scalar;
+
+    return self;
+}
+
+inline sgl_Vec2& operator*=(sgl_Vec2& self, sgl_Vec2 other)
+{
+    self.x *= other.x;
+    self.y *= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2& operator*=(sgl_Vec2& self, float scalar)
+{
+    self.x *= scalar;
+    self.y *= scalar;
+
+    return self;
+}
 
 inline sgl_Vec2i operator+(sgl_Vec2i a, sgl_Vec2i b) {
     return sgl_Vec2i_Add_Vec2i(a, b);
@@ -179,6 +226,54 @@ inline bool operator==(sgl_Vec2i a, sgl_Vec2i b) {
 
 inline bool operator!=(sgl_Vec2i a, sgl_Vec2i b) {
     return !(a == b);
+}
+
+inline sgl_Vec2i& operator+=(sgl_Vec2i& self, sgl_Vec2i other)
+{
+    self.x += other.x;
+    self.y += other.y;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator+=(sgl_Vec2i& self, int scalar)
+{
+    self.x += scalar;
+    self.y += scalar;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator-=(sgl_Vec2i& self, sgl_Vec2i other)
+{
+    self.x -= other.x;
+    self.y -= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator-=(sgl_Vec2i& self, int scalar)
+{
+    self.x -= scalar;
+    self.y -= scalar;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator*=(sgl_Vec2i& self, sgl_Vec2i other)
+{
+    self.x *= other.x;
+    self.y *= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator*=(sgl_Vec2i& self, int scalar)
+{
+    self.x *= scalar;
+    self.y *= scalar;
+
+    return self;
 }
 
 #endif
