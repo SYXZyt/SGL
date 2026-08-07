@@ -14,6 +14,17 @@ typedef struct sgl_Vec2 sgl_sealed
         struct { float width, height; };
         float values[2];
     };
+
+#ifdef __cplusplus
+    static sgl_Vec2 Zero;
+    static sgl_Vec2 One;
+    static sgl_Vec2 Left;
+    static sgl_Vec2 Right;
+    static sgl_Vec2 Up;
+    static sgl_Vec2 Down;
+    static sgl_Vec2 Inf;
+    static sgl_Vec2 NegativeInf;
+#endif
 } sgl_Vec2;
 
 SGL_API extern const sgl_Vec2 sgl_Vec2_Zero;
@@ -53,6 +64,17 @@ typedef struct sgl_Vec2i
         struct { int width, height; };
         int values[2];
     };
+
+#ifdef __cplusplus
+    static sgl_Vec2i Zero;
+    static sgl_Vec2i One;
+    static sgl_Vec2i Left;
+    static sgl_Vec2i Right;
+    static sgl_Vec2i Up;
+    static sgl_Vec2i Down;
+    static sgl_Vec2i Inf;
+    static sgl_Vec2i NegativeInf;
+#endif
 } sgl_Vec2i;
 
 SGL_API extern const sgl_Vec2i sgl_Vec2i_Zero;

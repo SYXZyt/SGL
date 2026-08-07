@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 #include <SGL/SGL.h>
 
 SGL_BEGIN
@@ -15,6 +15,19 @@ typedef struct sgl_Vec3 sgl_sealed
         struct { float width, height, depth; };
         float values[3];
     };
+
+#ifdef __cplusplus
+    static sgl_Vec3 Zero;
+    static sgl_Vec3 One;
+    static sgl_Vec3 Left;
+    static sgl_Vec3 Right;
+    static sgl_Vec3 Up;
+    static sgl_Vec3 Down;
+    static sgl_Vec3 Forward;
+    static sgl_Vec3 Backward;
+    static sgl_Vec3 Inf;
+    static sgl_Vec3 NegativeInf;
+#endif
 } sgl_Vec3;
 
 SGL_API extern const sgl_Vec3 sgl_Vec3_Zero;
@@ -57,6 +70,19 @@ typedef struct sgl_Vec3i sgl_sealed
         struct { int width, height, depth; };
         int values[3];
     };
+
+#ifdef __cplusplus
+    static sgl_Vec3i Zero;
+    static sgl_Vec3i One;
+    static sgl_Vec3i Left;
+    static sgl_Vec3i Right;
+    static sgl_Vec3i Up;
+    static sgl_Vec3i Down;
+    static sgl_Vec3i Forward;
+    static sgl_Vec3i Backward;
+    static sgl_Vec3i Inf;
+    static sgl_Vec3i NegativeInf;
+#endif
 } sgl_Vec3i;
 
 SGL_API extern const sgl_Vec3i sgl_Vec3i_Zero;

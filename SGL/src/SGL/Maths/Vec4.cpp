@@ -1,6 +1,19 @@
 #include "Vec4.h"
 #include <SGL/Maths/Maths.h>
 
+#define IMPL(t, v) t t::v = t##_##v
+
+IMPL(sgl_Vec4, Zero);
+IMPL(sgl_Vec4, One);
+IMPL(sgl_Vec4, Left);
+IMPL(sgl_Vec4, Right);
+IMPL(sgl_Vec4, Up);
+IMPL(sgl_Vec4, Down);
+IMPL(sgl_Vec4, Forward);
+IMPL(sgl_Vec4, Backward);
+IMPL(sgl_Vec4, Inf);
+IMPL(sgl_Vec4, NegativeInf);
+
 const sgl_Vec4 sgl_Vec4_Zero = { {{ 0.0f, 0.0f, 0.f, 0.f }} };
 const sgl_Vec4 sgl_Vec4_One = { {{ 1.f, 1.f, 1.f, 1.f }} };
 const sgl_Vec4 sgl_Vec4_Left = { {{ -1.f, 0.f, 0.f, 0.f }} };
