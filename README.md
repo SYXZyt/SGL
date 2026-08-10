@@ -147,7 +147,7 @@ int main(void)
     sgl_Shader* shader = sgl_Shader_Create(gpu, layout);
     sgl_Shader_Load_Slang_Source(shader, SHADER, "vertexMain", "fragmentMain");
 
-    sgl_Texture* texture = sgl_Texture2D_New_File(gpu, "texture.png");
+    sgl_Texture* texture = sgl_Texture2D_New_File(gpu, "texture.png", true);
 
     while (!window->wantsClose)
     {

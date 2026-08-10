@@ -27,6 +27,8 @@ typedef struct sgl_DXDevice sgl_sealed
     ID3D11RasterizerState* rasterState;
     ID3D11RasterizerState* postProState;
 
+    ID3D11BlendState* spriteBlendState;
+
     sgl_Shader* blitShader;
 
     ID3D11RenderTargetView* backBufferRtv;

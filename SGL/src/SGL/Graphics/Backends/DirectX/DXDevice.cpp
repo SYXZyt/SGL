@@ -261,11 +261,16 @@ static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
     );
 
     self->ctx->ClearDepthStencilView(self->sceneDsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+    float blendFactor[4] = { 0, 0, 0, 0 };
+    self->ctx->OMSetBlendState(self->spriteBlendState, blendFactor, 0xffffffff);
 }
 
 static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
 {
     GetSelf;
+
+    self->ctx->OMSetBlendState(nullptr, nullptr, 0xffffffff);
 
     self->ctx->RSSetState(self->postProState);
 
@@ -334,6 +339,7 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->depthStencilDisabledState);
     TryRelease(self->rasterState);
     TryRelease(self->postProState);
+    TryRelease(self->spriteBlendState);
 
     sgl_Shader_Destroy(self->blitShader);
 
@@ -404,7 +410,7 @@ static void DXDevice_ImGui_RenderDrawData(sgl_GraphicsDevice* dev)
 
 static const sgl_GraphicsDeviceVTable gDxVTable =
 {
-    .SetClearColour = &sgl_GraphicsDevice_SetClearColour,
+    .SetClearColour = &DXDevice_SetClearColour,
     .SetDepthTestEnabled = &DXDevice_SetDepthTestEnabled,
     .Resize = &DXDevice_Resize,
     .BeginFrame = &DXDevice_BeginFrame,
@@ -568,7 +574,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
 #pragma region Blend State
     D3D11_BLEND_DESC blendDesc{};
     blendDesc.RenderTarget[0].BlendEnable = true;
-    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
     blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
     blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
     blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
@@ -576,8 +582,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 
-    ID3D11BlendState* blendState = nullptr;
-    hr = device->device->CreateBlendState(&blendDesc, &blendState);
+    hr = device->device->CreateBlendState(&blendDesc, &device->spriteBlendState);
     if (FAILED(hr))
     {
         ReportHRError("Failed to create blend state", hr);
@@ -585,8 +590,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     }
 
     float blendFactor[4] = { 0, 0, 0, 0 };
-    device->ctx->OMSetBlendState(blendState, blendFactor, 0xffffffff);
-    blendState->Release();
+    device->ctx->OMSetBlendState(device->spriteBlendState, blendFactor, 0xffffffff);
 
 #pragma endregion
 

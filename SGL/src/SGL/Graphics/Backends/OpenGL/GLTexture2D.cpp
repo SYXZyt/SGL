@@ -2,6 +2,7 @@
 #include <SGL/Util/Memory.h>
 #include <stb/stb_image.h>
 #include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
+#include <algorithm>
 
 #define GetSelf sgl_GLTexture2D* self = (sgl_GLTexture2D*)tex
 
@@ -30,7 +31,11 @@ static void GLEnsureGPUResources(sgl_GLTexture2D* self)
     glTextureParameteri(self->texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTextureParameteri(self->texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTextureStorage2D(self->texture, 1, GL_RGBA8, tex->size.width, tex->size.height);
+    GLsizei levels = 1;
+    for (int dim = std::max(tex->size.width, tex->size.height); dim > 1; dim /= 2)
+        ++levels;
+
+    glTextureStorage2D(self->texture, levels, GL_RGBA8, tex->size.width, tex->size.height);
     glTextureSubImage2D(self->texture, 0, 0, 0, tex->size.width, tex->size.height, GL_RGBA, GL_UNSIGNED_BYTE, self->base.pixels);
 
     glGenerateTextureMipmap(self->texture);

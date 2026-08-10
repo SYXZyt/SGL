@@ -247,7 +247,7 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     glDepthFunc(GL_LESS);
 
     glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 
     glCreateTextures(GL_TEXTURE_2D, 1, &device->sceneTexture);
     glTextureStorage2D(device->sceneTexture, 1, GL_RGBA8, (GLsizei)window->screenSize.width, (GLsizei)window->screenSize.height);

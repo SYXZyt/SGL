@@ -6,7 +6,7 @@
 #include <fstream>
 #include <filesystem>
 
-sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path)
+sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool premultiplyAlpha)
 {
     if (!std::filesystem::exists(path))
     {
@@ -17,10 +17,10 @@ sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path
     std::ifstream f(path, std::ios::binary);
     std::vector<uint8> data((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
-    return sgl_Texture2D_New_Source(device, data.data(), data.size());
+    return sgl_Texture2D_New_Source(device, data.data(), data.size(), premultiplyAlpha);
 }
 
-sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize)
+sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, bool premultiplyAlpha)
 {
     sgl_Texture* texture = nullptr;
 
@@ -32,6 +32,19 @@ sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, si
     {
         SGL_REPORT_ERROR("Failed to decode texture data");
         return nullptr;
+    }
+
+    if (premultiplyAlpha)
+    {
+        stbi_uc* pixels = (stbi_uc*)bytes;
+        size_t pixelCount = (size_t)width * (size_t)height;
+        for (size_t i = 0; i < pixelCount; ++i)
+        {
+            stbi_uc a = pixels[i * 4 + 3];
+            pixels[i * 4 + 0] = (stbi_uc)((pixels[i * 4 + 0] * a) / 255);
+            pixels[i * 4 + 1] = (stbi_uc)((pixels[i * 4 + 1] * a) / 255);
+            pixels[i * 4 + 2] = (stbi_uc)((pixels[i * 4 + 2] * a) / 255);
+        }
     }
 
     // Ownership of 'bytes' passes to the backend texture, which uploads it to the GPU on first Bind
