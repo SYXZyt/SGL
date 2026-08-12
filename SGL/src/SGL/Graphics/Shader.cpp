@@ -131,8 +131,8 @@ void sgl_Shader_Load_Slang_Source(sgl_Shader* shader, const char* slangSource, c
 
     if (isDX)
     {
-        strncpy_s(shader->vertexEntryName, vertexEntry, sizeof(shader->vertexEntryName) - 1);
-        strncpy_s(shader->fragmentEntryName, fragmentEntry, sizeof(shader->fragmentEntryName) - 1);
+        strncpy(shader->vertexEntryName, vertexEntry, sizeof(shader->vertexEntryName) - 1);
+        strncpy(shader->fragmentEntryName, fragmentEntry, sizeof(shader->fragmentEntryName) - 1);
     }
 
     sgl_Shader_Load_Source(shader, (const char*)vsCode->getBufferPointer(), (const char*)fsCode->getBufferPointer());
@@ -188,8 +188,8 @@ sgl_Shader* sgl_Shader_Create(sgl_GraphicsDevice* gpu, sgl_VertexLayout* layout)
     shader->gpu = gpu;
     shader->layout = ourLayout;
 
-    strcpy_s(shader->vertexEntryName, "main");
-    strcpy_s(shader->fragmentEntryName, "main");
+    strcpy(shader->vertexEntryName, "main");
+    strcpy(shader->fragmentEntryName, "main");
 
     return shader;
 }

@@ -112,6 +112,19 @@ namespace sgl
             ptr->~T();
             sgl_Free(ptr);
         }
+
+        /// @brief Delete and object and set the pointer to null
+        /// @tparam T The objetc type
+        /// @param ptr Reference to the pointer to delete and null
+        template <typename T>
+        static void DeleteAndNull(T*& ptr)
+        {
+            if (!ptr)
+                return;
+
+            Delete(ptr);
+            ptr = nullptr;
+        }
     };
 }
 

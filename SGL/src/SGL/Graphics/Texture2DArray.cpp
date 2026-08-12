@@ -1,10 +1,13 @@
 #include "Texture2DArray.h"
 #include <fstream>
 #include <filesystem>
+#include <vector>
 #include <SGL/Util/Error.h>
 #include <stb/stb_image.h>
 #include <SGL/Graphics/Backends/OpenGL/GLTexture2DArray.h>
+#ifdef SGL_DIRECTX
 #include <SGL/Graphics/Backends/DirectX/DXTexture2DArray.h>
+#endif
 
 sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* device, const char* path, sgl_Vec2i frameSize)
 {

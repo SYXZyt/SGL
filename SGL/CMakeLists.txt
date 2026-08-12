@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
+set(CMAKE_C_VER)
+
 add_library(SGL SHARED
     src/imgui/backends/imgui_impl_dx11.cpp
     src/imgui/backends/imgui_impl_opengl3.cpp

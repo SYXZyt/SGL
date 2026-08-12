@@ -1,3 +1,5 @@
+#ifdef SGL_DIRECTX
+
 #include "DXTexture2D.h"
 #include <SGL/Util/Memory.h>
 #include <SGL/Graphics/Backends/DirectX/DXDevice.h>
@@ -115,3 +117,5 @@ sgl_DXTexture2D* sgl_DXTexture2D_Create(void* data, sgl_Vec2i size)
 
     return texture;
 }
+
+#endif

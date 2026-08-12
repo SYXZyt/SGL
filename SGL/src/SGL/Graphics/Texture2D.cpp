@@ -1,10 +1,13 @@
 #include "Texture2D.h"
 #include <stb/stb_image.h>
 #include <SGL/Util/Error.h>
-#include <SGL/Graphics/Backends/DirectX/DXTexture2D.h>
 #include <SGL/Graphics/Backends/OpenGL/GLTexture2D.h>
 #include <fstream>
 #include <filesystem>
+#include <vector>
+#ifdef SGL_DIRECTX
+#include <SGL/Graphics/Backends/DirectX/DXTexture2D.h>
+#endif
 
 sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool premultiplyAlpha)
 {
