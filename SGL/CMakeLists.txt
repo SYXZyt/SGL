@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
+include(GNUInstallDirs)
+
 set(CMAKE_C_VER)
 
 add_library(SGL SHARED
@@ -154,4 +156,16 @@ endif ()
 
 set_target_properties(SGL PROPERTIES
 	DEBUG_POSTFIX "-d"
+)
+
+# Install stuff
+install(TARGETS SGL
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(DIRECTORY src/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h"
 )
