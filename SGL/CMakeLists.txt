@@ -120,7 +120,10 @@ target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm slang::gfx slang::slang)
 target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
 target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
 
-target_include_directories(SGL PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(SGL PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 target_include_directories(SGL PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/imgui)
 
 target_compile_definitions(SGL PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
@@ -160,6 +163,7 @@ set_target_properties(SGL PROPERTIES
 
 # Install stuff
 install(TARGETS SGL
+        EXPORT SGLTargets
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
         LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
         ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
@@ -168,4 +172,30 @@ install(TARGETS SGL
 install(DIRECTORY src/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
         FILES_MATCHING PATTERN "*.h"
+)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMake/SGLConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfig.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SGL
+)
+
+write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfigVersion.cmake
+        VERSION 1.0.0
+        COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SGL
+)
+
+install(EXPORT SGLTargets
+        FILE SGLTargets.cmake
+        NAMESPACE SGL::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SGL
 )
