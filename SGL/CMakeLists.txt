@@ -171,7 +171,7 @@ install(TARGETS SGL
 
 install(DIRECTORY src/
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-        FILES_MATCHING PATTERN "*.h"
+        FILES_MATCHING PATTERN "*.h" PATTERN "LICENSE.txt"
 )
 
 include(CMakePackageConfigHelpers)
