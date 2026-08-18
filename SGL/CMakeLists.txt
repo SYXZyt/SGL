@@ -199,3 +199,43 @@ install(EXPORT SGLTargets
         NAMESPACE SGL::
         DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SGL
 )
+
+get_filename_component(SGL_VCPKG_TRIPLET_DIR "${SDL3_DIR}/../.." ABSOLUTE)
+
+install(DIRECTORY
+        ${SGL_VCPKG_TRIPLET_DIR}/share/sdl3
+        ${SGL_VCPKG_TRIPLET_DIR}/share/glm
+        ${SGL_VCPKG_TRIPLET_DIR}/share/slang
+        DESTINATION share
+)
+
+install(DIRECTORY ${SGL_VCPKG_TRIPLET_DIR}/include/SDL3 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${SGL_VCPKG_TRIPLET_DIR}/include/glm DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+file(GLOB SGL_VCPKG_SLANG_HEADERS ${SGL_VCPKG_TRIPLET_DIR}/include/slang*.h)
+install(FILES ${SGL_VCPKG_SLANG_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+foreach(SGL_VCPKG_CFG_DIR "" "debug/")
+    file(GLOB SGL_VCPKG_LIBS
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/SDL3.lib
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/glm.lib
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/slang*.lib
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/gfx.lib
+    )
+    if(SGL_VCPKG_LIBS)
+        install(FILES ${SGL_VCPKG_LIBS} DESTINATION ${SGL_VCPKG_CFG_DIR}${CMAKE_INSTALL_LIBDIR})
+    endif()
+
+    file(GLOB SGL_VCPKG_DLLS
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}bin/SDL3.dll
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}bin/slang*.dll
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}bin/gfx.dll
+    )
+    if(SGL_VCPKG_DLLS)
+        install(FILES ${SGL_VCPKG_DLLS} DESTINATION ${SGL_VCPKG_CFG_DIR}${CMAKE_INSTALL_BINDIR})
+    endif()
+
+    file(GLOB SGL_VCPKG_TOOLS ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}tools/shader-slang/*.exe)
+    if(SGL_VCPKG_TOOLS)
+        install(FILES ${SGL_VCPKG_TOOLS} DESTINATION ${SGL_VCPKG_CFG_DIR}tools/shader-slang)
+    endif()
+endforeach()
