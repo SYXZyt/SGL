@@ -170,171 +170,174 @@ SGL_END
 
 namespace sgl
 {
-    namespace Maths
+    // Use a struct so another library can alias it
+    struct Maths final
     {
-        inline const float& PI = sgl_Maths_PI;
-        inline const float& HALF_PI = sgl_Maths_HALF_PI;
-        inline const float& TWO_PI = sgl_Maths_TWO_PI;
-        inline const float& TAU = sgl_Maths_TWO_PI;
+        Maths() = delete;
 
-        inline const float& EPS = sgl_Maths_EPS;
-        inline const float& INF = sgl_Maths_INF;
-        inline const float NegInf = sgl_Maths_NEG_INF;
+        static inline const float& PI = sgl_Maths_PI;
+        static inline const float& HALF_PI = sgl_Maths_HALF_PI;
+        static inline const float& TWO_PI = sgl_Maths_TWO_PI;
+        static inline const float& TAU = sgl_Maths_TWO_PI;
+
+        static inline const float& EPS = sgl_Maths_EPS;
+        static inline const float& INF = sgl_Maths_INF;
+        static inline const float NegInf = sgl_Maths_NEG_INF;
         // Named NaN (not NAN) since <cmath>/<math.h> may already define NAN as a macro
-        inline const float& NaN = sgl_Maths_NAN;
+        static inline const float& NaN = sgl_Maths_NAN;
 
         template<typename T>
-        inline bool IsPowerOfTwo(T x) {
+        static bool IsPowerOfTwo(T x) {
             return x > 0 && (x & (x - 1)) == 0;
         }
 
         template<typename T>
-        inline T Sq(T x) {
+        static T Sq(T x) {
             return x * x;
         }
 
-        inline bool IsMultiple(int value, int multiple) {
+        static bool IsMultiple(int value, int multiple) {
             return value % multiple == 0;
         }
 
         template<typename T>
-        inline T Lerp(T a, T b, float t) {
+        static T Lerp(T a, T b, float t) {
             return a * (1.f - t) + b * t;
         }
 
         template<typename T>
-        inline T Min(T a, T b) {
+        static T Min(T a, T b) {
             return a < b ? a : b;
         }
 
         template<typename T>
-        inline T Max(T a, T b) {
+        static T Max(T a, T b) {
             return a > b ? a : b;
         }
 
         template<typename T>
-        inline T Clamp(T value, T min, T max) {
+        static T Clamp(T value, T min, T max) {
             return Max(min, Min(max, value));
         }
 
         template<typename T>
-        inline T Abs(T f) {
+        static T Abs(T f) {
             return f < 0 ? -f : f;
         }
 
         template<typename T>
-        inline T Copysign(T f, T sign) {
+        static T Copysign(T f, T sign) {
             return sign < 0 ? -Abs(f) : Abs(f);
         }
 
-        inline float Trunc(float f) {
+        static float Trunc(float f) {
             return sgl_Maths_Trunc(f);
         }
 
-        inline float Rad(float deg) {
+        static float Rad(float deg) {
             return deg * sgl_Maths_DEG2RAD;
         }
 
-        inline float Deg(float rad) {
+        static float Deg(float rad) {
             return rad * sgl_Maths_RAD2DEG;
         }
 
         template<typename T>
-        inline T Normalise(T f, T min, T max) {
+        static T Normalise(T f, T min, T max) {
             return (f - min) / (max - min);
         }
 
         template<typename T>
-        inline bool IsNan(T f) {
+        static bool IsNan(T f) {
             return f != f;
         }
 
-        inline float Sqrt(float f) { return sgl_Maths_Sqrt(f); }
+        static float Sqrt(float f) { return sgl_Maths_Sqrt(f); }
 
-        inline float Sin(float f) { return sgl_Maths_Sin(f); }
-        inline float SinRange(float f, float min, float max) { return sgl_Maths_SinRange(f, min, max); }
+        static float Sin(float f) { return sgl_Maths_Sin(f); }
+        static float SinRange(float f, float min, float max) { return sgl_Maths_SinRange(f, min, max); }
 
-        inline float Cos(float f) { return sgl_Maths_Cos(f); }
-        inline float CosRange(float f, float min, float max) { return sgl_Maths_CosRange(f, min, max); }
+        static float Cos(float f) { return sgl_Maths_Cos(f); }
+        static float CosRange(float f, float min, float max) { return sgl_Maths_CosRange(f, min, max); }
 
-        inline float Tan(float f) { return sgl_Maths_Tan(f); }
+        static float Tan(float f) { return sgl_Maths_Tan(f); }
 
-        inline float ASin(float f) { return sgl_Maths_ASin(f); }
-        inline float ACos(float f) { return sgl_Maths_ACos(f); }
-        inline float ATan(float f) { return sgl_Maths_ATan(f); }
-        inline float ATan2(float y, float x) { return sgl_Maths_ATan2(y, x); }
+        static float ASin(float f) { return sgl_Maths_ASin(f); }
+        static float ACos(float f) { return sgl_Maths_ACos(f); }
+        static float ATan(float f) { return sgl_Maths_ATan(f); }
+        static float ATan2(float y, float x) { return sgl_Maths_ATan2(y, x); }
 
-        inline float Log(float f) { return sgl_Maths_Log(f); }
+        static float Log(float f) { return sgl_Maths_Log(f); }
 
-        inline float Floor(float f) { return sgl_Maths_Floor(f); }
-        inline float Ceil(float f) { return sgl_Maths_Ceil(f); }
-        inline float Round(float f) { return sgl_Maths_Round(f); }
+        static float Floor(float f) { return sgl_Maths_Floor(f); }
+        static float Ceil(float f) { return sgl_Maths_Ceil(f); }
+        static float Round(float f) { return sgl_Maths_Round(f); }
 
-        inline float Pow(float base, float exponent) { return sgl_Maths_Pow(base, exponent); }
+        static float Pow(float base, float exponent) { return sgl_Maths_Pow(base, exponent); }
 
-        inline float LerpDT(float a, float b, float t, float dt) { return sgl_Maths_LerpDT(a, b, t, dt); }
+        static float LerpDT(float a, float b, float t, float dt) { return sgl_Maths_LerpDT(a, b, t, dt); }
 
         // Vec2
-        inline float Dist(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Dist(a, b); }
-        inline float Dist2(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Dist2(a, b); }
-        inline float Angle(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Angle(a, b); }
-        inline float Direction(sgl_Vec2 v) { return sgl_Maths_Vec2_Direction(v); }
-        inline float Length(sgl_Vec2 v) { return sgl_Maths_Vec2_Length(v); }
-        inline float Length2(sgl_Vec2 v) { return sgl_Maths_Vec2_Length2(v); }
-        inline float Dot(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Dot(a, b); }
-        inline float AspectRatio(sgl_Vec2 v) { return sgl_Maths_Vec2_AspectRatio(v); }
-        inline sgl_Vec2 Floor(sgl_Vec2 v) { return sgl_Maths_Vec2_Floor(v); }
-        inline sgl_Vec2 Normalise(sgl_Vec2 v) { return sgl_Maths_Vec2_Normalise(v); }
+        static float Dist(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Dist(a, b); }
+        static float Dist2(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Dist2(a, b); }
+        static float Angle(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Angle(a, b); }
+        static float Direction(sgl_Vec2 v) { return sgl_Maths_Vec2_Direction(v); }
+        static float Length(sgl_Vec2 v) { return sgl_Maths_Vec2_Length(v); }
+        static float Length2(sgl_Vec2 v) { return sgl_Maths_Vec2_Length2(v); }
+        static float Dot(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Dot(a, b); }
+        static float AspectRatio(sgl_Vec2 v) { return sgl_Maths_Vec2_AspectRatio(v); }
+        static sgl_Vec2 Floor(sgl_Vec2 v) { return sgl_Maths_Vec2_Floor(v); }
+        static sgl_Vec2 Normalise(sgl_Vec2 v) { return sgl_Maths_Vec2_Normalise(v); }
 
         // Vec2i
-        inline float Dist(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Dist(a, b); }
-        inline float Dist2(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Dist2(a, b); }
-        inline float Angle(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Angle(a, b); }
-        inline float Direction(sgl_Vec2i v) { return sgl_Maths_Vec2i_Direction(v); }
-        inline float Length(sgl_Vec2i v) { return sgl_Maths_Vec2i_Length(v); }
-        inline float Length2(sgl_Vec2i v) { return sgl_Maths_Vec2i_Length2(v); }
-        inline float Dot(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Dot(a, b); }
-        inline float AspectRatio(sgl_Vec2i v) { return sgl_Maths_Vec2i_AspectRatio(v); }
+        static float Dist(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Dist(a, b); }
+        static float Dist2(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Dist2(a, b); }
+        static float Angle(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Angle(a, b); }
+        static float Direction(sgl_Vec2i v) { return sgl_Maths_Vec2i_Direction(v); }
+        static float Length(sgl_Vec2i v) { return sgl_Maths_Vec2i_Length(v); }
+        static float Length2(sgl_Vec2i v) { return sgl_Maths_Vec2i_Length2(v); }
+        static float Dot(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Dot(a, b); }
+        static float AspectRatio(sgl_Vec2i v) { return sgl_Maths_Vec2i_AspectRatio(v); }
 
         // Vec3
-        inline float Dist(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Dist(a, b); }
-        inline float Dist2(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Dist2(a, b); }
-        inline float Angle(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Angle(a, b); }
-        inline float Length(sgl_Vec3 v) { return sgl_Maths_Vec3_Length(v); }
-        inline float Length2(sgl_Vec3 v) { return sgl_Maths_Vec3_Length2(v); }
-        inline float Dot(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Dot(a, b); }
-        inline sgl_Vec3 Cross(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Cross(a, b); }
-        inline sgl_Vec3 Normalise(sgl_Vec3 v) { return sgl_Maths_Vec3_Normalise(v); }
+        static float Dist(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Dist(a, b); }
+        static float Dist2(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Dist2(a, b); }
+        static float Angle(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Angle(a, b); }
+        static float Length(sgl_Vec3 v) { return sgl_Maths_Vec3_Length(v); }
+        static float Length2(sgl_Vec3 v) { return sgl_Maths_Vec3_Length2(v); }
+        static float Dot(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Dot(a, b); }
+        static sgl_Vec3 Cross(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Cross(a, b); }
+        static sgl_Vec3 Normalise(sgl_Vec3 v) { return sgl_Maths_Vec3_Normalise(v); }
 
         // Vec3i
-        inline float Dist(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Dist(a, b); }
-        inline float Dist2(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Dist2(a, b); }
-        inline float Angle(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Angle(a, b); }
-        inline float Length(sgl_Vec3i v) { return sgl_Maths_Vec3i_Length(v); }
-        inline float Length2(sgl_Vec3i v) { return sgl_Maths_Vec3i_Length2(v); }
-        inline float Dot(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Dot(a, b); }
-        inline sgl_Vec3i Cross(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Cross(a, b); }
+        static float Dist(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Dist(a, b); }
+        static float Dist2(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Dist2(a, b); }
+        static float Angle(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Angle(a, b); }
+        static float Length(sgl_Vec3i v) { return sgl_Maths_Vec3i_Length(v); }
+        static float Length2(sgl_Vec3i v) { return sgl_Maths_Vec3i_Length2(v); }
+        static float Dot(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Dot(a, b); }
+        static sgl_Vec3i Cross(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Cross(a, b); }
 
         // Vec4
-        inline float Dist(sgl_Vec4 a, sgl_Vec4 b) { return sgl_Maths_Vec4_Dist(a, b); }
-        inline float Dist2(sgl_Vec4 a, sgl_Vec4 b) { return sgl_Maths_Vec4_Dist2(a, b); }
-        inline float Length(sgl_Vec4 v) { return sgl_Maths_Vec4_Length(v); }
-        inline float Length2(sgl_Vec4 v) { return sgl_Maths_Vec4_Length2(v); }
-        inline float Dot(sgl_Vec4 a, sgl_Vec4 b) { return sgl_Maths_Vec4_Dot(a, b); }
-        inline sgl_Vec4 Normalise(sgl_Vec4 v) { return sgl_Maths_Vec4_Normalise(v); }
+        static float Dist(sgl_Vec4 a, sgl_Vec4 b) { return sgl_Maths_Vec4_Dist(a, b); }
+        static float Dist2(sgl_Vec4 a, sgl_Vec4 b) { return sgl_Maths_Vec4_Dist2(a, b); }
+        static float Length(sgl_Vec4 v) { return sgl_Maths_Vec4_Length(v); }
+        static float Length2(sgl_Vec4 v) { return sgl_Maths_Vec4_Length2(v); }
+        static float Dot(sgl_Vec4 a, sgl_Vec4 b) { return sgl_Maths_Vec4_Dot(a, b); }
+        static sgl_Vec4 Normalise(sgl_Vec4 v) { return sgl_Maths_Vec4_Normalise(v); }
 
         // Mat4
-        inline sgl_Mat4 Orthographic(sgl_Vec2i screenSize, float zoom) { return sgl_Maths_Mat4_Orthographic(screenSize, zoom); }
-        inline sgl_Mat4 OrthographicGL(sgl_Vec2i screenSize, float zoom) { return sgl_Maths_Mat4_OrthographicGL(screenSize, zoom); }
-        inline sgl_Mat4 Perspective(float fovY, float aspectRatio, float nearPlane, float farPlane) { return sgl_Maths_Mat4_Perspective(fovY, aspectRatio, nearPlane, farPlane); }
-        inline sgl_Mat4 View(sgl_Vec3 position, float angle) { return sgl_Maths_Mat4_View(position, angle); }
-        inline sgl_Mat4 LookAt(sgl_Vec3 eye, sgl_Vec3 target, sgl_Vec3 up) { return sgl_Maths_Mat4_LookAt(eye, target, up); }
-        inline sgl_Mat4 Inverse(sgl_Mat4 mat) { return sgl_Maths_Mat4_Inverse(mat); }
-        inline sgl_Mat4 Transpose(sgl_Mat4 mat) { return sgl_Maths_Mat4_Transpose(mat); }
-        inline sgl_Mat4 Translation(sgl_Vec3 translation) { return sgl_Maths_Mat4_Translation(translation); }
-        inline sgl_Mat4 Rotation(float angle, sgl_Vec3 axis) { return sgl_Maths_Mat4_Rotation(angle, axis); }
-        inline sgl_Mat4 Scale(sgl_Vec3 scale) { return sgl_Maths_Mat4_Scale(scale); }
-    }
+        static sgl_Mat4 Orthographic(sgl_Vec2i screenSize, float zoom) { return sgl_Maths_Mat4_Orthographic(screenSize, zoom); }
+        static sgl_Mat4 OrthographicGL(sgl_Vec2i screenSize, float zoom) { return sgl_Maths_Mat4_OrthographicGL(screenSize, zoom); }
+        static sgl_Mat4 Perspective(float fovY, float aspectRatio, float nearPlane, float farPlane) { return sgl_Maths_Mat4_Perspective(fovY, aspectRatio, nearPlane, farPlane); }
+        static sgl_Mat4 View(sgl_Vec3 position, float angle) { return sgl_Maths_Mat4_View(position, angle); }
+        static sgl_Mat4 LookAt(sgl_Vec3 eye, sgl_Vec3 target, sgl_Vec3 up) { return sgl_Maths_Mat4_LookAt(eye, target, up); }
+        static sgl_Mat4 Inverse(sgl_Mat4 mat) { return sgl_Maths_Mat4_Inverse(mat); }
+        static sgl_Mat4 Transpose(sgl_Mat4 mat) { return sgl_Maths_Mat4_Transpose(mat); }
+        static sgl_Mat4 Translation(sgl_Vec3 translation) { return sgl_Maths_Mat4_Translation(translation); }
+        static sgl_Mat4 Rotation(float angle, sgl_Vec3 axis) { return sgl_Maths_Mat4_Rotation(angle, axis); }
+        static sgl_Mat4 Scale(sgl_Vec3 scale) { return sgl_Maths_Mat4_Scale(scale); }
+    };
 }
 
 #endif
