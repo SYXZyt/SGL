@@ -23,7 +23,7 @@ SGL_API extern const float sgl_Maths_NAN;
 #define sgl_Maths_IsPowerOfTwo(x) ((x) > 0) && (((x) & ((x) - 1)) == 0)
 
 SGL_API extern float sgl_Maths_Sqrt(float x);
-#define sgl_Maths_Sq(x) (x) * (x)
+#define sgl_Maths_Sq(x) ((x) * (x))
 
 // Closest we got to constexpr
 #define sgl_Maths_IsMultiple(value, multiple) (int)(value) % (int)(multiple) == 0;
@@ -66,8 +66,7 @@ SGL_API extern float sgl_Maths_Round(float f);
 
 SGL_API extern float sgl_Maths_Pow(float base, float exponent);
 
-SGL_API extern float sgl_Maths_LerpDT(float a, float b, float t, float dt);
-
+SGL_API extern float sgl_Maths_LerpDt(float a, float b, float t, float dt);
 
 #pragma region Vec2
 SGL_API extern float sgl_Maths_Vec2_Dist(sgl_Vec2 a, sgl_Vec2 b);
@@ -87,6 +86,9 @@ SGL_API extern float sgl_Maths_Vec2_AspectRatio(sgl_Vec2 v);
 SGL_API extern sgl_Vec2 sgl_Maths_Vec2_Floor(sgl_Vec2 v);
 
 SGL_API extern sgl_Vec2 sgl_Maths_Vec2_Normalise(sgl_Vec2 v);
+
+SGL_API extern sgl_Vec2 sgl_Maths_Vec2_Lerp(sgl_Vec2 a,  sgl_Vec2 b, float t);
+SGL_API extern sgl_Vec2 sgl_Maths_Vec2_LerpDt(sgl_Vec2 a,  sgl_Vec2 b, float t, float dt);
 #pragma endregion
 
 #pragma region Vec2i
@@ -118,6 +120,9 @@ SGL_API extern float sgl_Maths_Vec3_Dot(sgl_Vec3 a, sgl_Vec3 b);
 SGL_API extern sgl_Vec3 sgl_Maths_Vec3_Cross(sgl_Vec3 a, sgl_Vec3 b);
 
 SGL_API extern sgl_Vec3 sgl_Maths_Vec3_Normalise(sgl_Vec3 v);
+
+SGL_API extern sgl_Vec3 sgl_Maths_Vec3_Lerp(sgl_Vec3 a,  sgl_Vec3 b, float t);
+SGL_API extern sgl_Vec3 sgl_Maths_Vec3_LerpDt(sgl_Vec3 a,  sgl_Vec3 b, float t, float dt);
 #pragma endregion
 
 #pragma region Vec3i
@@ -143,6 +148,9 @@ SGL_API extern float sgl_Maths_Vec4_Length2(sgl_Vec4 v);
 SGL_API extern float sgl_Maths_Vec4_Dot(sgl_Vec4 a, sgl_Vec4 b);
 
 SGL_API extern sgl_Vec4 sgl_Maths_Vec4_Normalise(sgl_Vec4 v);
+
+SGL_API extern sgl_Vec4 sgl_Maths_Vec4_Lerp(sgl_Vec4 a,  sgl_Vec4 b, float t);
+SGL_API extern sgl_Vec4 sgl_Maths_Vec4_LerpDt(sgl_Vec4 a,  sgl_Vec4 b, float t, float dt);
 #pragma endregion
 
 #pragma region Mat4
@@ -275,7 +283,8 @@ namespace sgl
 
         static float Pow(float base, float exponent) { return sgl_Maths_Pow(base, exponent); }
 
-        static float LerpDT(float a, float b, float t, float dt) { return sgl_Maths_LerpDT(a, b, t, dt); }
+        static float Lerp(float a, float b, float t) { return sgl_Maths_Lerp(a, b, t); }
+        static float LerpDt(float a, float b, float t, float dt) { return sgl_Maths_LerpDt(a, b, t, dt); }
 
         // Vec2
         static float Dist(sgl_Vec2 a, sgl_Vec2 b) { return sgl_Maths_Vec2_Dist(a, b); }
@@ -288,6 +297,8 @@ namespace sgl
         static float AspectRatio(sgl_Vec2 v) { return sgl_Maths_Vec2_AspectRatio(v); }
         static sgl_Vec2 Floor(sgl_Vec2 v) { return sgl_Maths_Vec2_Floor(v); }
         static sgl_Vec2 Normalise(sgl_Vec2 v) { return sgl_Maths_Vec2_Normalise(v); }
+        static sgl_Vec2 Lerp(sgl_Vec2 a, sgl_Vec2 b, float t) { return sgl_Maths_Vec2_Lerp(a, b, t); }
+        static sgl_Vec2 LerpDt(sgl_Vec2 a, sgl_Vec2 b, float t, float dt) { return sgl_Maths_Vec2_LerpDt(a, b, t, dt); }
 
         // Vec2i
         static float Dist(sgl_Vec2i a, sgl_Vec2i b) { return sgl_Maths_Vec2i_Dist(a, b); }
@@ -308,6 +319,8 @@ namespace sgl
         static float Dot(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Dot(a, b); }
         static sgl_Vec3 Cross(sgl_Vec3 a, sgl_Vec3 b) { return sgl_Maths_Vec3_Cross(a, b); }
         static sgl_Vec3 Normalise(sgl_Vec3 v) { return sgl_Maths_Vec3_Normalise(v); }
+        static sgl_Vec3 Lerp(sgl_Vec3 a, sgl_Vec3 b, float t) { return sgl_Maths_Vec3_Lerp(a, b, t); }
+        static sgl_Vec3 LerpDt(sgl_Vec3 a, sgl_Vec3 b, float t, float dt) { return sgl_Maths_Vec3_LerpDt(a, b, t, dt); }
 
         // Vec3i
         static float Dist(sgl_Vec3i a, sgl_Vec3i b) { return sgl_Maths_Vec3i_Dist(a, b); }
@@ -325,6 +338,8 @@ namespace sgl
         static float Length2(sgl_Vec4 v) { return sgl_Maths_Vec4_Length2(v); }
         static float Dot(sgl_Vec4 a, sgl_Vec4 b) { return sgl_Maths_Vec4_Dot(a, b); }
         static sgl_Vec4 Normalise(sgl_Vec4 v) { return sgl_Maths_Vec4_Normalise(v); }
+        static sgl_Vec4 Lerp(sgl_Vec4 a, sgl_Vec4 b, float t) { return sgl_Maths_Vec4_Lerp(a, b, t); }
+        static sgl_Vec4 LerpDt(sgl_Vec4 a, sgl_Vec4 b, float t, float dt) { return sgl_Maths_Vec4_LerpDt(a, b, t, dt); }
 
         // Mat4
         static sgl_Mat4 Orthographic(sgl_Vec2i screenSize, float zoom) { return sgl_Maths_Mat4_Orthographic(screenSize, zoom); }
