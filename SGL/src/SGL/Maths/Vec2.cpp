@@ -1,7 +1,6 @@
 #include "Vec2.h"
 #include <SGL/Maths/Maths.h>
 
-
 #define IMPL(t, v) t t::v = t##_##v; t##i t##i::v = t##i##_##v
 
 IMPL(sgl_Vec2, Zero);
@@ -21,6 +20,18 @@ const sgl_Vec2 sgl_Vec2_Up = {{{ 0.f, 1.f }}};
 const sgl_Vec2 sgl_Vec2_Down = {{{ 0.f, -1.f }}};
 const sgl_Vec2 sgl_Vec2_Inf = {{{ sgl_Maths_INF, sgl_Maths_INF }}};
 const sgl_Vec2 sgl_Vec2_NegativeInf = {{{ sgl_Maths_NEG_INF, sgl_Maths_NEG_INF }}};
+
+sgl_Vec2 sgl_Vec2::Make() {
+    return sgl_Vec2_Zero;
+}
+
+sgl_Vec2 sgl_Vec2::Make(float scalar) {
+    return  sgl_Vec2_New_Scalar(scalar);
+}
+
+sgl_Vec2 sgl_Vec2::Make(float x, float y) {
+    return  sgl_Vec2_New_ScalarXY(x, y);
+}
 
 sgl_Vec2 sgl_Vec2_New_Scalar(float scalar) {
     return {{{ scalar, scalar }}};

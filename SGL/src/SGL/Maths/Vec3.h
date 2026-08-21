@@ -28,6 +28,12 @@ typedef struct sgl_Vec3 sgl_sealed
     SGL_API static sgl_Vec3 Inf;
     SGL_API static sgl_Vec3 NegativeInf;
 #endif
+
+#ifdef  __cplusplus
+    static sgl_Vec3 Make();
+    static sgl_Vec3 Make(float scalar);
+    static sgl_Vec3 Make(float x, float y, float z);
+#endif
 } sgl_Vec3;
 
 SGL_API extern const sgl_Vec3 sgl_Vec3_Zero;

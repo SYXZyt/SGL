@@ -25,6 +25,18 @@ const sgl_Vec4 sgl_Vec4_Backward = { {{ 0.f, 0.f, -1.f, 0.f }} };
 const sgl_Vec4 sgl_Vec4_Inf = { {{ sgl_Maths_INF, sgl_Maths_INF, sgl_Maths_INF, sgl_Maths_INF }} };
 const sgl_Vec4 sgl_Vec4_NegativeInf = { {{ sgl_Maths_NEG_INF, sgl_Maths_NEG_INF, sgl_Maths_NEG_INF, sgl_Maths_NEG_INF }} };
 
+sgl_Vec4 sgl_Vec4::Make() {
+    return sgl_Vec4_Zero;
+}
+
+sgl_Vec4 sgl_Vec4::Make(float scalar) {
+    return  sgl_Vec4_New_Scalar(scalar);
+}
+
+sgl_Vec4 sgl_Vec4::Make(float x, float y, float z, float w) {
+    return  sgl_Vec4_New_ScalarXYZW(x, y, z, w);
+}
+
 sgl_Vec4 sgl_Vec4_New_Scalar(float scalar) {
     return { {{ scalar, scalar, scalar, scalar }} };
 }

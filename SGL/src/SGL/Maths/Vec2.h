@@ -25,6 +25,15 @@ typedef struct sgl_Vec2 sgl_sealed
     SGL_API static sgl_Vec2 Inf;
     SGL_API static sgl_Vec2 NegativeInf;
 #endif
+
+    // We can't use a constructor since it causes compile errors
+    // well it does if you are using this in a c++ project
+#ifdef  __cplusplus
+    static sgl_Vec2 Make();
+    static sgl_Vec2 Make(float scalar);
+    static sgl_Vec2 Make(float x, float y);
+#endif
+
 } sgl_Vec2;
 
 SGL_API extern const sgl_Vec2 sgl_Vec2_Zero;

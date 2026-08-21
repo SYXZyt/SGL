@@ -24,6 +24,12 @@ typedef struct sgl_Vec4 sgl_sealed
     SGL_API static sgl_Vec4 Inf;
     SGL_API static sgl_Vec4 NegativeInf;
 #endif
+
+#ifdef  __cplusplus
+    static sgl_Vec4 Make();
+    static sgl_Vec4 Make(float scalar);
+    static sgl_Vec4 Make(float x, float y, float z, float w);
+#endif
 } sgl_Vec4;
 
 SGL_API extern const sgl_Vec4 sgl_Vec4_Zero;
