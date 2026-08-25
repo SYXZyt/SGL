@@ -135,7 +135,10 @@ void sgl_Shader_Load_Slang_Source(sgl_Shader* shader, const char* slangSource, c
         strncpy(shader->fragmentEntryName, fragmentEntry, sizeof(shader->fragmentEntryName) - 1);
     }
 
-    sgl_Shader_Load_Source(shader, (const char*)vsCode->getBufferPointer(), (const char*)fsCode->getBufferPointer());
+    std::string vsSource((const char*)vsCode->getBufferPointer(), vsCode->getBufferSize());
+    std::string fsSource((const char*)fsCode->getBufferPointer(), fsCode->getBufferSize());
+
+    sgl_Shader_Load_Source(shader, vsSource.c_str(), fsSource.c_str());
 }
 
 void sgl_Shader_Load_File(sgl_Shader* shader, const char* vFile, const char* fFile)
