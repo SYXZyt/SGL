@@ -356,6 +356,15 @@ static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
     for (size_t i = 0; i < textureCount; ++i)
         sgl_Texture_Bind(textures[i], (uint32)i);
 
+    if (self->boundTextureCount > textureCount)
+    {
+        static ID3D11ShaderResourceView* const nullSrvs[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+        size_t staleCount = self->boundTextureCount - textureCount;
+        self->ctx->PSSetShaderResources((UINT)textureCount, (UINT)staleCount, nullSrvs);
+    }
+
+    self->boundTextureCount = textureCount;
+
     for (size_t i = 0; i < bufferCount; ++i)
         sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
 
@@ -440,6 +449,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     device->base.width = window->screenSize.width;
     device->base.height = window->screenSize.height;
     device->base.vtable = &gDxVTable;
+    device->boundTextureCount = 0;
 
     DXGI_SWAP_CHAIN_DESC swapDesc = {};
     swapDesc.BufferCount = 1;

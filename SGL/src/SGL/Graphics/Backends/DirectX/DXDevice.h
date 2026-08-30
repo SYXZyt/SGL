@@ -32,6 +32,8 @@ typedef struct sgl_DXDevice sgl_sealed
     sgl_Shader* blitShader;
 
     ID3D11RenderTargetView* backBufferRtv;
+
+    size_t boundTextureCount;
 } sgl_DXDevice;
 
 /// @brief Create a new DirectX device
