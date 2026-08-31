@@ -68,7 +68,7 @@ static int LoadingThread(void* arg)
     sgl_Shader_Load_Slang_File(gShader, "Object.slang", "vertexMain", "fragmentMain");
 
     gSuzanne = sgl_Model_Load(gGPU, "suzanne.obj", sizeof(Vertex), gLayout);
-    gTexture = sgl_Texture2DArray_New_File(gGPU, "stone.png", sgl_Vec2i_New_Scalar(16));
+    gTexture = sgl_Texture2D_New_File(gGPU, "stone.png", false);
 
     gHasLoadingBeenDone = true;
     return 0;
