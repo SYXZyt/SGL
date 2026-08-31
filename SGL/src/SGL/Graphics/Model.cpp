@@ -34,18 +34,49 @@ namespace
     void WriteFloats(byte* vertex, size_t offset, const float* src, int count) {
         std::memcpy(vertex + offset, src, sizeof(float) * count);
     }
+
+    sgl_Model_VertexSource BuildVertexSource(const tinyobj::attrib_t& attrib, const tinyobj::index_t& index, float scaledPosition[3])
+    {
+        sgl_Model_VertexSource source{};
+
+        if (index.vertex_index >= 0)
+        {
+            const float* src = &attrib.vertices[3ull * index.vertex_index];
+            scaledPosition[0] = src[0] * gUnitScale;
+            scaledPosition[1] = src[1] * gUnitScale;
+            scaledPosition[2] = src[2] * gUnitScale;
+            source.position = scaledPosition;
+        }
+
+        if (index.normal_index >= 0)
+            source.normal = &attrib.normals[3ull * index.normal_index];
+
+        if (index.texcoord_index >= 0)
+        {
+            source.texcoord = &attrib.texcoords[2ull * index.texcoord_index];
+            source.texcoordW = &attrib.texcoord_ws[index.texcoord_index];
+        }
+
+        if (!attrib.colors.empty() && index.vertex_index >= 0)
+            source.colour = &attrib.colors[3ull * index.vertex_index];
+
+        return source;
+    }
 }
 
-sgl_VertexArray* sgl_Model_Load(sgl_GraphicsDevice* gpu, const char* path, uint32 vertexSize, sgl_VertexLayout* layout)
+sgl_VertexArray* sgl_Model_Load(sgl_GraphicsDevice* gpu, const char* path, uint32 vertexSize, sgl_VertexLayout* layout, sgl_Model_Vertex_Callback_ptr callback, void* userdata)
 {
     try
     {
+        if (!callback)
+            throw std::exception("No callback provided");
+
         tinyobj::attrib_t attrib;
         std::vector<tinyobj::shape_t> shapes;
         std::vector<tinyobj::material_t> materials;
         std::string warn, err;
 
-        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path))
+        if (!tinyobj::LoadObj(&attrib, &shapes, &materials, &warn, &err, path, nullptr, true, false))
         {
             SGL_REPORT_ERROR((std::string("Failed to load model '") + path + "': " + err).c_str());
             return nullptr;
@@ -71,35 +102,10 @@ sgl_VertexArray* sgl_Model_Load(sgl_GraphicsDevice* gpu, const char* path, uint3
 
                 std::memset(vertex.data(), 0, vertexSize);
 
-                for (uint32 i = 0; i < layout->elementCount; ++i)
-                {
-                    const sgl_VertexElement& element = layout->elements[i];
+                float scaledPosition[3];
+                sgl_Model_VertexSource source = BuildVertexSource(attrib, index, scaledPosition);
 
-                    switch (element.semantic)
-                    {
-                        case sgl_POSITION:
-                            if (index.vertex_index >= 0)
-                            {
-                                const float* src = &attrib.vertices[3ull * index.vertex_index];
-                                float scaled[3] = { src[0] * gUnitScale, src[1] * gUnitScale, src[2] * gUnitScale };
-                                WriteFloats(vertex.data(), element.offset, scaled, 3);
-                            }
-                            break;
-
-                        case sgl_NORMAL:
-                            if (index.normal_index >= 0)
-                                WriteFloats(vertex.data(), element.offset, &attrib.normals[3ull * index.normal_index], 3);
-                            break;
-
-                        case sgl_TEXCOORD:
-                            if (index.texcoord_index >= 0)
-                                WriteFloats(vertex.data(), element.offset, &attrib.texcoords[2ull * index.texcoord_index], 2);
-                            break;
-
-                        default:
-                            break;
-                    }
-                }
+                callback(&source, vertex.data(), userdata);
 
                 sgl_VertexArray_AddVertex(va, vertex.data());
 

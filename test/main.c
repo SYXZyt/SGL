@@ -29,6 +29,20 @@ typedef struct sgl_alignas(16) Vertex
     sgl_Vec2 __pad;
 } Vertex;
 
+static void ModelVertexCallback(const sgl_Model_VertexSource* source, void* outVertex, void* userdata)
+{
+    Vertex* vertex = (Vertex*)outVertex;
+
+    if (source->position)
+        vertex->pos = sgl_Vec3_New_ScalarXYZ(source->position[0], source->position[1], source->position[2]);
+
+    if (source->normal)
+        vertex->normal = sgl_Vec3_New_ScalarXYZ(source->normal[0], source->normal[1], source->normal[2]);
+
+    if (source->texcoord)
+        vertex->uv = sgl_Vec2_New_ScalarXY(source->texcoord[0], source->texcoord[1]);
+}
+
 typedef struct sgl_alignas(16) UB
 {
     sgl_Mat4 view;
@@ -67,7 +81,7 @@ static int LoadingThread(void* arg)
     gShader = sgl_Shader_Create(gGPU, gLayout);
     sgl_Shader_Load_Slang_File(gShader, "Object.slang", "vertexMain", "fragmentMain");
 
-    gSuzanne = sgl_Model_Load(gGPU, "suzanne.obj", sizeof(Vertex), gLayout);
+    gSuzanne = sgl_Model_Load(gGPU, "suzanne.obj", sizeof(Vertex), gLayout, ModelVertexCallback, NULL);
     gTexture = sgl_Texture2D_New_File(gGPU, "stone.png", false);
 
     gHasLoadingBeenDone = true;
@@ -259,7 +273,7 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_BeginFrame(gGPU);
         sgl_GraphicsDevice_Draw(gGPU, gSuzanne, gShader, &gTexture, 1, frameBuffers, 2);
 
-        if (sgl_Checkbox_intbool("FXAA", &ppUniforms.isActive, 1, 1, 0))
+        if (sgl_Checkbox_intbool("FXAA", &ppUniforms.isActive))
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
 
         {
