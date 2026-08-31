@@ -123,3 +123,7 @@ sgl_Vec2i sgl_Vec2i_Negate(sgl_Vec2i v) {
 bool sgl_Vec2i_Compare(sgl_Vec2i a, sgl_Vec2i b) {
     return a.x == b.x && a.y == b.y;
 }
+
+sgl_Vec2 sgl_Vec2i_to_sgl_Vec2(sgl_Vec2i v) {
+    return {{{ (float)v.x, (float)v.y }}};
+}

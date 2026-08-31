@@ -112,6 +112,8 @@ SGL_API extern bool sgl_Vec2i_Compare(sgl_Vec2i a, sgl_Vec2i b);
 
 #pragma endregion
 
+SGL_API extern sgl_Vec2 sgl_Vec2i_to_sgl_Vec2(sgl_Vec2i v);
+
 SGL_END
 
 // If using C++, it is nice to have some operators
