@@ -249,6 +249,7 @@ SGL_API extern bool sgl_DragVec2(const char* text, sgl_Vec2* v, float speed, flo
 SGL_API extern bool sgl_DragMat4(const char* text, sgl_Mat4* v, float speed, float min, float max);
 
 SGL_API extern bool sgl_Checkbox(const char* text, bool* v);
+SGL_API extern bool sgl_Checkbox_intbool(const char* text, int* v);
 
 SGL_API extern bool sgl_CollapsableHeader(const char* text);
 SGL_API extern bool sgl_TreeNode(const char* text);

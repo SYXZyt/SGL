@@ -423,6 +423,18 @@ bool sgl_Checkbox(const char* text, bool* v) {
     return ImGui::Checkbox(text, v);
 }
 
+bool sgl_Checkbox_intbool(const char* text, int* v)
+{
+    bool b = *v;
+    if (ImGui::Checkbox(text, &b))
+    {
+        *v = b;
+        return true;
+    }
+
+    return false;
+}
+
 bool sgl_CollapsableHeader(const char* text) {
     return ImGui::CollapsingHeader(text);
 }
