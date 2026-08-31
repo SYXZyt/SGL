@@ -45,11 +45,11 @@ typedef struct sgl_alignas(16) LightUB
     float __pad;
 } LightUB;
 
-typedef struct sgl_alignas(16) PostProcessEffectUniforms
+typedef struct sgl_alignas(16) FxaaParams
 {
-    float time;
-    sgl_Vec3 __pad;
-} PostProcessEffectUniforms;
+    sgl_Vec2 resolution;
+    int isActive;
+} FxaaParams;
 
 static sgl_Texture* gTexture = NULL;
 static sgl_VertexArray* gSuzanne = NULL;
@@ -144,7 +144,6 @@ int main(int argc, char** argv)
 
     _ = timespec_get(&end, TIME_UTC);
 
-
     double elapsed =
         (double)(end.tv_sec - start.tv_sec) +
         (double)(end.tv_nsec - start.tv_nsec) / 1000000000.0;
@@ -156,10 +155,13 @@ int main(int argc, char** argv)
 
     sgl_PostProcess* postProcessEffect = sgl_PostProcess_Create(gGPU, 1);
 
-    PostProcessEffectUniforms ppUniforms;
-    ppUniforms.time = 0;
+    FxaaParams ppUniforms;
+    ppUniforms.resolution = sgl_Vec2i_to_sgl_Vec2(window->screenSize);
+    ppUniforms.isActive = true;
 
-    sgl_UniformBuffer* ubPp = sgl_UniformBuffer_Create(gGPU, sizeof(PostProcessEffectUniforms));
+    sgl_UniformBuffer* ubPp = sgl_UniformBuffer_Create(gGPU, sizeof(FxaaParams));
+    sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
+
     sgl_PostProcess_AddUniformBuffer(postProcessEffect, ubPp, 0);
 
     sgl_Shader_Load_Slang_File(postProcessEffect->shader, "PostProcess.slang", "vertexMain", "fragmentMain");
@@ -195,9 +197,6 @@ int main(int argc, char** argv)
     while (!window->wantsClose)
     {
         {
-            ppUniforms.time += 0.1f;
-            sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
-
             if (useMouse)
             {
                 sgl_Vec2 mouseDelta = sgl_Mouse_GetDelta(mouse);
@@ -260,7 +259,7 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_BeginFrame(gGPU);
         sgl_GraphicsDevice_Draw(gGPU, gSuzanne, gShader, &gTexture, 1, frameBuffers, 2);
 
-        if (sgl_InputFloat("Time", &ppUniforms.time, 1, 1, 0))
+        if (sgl_Checkbox_intbool("FXAA", &ppUniforms.isActive, 1, 1, 0))
             sgl_UniformBuffer_Upload(ubPp, &ppUniforms);
 
         {
