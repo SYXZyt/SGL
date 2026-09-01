@@ -25,6 +25,9 @@ static void DXDestroy(sgl_VertexArray* va)
     if (self->indexBuffer)
         self->indexBuffer->Release();
 
+    if (self->instanceBuffer)
+        self->instanceBuffer->Release();
+
     sgl_VertexLayout_Destroy(va->layout);
     sgl::Memory::Delete(self);
 }
@@ -90,10 +93,45 @@ static void DXBind(sgl_VertexArray* va)
         va->needsIndexUpload = false;
     }
 
-    UINT stride = va->vertexSize;
-    UINT offset = 0;
+    if (va->needsInstanceUpload)
+    {
+        if (self->instanceBuffer)
+        {
+            self->instanceBuffer->Release();
+            self->instanceBuffer = nullptr;
+        }
 
-    device->ctx->IASetVertexBuffers(0, 1, &self->vertexBuffer, &stride, &offset);
+        if (va->instanceCount > 0 && va->instanceSize > 0)
+        {
+            D3D11_BUFFER_DESC desc = {};
+            desc.ByteWidth = (UINT)(va->instanceCount * va->instanceSize);
+            desc.Usage = D3D11_USAGE_DEFAULT;
+            desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+
+            D3D11_SUBRESOURCE_DATA data = {};
+            data.pSysMem = va->instanceData;
+
+            HRESULT hr = device->device->CreateBuffer(&desc, &data, &self->instanceBuffer);
+            if (FAILED(hr))
+                ReportHRError("Failed to create instance buffer", hr);
+        }
+
+        va->needsInstanceUpload = false;
+    }
+
+    if (self->instanceBuffer)
+    {
+        ID3D11Buffer* buffers[2] = { self->vertexBuffer, self->instanceBuffer };
+        UINT strides[2] = { va->vertexSize, va->instanceSize };
+        UINT offsets[2] = { 0, 0 };
+        device->ctx->IASetVertexBuffers(0, 2, buffers, strides, offsets);
+    }
+    else
+    {
+        UINT stride = va->vertexSize;
+        UINT offset = 0;
+        device->ctx->IASetVertexBuffers(0, 1, &self->vertexBuffer, &stride, &offset);
+    }
 
     if (self->indexBuffer)
         device->ctx->IASetIndexBuffer(self->indexBuffer, DXGI_FORMAT_R32_UINT, 0);
@@ -107,7 +145,7 @@ static sgl_VertexArrayVTable gDXVtable =
     .Bind = &DXBind,
 };
 
-sgl_DXVertexArray* sgl_DXVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout)
+sgl_DXVertexArray* sgl_DXVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout, uint32 instanceSize)
 {
     sgl_DXVertexArray* va = sgl::Memory::New<sgl_DXVertexArray>();
 
@@ -122,12 +160,19 @@ sgl_DXVertexArray* sgl_DXVertexArray_New(uint32 vertexSize, sgl_VertexLayout* la
     va->base.indexCount = 0;
     va->base.indexCapacity = 0;
 
+    va->base.instanceData = nullptr;
+    va->base.instanceCount = 0;
+    va->base.instanceCapacity = 0;
+    va->base.instanceSize = instanceSize;
+
     va->base.needsVertexUpload = true;
     va->base.needsIndexUpload = true;
+    va->base.needsInstanceUpload = true;
     va->base.layoutDirty = true;
 
     va->vertexBuffer = nullptr;
     va->indexBuffer = nullptr;
+    va->instanceBuffer = nullptr;
 
     return va;
 }

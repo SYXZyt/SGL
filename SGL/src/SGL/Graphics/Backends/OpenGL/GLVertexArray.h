@@ -9,13 +9,13 @@ SGL_BEGIN
 typedef struct sgl_GLVertexArray sgl_sealed
 {
     sgl_VertexArray base;
-    gluint vao, vbo, ebo;
+    gluint vao, vbo, ebo, instanceVbo;
 
     bool gpuLoaded;
 
 } sgl_GLVertexArray;
 
 /// @brief Create an OpenGL vertex array
-SGL_API extern sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout);
+SGL_API extern sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout, uint32 instanceSize);
 
 SGL_END

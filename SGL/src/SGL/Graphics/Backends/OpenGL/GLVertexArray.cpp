@@ -13,11 +13,14 @@ static void GLDestroy(sgl_VertexArray* va)
     sgl_OpenGLThreadSync_DeleteEBO(self->ebo);
     sgl_OpenGLThreadSync_DeleteVAO(self->vao);
 
+    if (self->instanceVbo)
+        sgl_OpenGLThreadSync_DeleteVBO(self->instanceVbo);
+
     sgl_VertexLayout_Destroy(va->layout);
     sgl::Memory::Delete(self);
 }
 
-static void ApplyVertexLayout(GLuint vbo, GLuint vao, sgl_VertexLayout* layout, uint32 vertexSize);
+static void ApplyVertexLayout(GLuint vbo, GLuint instanceVbo, GLuint vao, sgl_VertexLayout* layout, uint32 vertexSize, uint32 instanceSize);
 
 static void GLEnsureGPUResources(sgl_GLVertexArray* self, sgl_VertexArray* va)
 {
@@ -28,7 +31,10 @@ static void GLEnsureGPUResources(sgl_GLVertexArray* self, sgl_VertexArray* va)
     glCreateBuffers(1, &self->vbo);
     glCreateBuffers(1, &self->ebo);
 
-    ApplyVertexLayout(self->vbo, self->vao, va->layout, va->vertexSize);
+    if (va->instanceSize > 0)
+        glCreateBuffers(1, &self->instanceVbo);
+
+    ApplyVertexLayout(self->vbo, self->instanceVbo, self->vao, va->layout, va->vertexSize, va->instanceSize);
     glVertexArrayElementBuffer(self->vao, self->ebo);
 
     self->gpuLoaded = true;
@@ -53,6 +59,12 @@ static void GLBind(sgl_VertexArray* va)
     {
         glNamedBufferData(self->ebo, (GLsizeiptr)(va->indexCount * sizeof(uint32)), va->indexData, GL_DYNAMIC_DRAW);
         va->needsIndexUpload = false;
+    }
+
+    if (va->needsInstanceUpload && va->instanceData != nullptr && va->instanceCount > 0)
+    {
+        glNamedBufferData(self->instanceVbo, (GLsizeiptr)(va->instanceCount * va->instanceSize), va->instanceData, GL_STREAM_DRAW);
+        va->needsInstanceUpload = false;
     }
 }
 
@@ -121,11 +133,17 @@ static void GetGLType(sgl_VertexElementType type, GLenum* outType, GLint* outCom
     *outComponentCount = 1;
 }
 
-static void ApplyVertexLayout(GLuint vbo, GLuint vao, sgl_VertexLayout* layout, uint32 vertexSize)
+static void ApplyVertexLayout(GLuint vbo, GLuint instanceVbo, GLuint vao, sgl_VertexLayout* layout, uint32 vertexSize, uint32 instanceSize)
 {
     glBindVertexArray(vao);
 
     glVertexArrayVertexBuffer(vao, 0, vbo, 0, vertexSize);
+
+    if (instanceSize > 0)
+    {
+        glVertexArrayVertexBuffer(vao, 1, instanceVbo, 0, instanceSize);
+        glVertexArrayBindingDivisor(vao, 1, 1);
+    }
 
     for (uint32 i = 0; i < layout->elementCount; i++)
     {
@@ -147,13 +165,13 @@ static void ApplyVertexLayout(GLuint vbo, GLuint vao, sgl_VertexLayout* layout, 
             (GLuint)e->offset
         );
 
-        glVertexAttribBinding(attribIndex, 0);
+        glVertexAttribBinding(attribIndex, e->perInstance ? 1 : 0);
     }
 
     glBindVertexArray(0);
 }
 
-sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout)
+sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* layout, uint32 instanceSize)
 {
     sgl_GLVertexArray* va = sgl::Memory::New<sgl_GLVertexArray>();
 
@@ -168,13 +186,20 @@ sgl_GLVertexArray* sgl_GLVertexArray_New(uint32 vertexSize, sgl_VertexLayout* la
     va->base.indexCount = 0;
     va->base.indexCapacity = 0;
 
+    va->base.instanceData = nullptr;
+    va->base.instanceCount = 0;
+    va->base.instanceCapacity = 0;
+    va->base.instanceSize = instanceSize;
+
     va->base.needsVertexUpload = true;
     va->base.needsIndexUpload = true;
+    va->base.needsInstanceUpload = true;
     va->base.layoutDirty = true;
 
     va->vao = 0;
     va->vbo = 0;
     va->ebo = 0;
+    va->instanceVbo = 0;
     va->gpuLoaded = false;
 
     return va;

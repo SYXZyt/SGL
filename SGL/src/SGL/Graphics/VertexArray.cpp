@@ -41,6 +41,29 @@ static void EnsureIndexCapacity(sgl_VertexArray* va, uint32 required)
     va->indexCapacity = newCap;
 }
 
+static void EnsureInstanceCapacity(sgl_VertexArray* va, uint32 required)
+{
+    if (required <= va->instanceCapacity)
+        return;
+
+    uint32 newCap = va->instanceCapacity == 0 ? 16 : va->instanceCapacity * 2;
+    while (newCap < required)
+        newCap *= 2;
+
+    va->instanceData = (byte*)sgl_Realloc(va->instanceData, (size_t)newCap * va->instanceSize);
+    va->instanceCapacity = newCap;
+}
+
+static void AddRawInstance(sgl_VertexArray* va, const void* instance)
+{
+    EnsureInstanceCapacity(va, va->instanceCount + 1);
+
+    std::memcpy(va->instanceData + va->instanceCount * va->instanceSize, instance, va->instanceSize);
+
+    ++va->instanceCount;
+    va->needsInstanceUpload = true;
+}
+
 sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, void* br, void* bl)
 {
     sgl_VertexArray_Triangulated result{};
@@ -56,19 +79,19 @@ sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, void* br, void*
     return result;
 }
 
-sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize, sgl_VertexLayout* layout)
+sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize, sgl_VertexLayout* layout, uint32 instanceSize)
 {
     sgl_VertexArray* va = nullptr;
     sgl_VertexLayout* ourLayout = sgl_VertexLayout_DeepCopy(layout);
 
     if (gpu->window->cfg.backend == sgl_Backend_OPENGL)
     {
-        va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize, ourLayout);
+        va = (sgl_VertexArray*)sgl_GLVertexArray_New(vertexSize, ourLayout, instanceSize);
     }
     else if (gpu->window->cfg.backend == sgl_Backend_DIRECTX11)
     {
 #ifdef SGL_DIRECTX
-        va = (sgl_VertexArray*)sgl_DXVertexArray_New(vertexSize, ourLayout);
+        va = (sgl_VertexArray*)sgl_DXVertexArray_New(vertexSize, ourLayout, instanceSize);
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
         return nullptr;
@@ -93,6 +116,7 @@ void sgl_VertexArray_Destroy(sgl_VertexArray* va)
 {
     sgl_Free(va->vertexData);
     sgl_Free(va->indexData);
+    sgl_Free(va->instanceData);
     va->vtable->Destroy(va);
 }
 
@@ -156,4 +180,32 @@ void sgl_VertexArray_AddTriIndices(sgl_VertexArray* va, uint32 i0, uint32 i1, ui
     sgl_VertexArray_AddIndex(va, i0);
     sgl_VertexArray_AddIndex(va, i1);
     sgl_VertexArray_AddIndex(va, i2);
+}
+
+void sgl_VertexArray_SetInstances(sgl_VertexArray* va, byte* instances, uint32 instanceCount)
+{
+    if (va->instanceSize == 0)
+    {
+        SGL_REPORT_ERROR("VertexArray was not created with instancing enabled (instanceSize == 0)");
+        return;
+    }
+
+    va->instanceCount = instanceCount;
+    va->instanceCapacity = instanceCount;
+
+    va->instanceData = (byte*)sgl_Realloc(va->instanceData, (size_t)instanceCount * va->instanceSize);
+    std::memcpy(va->instanceData, instances, (size_t)va->instanceCount * va->instanceSize);
+
+    va->needsInstanceUpload = true;
+}
+
+void sgl_VertexArray_AddInstance(sgl_VertexArray* va, void* instance)
+{
+    if (va->instanceSize == 0)
+    {
+        SGL_REPORT_ERROR("VertexArray was not created with instancing enabled (instanceSize == 0)");
+        return;
+    }
+
+    AddRawInstance(va, instance);
 }

@@ -34,6 +34,10 @@ static void GLDevice_SetDepthTestEnabled(sgl_GraphicsDevice* dev, bool enabled)
         glDisable(GL_DEPTH_TEST);
 }
 
+static void GLDevice_SetDepthWriteEnabled(sgl_GraphicsDevice* dev, bool enabled) {
+    glDepthMask(enabled ? GL_TRUE : GL_FALSE);
+}
+
 static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 {
     GetSelf;
@@ -153,6 +157,23 @@ static void GLDevice_Destroy(sgl_GraphicsDevice* dev)
     sgl::Memory::Delete(self);
 }
 
+static void GLDevice_DrawInstanced(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount, uint32 instanceCount)
+{
+    sgl_Shader_Bind(shr);
+    sgl_VertexArray_Bind(va);
+
+    for (size_t i = 0; i < textureCount; ++i)
+        sgl_Texture_Bind(textures[i], (uint32)i);
+
+    for (size_t i = 0; i < bufferCount; ++i)
+        sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
+
+    if (va->indexCount > 0)
+        glDrawElementsInstanced(GL_TRIANGLES, va->indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+    else
+        glDrawArraysInstanced(GL_TRIANGLES, 0, va->vertexCount, instanceCount);
+}
+
 static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount)
 {
     sgl_Shader_Bind(shr);
@@ -215,12 +236,14 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
 {
     .SetClearColour = &GLDevice_SetClearColour,
     .SetDepthTestEnabled = &GLDevice_SetDepthTestEnabled,
+    .SetDepthWriteEnabled = &GLDevice_SetDepthWriteEnabled,
     .Resize = &GLDevice_Resize,
     .BeginFrame = &GLDevice_BeginFrame,
     .EndFrame = &GLDevice_EndFrame,
     .Destroy = &GLDevice_Destroy,
     .SwapBuffer = &GLDevice_SwapBuffer,
     .Draw = &GLDevice_Draw,
+    .DrawInstanced = &GLDevice_DrawInstanced,
 
     .ImGui_Init = &GLDevice_ImGui_Init,
     .ImGui_Shutdown = &GLDevice_ImGui_Shutdown,

@@ -126,10 +126,30 @@ static void DXDevice_SetClearColour(sgl_GraphicsDevice* dev, sgl_Colour colour) 
     dev->clearColour = colour;
 }
 
+static void DXDevice_ApplyDepthStencilState(sgl_DXDevice* self)
+{
+    ID3D11DepthStencilState* state;
+
+    if (!self->base.depthTestEnabled)
+        state = self->depthStencilDisabledState;
+    else if (self->base.depthWriteEnabled)
+        state = self->depthStencilState;
+    else
+        state = self->depthStencilReadOnlyState;
+
+    self->ctx->OMSetDepthStencilState(state, 0);
+}
+
 static void DXDevice_SetDepthTestEnabled(sgl_GraphicsDevice* dev, bool enabled)
 {
     GetSelf;
-    self->ctx->OMSetDepthStencilState(enabled ? self->depthStencilState : self->depthStencilDisabledState, 0);
+    DXDevice_ApplyDepthStencilState(self);
+}
+
+static void DXDevice_SetDepthWriteEnabled(sgl_GraphicsDevice* dev, bool enabled)
+{
+    GetSelf;
+    DXDevice_ApplyDepthStencilState(self);
 }
 
 static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
@@ -337,6 +357,7 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->sceneDepthTexture);
     TryRelease(self->depthStencilState);
     TryRelease(self->depthStencilDisabledState);
+    TryRelease(self->depthStencilReadOnlyState);
     TryRelease(self->rasterState);
     TryRelease(self->postProState);
     TryRelease(self->spriteBlendState);
@@ -344,6 +365,34 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     sgl_Shader_Destroy(self->blitShader);
 
     sgl::Memory::Delete(self);
+}
+
+static void DXDevice_DrawInstanced(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount, uint32 instanceCount)
+{
+    GetSelf;
+
+    sgl_Shader_Bind(shr);
+    sgl_VertexArray_Bind(va);
+
+    for (size_t i = 0; i < textureCount; ++i)
+        sgl_Texture_Bind(textures[i], (uint32)i);
+
+    if (self->boundTextureCount > textureCount)
+    {
+        static ID3D11ShaderResourceView* const nullSrvs[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+        size_t staleCount = self->boundTextureCount - textureCount;
+        self->ctx->PSSetShaderResources((UINT)textureCount, (UINT)staleCount, nullSrvs);
+    }
+
+    self->boundTextureCount = textureCount;
+
+    for (size_t i = 0; i < bufferCount; ++i)
+        sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
+
+    if (va->indexCount > 0)
+        self->ctx->DrawIndexedInstanced(va->indexCount, instanceCount, 0, 0, 0);
+    else
+        self->ctx->DrawInstanced(va->vertexCount, instanceCount, 0, 0);
 }
 
 static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount)
@@ -358,7 +407,7 @@ static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
 
     if (self->boundTextureCount > textureCount)
     {
-        static ID3D11ShaderResourceView* const nullSrvs[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+        static ID3D11ShaderResourceView* const nullSrvs[D3D11_COMMONSHADER_INPUT_RESOURCE_REGISTER_COUNT] = {};
         size_t staleCount = self->boundTextureCount - textureCount;
         self->ctx->PSSetShaderResources((UINT)textureCount, (UINT)staleCount, nullSrvs);
     }
@@ -421,12 +470,14 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
 {
     .SetClearColour = &DXDevice_SetClearColour,
     .SetDepthTestEnabled = &DXDevice_SetDepthTestEnabled,
+    .SetDepthWriteEnabled = &DXDevice_SetDepthWriteEnabled,
     .Resize = &DXDevice_Resize,
     .BeginFrame = &DXDevice_BeginFrame,
     .EndFrame = &DXDevice_EndFrame,
     .Destroy = &DXDevice_Destroy,
     .SwapBuffer = &DXDevice_SwapBuffer,
     .Draw = &DXDevice_Draw,
+    .DrawInstanced = &DXDevice_DrawInstanced,
 
     .ImGui_Init = &DXDevice_ImGui_Init,
     .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
@@ -574,6 +625,18 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
         if (FAILED(hr))
         {
             ReportHRError("Failed to create disabled depth-stencil state", hr);
+            return device;
+        }
+
+        D3D11_DEPTH_STENCIL_DESC depthReadOnlyDesc = {};
+        depthReadOnlyDesc.DepthEnable = true;
+        depthReadOnlyDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ZERO;
+        depthReadOnlyDesc.DepthFunc = D3D11_COMPARISON_LESS;
+
+        hr = device->device->CreateDepthStencilState(&depthReadOnlyDesc, &device->depthStencilReadOnlyState);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create read-only depth-stencil state", hr);
             return device;
         }
 

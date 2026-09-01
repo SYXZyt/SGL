@@ -82,7 +82,7 @@ sgl_VertexArray* sgl_Model_Load(sgl_GraphicsDevice* gpu, const char* path, uint3
             return nullptr;
         }
 
-        sgl_VertexArray* va = sgl_VertexArray_Create(gpu, vertexSize, layout);
+        sgl_VertexArray* va = sgl_VertexArray_Create(gpu, vertexSize, layout, 0);
 
         std::vector<byte> vertex(vertexSize);
         std::unordered_map<IndexKey, uint32, IndexKeyHash> uniqueVertices;

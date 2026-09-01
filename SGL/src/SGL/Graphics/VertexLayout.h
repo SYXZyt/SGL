@@ -38,9 +38,9 @@ enum
 typedef struct sgl_VertexElement sgl_sealed
 {
     sgl_VertexElementSemantic semantic;
-    size_t offset;
+    size_t offset; // Byte offset into the per-vertex struct, or the per-instance struct if perInstance is true
     sgl_VertexElementType type;
-    bool perInstance; // Unused for now    
+    bool perInstance; // If true, this element is sourced from the VertexArray's instance buffer instead of its vertex buffer
 } sgl_VertexElement;
 
 /// @brief List of element descriptions for a vertex
@@ -62,7 +62,7 @@ SGL_API extern sgl_VertexLayout* sgl_VertexLayout_New(sgl_GraphicsDevice* gpu);
 /// @return The copy
 SGL_API extern sgl_VertexLayout* sgl_VertexLayout_DeepCopy(sgl_VertexLayout* layout);
 
-/// @brief Add a new element to the layout
+/// @brief Add a new element to the layout. Elements must be added in the same order as the corresponding shader's vertex input struct declares its fields
 /// @param layout The layout to use
 /// @param element The element to add
 SGL_API extern void sgl_VertexLayout_Add(sgl_VertexLayout* layout, sgl_VertexElement element);

@@ -74,9 +74,10 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
     }
 
     device->depthTestEnabled = true;
+    device->depthWriteEnabled = true;
 
     device->screenQuadLayout = screenQuadLayout;
-    device->screenQuad = sgl_VertexArray_Create(device, sizeof(PP_Vertex), device->screenQuadLayout);
+    device->screenQuad = sgl_VertexArray_Create(device, sizeof(PP_Vertex), device->screenQuadLayout, 0);
 
     PP_Vertex tl = { .pos = {{{-1,  1, 0}}}, .uv = {{{0, 1}}} };
     PP_Vertex tr = { .pos = {{{ 1,  1, 0}}}, .uv = {{{1, 1}}} };
@@ -126,6 +127,16 @@ bool sgl_GraphicsDevice_GetDepthTestEnabled(sgl_GraphicsDevice* device) {
     return device->depthTestEnabled;
 }
 
+void sgl_GraphicsDevice_SetDepthWriteEnabled(sgl_GraphicsDevice* device, bool enabled)
+{
+    device->depthWriteEnabled = enabled;
+    device->vtable->SetDepthWriteEnabled(device, enabled);
+}
+
+bool sgl_GraphicsDevice_GetDepthWriteEnabled(sgl_GraphicsDevice* device) {
+    return device->depthWriteEnabled;
+}
+
 void sgl_GraphicsDevice_BeginFrame(sgl_GraphicsDevice* device) {
     device->vtable->BeginFrame(device);
 }
@@ -140,6 +151,10 @@ void sgl_GraphicsDevice_SwapBuffer(sgl_GraphicsDevice* device) {
 
 void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount) {
     device->vtable->Draw(device, va, shader, textures, textureCount, buffers, bufferCount);
+}
+
+void sgl_GraphicsDevice_DrawInstanced(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount, uint32 instanceCount) {
+    device->vtable->DrawInstanced(device, va, shader, textures, textureCount, buffers, bufferCount, instanceCount);
 }
 
 void sgl_GraphicsDevice_AddEffect(sgl_GraphicsDevice* device, sgl_PostProcess* effect)
