@@ -11,6 +11,7 @@
 #include <SGL/Graphics/VertexLayout.h>
 #include <SGL/Graphics/VertexArray.h>
 #include <SGL/Graphics/UniformBuffer.h>
+#include <SGL/Graphics/PostProcess.h>
 #include <SGL/Input/Keyboard.h>
 #include <SGL/Input/Mouse.h>
 #include <SGL/Graphics/Model.h>
@@ -54,6 +55,12 @@ typedef struct sgl_alignas(16) LightUB
     float __pad;
 } LightUB;
 
+typedef struct sgl_alignas(16) FxaaParams
+{
+    sgl_Vec2 bufferSize;
+    int isActive;
+} FxaaParams;
+
 static void ModelVertexCallback(const sgl_Model_VertexSource* source, void* outVertex, void* userdata)
 {
     ModelVertex* vertex = (ModelVertex*)outVertex;
@@ -77,6 +84,10 @@ typedef struct Particle
 } Particle;
 
 #define PARTICLE_COUNT 128
+
+static FxaaParams gFxaaParams;
+static sgl_PostProcess* gFxaaPP;
+static sgl_UniformBuffer* gFxaaUb;
 
 static const sgl_Vec3 gEmitterPos = {{{ 0.f, -2.5f, 0.f }}};
 static const float gGravity = 4.f;
@@ -141,6 +152,17 @@ int main(int argc, char** argv)
 
     sgl_Mouse* mouse = sgl_Mouse_New(window);
     sgl_Mouse_SetRelativeMode(mouse, true);
+
+    gFxaaParams.bufferSize = sgl_Vec2i_to_sgl_Vec2(window->screenSize);
+    gFxaaParams.isActive = true;
+
+    gFxaaPP = sgl_PostProcess_Create(gpu, 1);
+    gFxaaUb = sgl_UniformBuffer_Create(gpu, sizeof(FxaaParams));
+    sgl_PostProcess_AddUniformBuffer(gFxaaPP, gFxaaUb, 0);
+    sgl_UniformBuffer_Upload(gFxaaUb, &gFxaaParams);
+    sgl_Shader_Load_Slang_File(sgl_PostProcess_GetShader(gFxaaPP), "PostProcess.slang", "vertexMain", "fragmentMain");
+
+    sgl_GraphicsDevice_AddEffect(gpu, gFxaaPP);
 
     sgl_VertexLayout* layout = sgl_VertexLayout_New(gpu);
     {
@@ -316,6 +338,12 @@ int main(int argc, char** argv)
             sgl_Mouse_SetRelativeMode(mouse, useMouse);
         }
 
+        if (sgl_Keyboard_IsKeyPressed(kb, sgl_Key_F1))
+        {
+            gFxaaParams.isActive = !gFxaaParams.isActive;
+            sgl_UniformBuffer_Upload(gFxaaUb, &gFxaaParams);
+        }
+
         if (sgl_Maths_Vec3_Length2(movement) > 0.f)
             movement = sgl_Maths_Vec3_Normalise(movement);
 
@@ -341,6 +369,8 @@ int main(int argc, char** argv)
         sgl_GraphicsDevice_SwapBuffer(gpu);
     }
 
+    sgl_UniformBuffer_Destroy(gFxaaUb);
+    sgl_PostProcess_Destroy(gFxaaPP);
     sgl_UniformBuffer_Destroy(cameraUB);
     sgl_UniformBuffer_Destroy(lightUB);
     sgl_Texture_Destroy(texture);

@@ -14,6 +14,7 @@ typedef struct sgl_DXDevice sgl_sealed
     ID3D11DeviceContext* ctx;
     IDXGISwapChain* swapchain;
     ID3D11SamplerState* sampler;
+    ID3D11SamplerState* postProSampler;
 
     ID3D11Texture2D* sceneTexture;
     ID3D11RenderTargetView* sceneRtv;

@@ -299,6 +299,8 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
 
     ID3D11ShaderResourceView* currentSrv = self->sceneSrv;
 
+    self->ctx->PSSetSamplers(0, 1, &self->postProSampler);
+
     for (size_t i = 0; i < effectCount; ++i)
     {
         sgl_DXPostProcess* effect = (sgl_DXPostProcess*)effects[i];
@@ -321,6 +323,8 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
 
         currentSrv = effect->shaderResourceView;
     }
+
+    self->ctx->PSSetSamplers(0, 1, &self->sampler);
 
     self->ctx->OMSetRenderTargets(1, &self->backBufferRtv, nullptr);
     sgl_Shader_Bind(self->blitShader);
@@ -350,6 +354,7 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->device);
     TryRelease(self->swapchain);
     TryRelease(self->sampler);
+    TryRelease(self->postProSampler);
     TryRelease(self->sceneRtv);
     TryRelease(self->sceneSrv);
     TryRelease(self->sceneTexture);
@@ -685,6 +690,16 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     }
 
     device->ctx->PSSetSamplers(0, 1, &device->sampler);
+
+    D3D11_SAMPLER_DESC postProSampDesc = sampDesc;
+    postProSampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+
+    hr = device->device->CreateSamplerState(&postProSampDesc, &device->postProSampler);
+    if (FAILED(hr))
+    {
+        ReportHRError("Failed to create post-process sampler state", hr);
+        return device;
+    }
 #pragma endregion
 
     device->blitShader = sgl_Shader_Create((sgl_GraphicsDevice*)device, screenQuadLayout);
