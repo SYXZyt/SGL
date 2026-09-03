@@ -105,6 +105,10 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
 void sgl_GraphicsDevice_Destroy(sgl_GraphicsDevice* device)
 {
     std::vector<sgl_PostProcess*>* effectList = (std::vector<sgl_PostProcess*>*)device->vecPtr;
+
+    for (sgl_PostProcess* effect : *effectList)
+        sgl_PostProcess_Destroy(effect);
+
     sgl::Memory::Delete(effectList);
 
     sgl_VertexLayout_Destroy(device->screenQuadLayout);
