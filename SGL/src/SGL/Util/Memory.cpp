@@ -18,6 +18,7 @@ static std::vector<sgl_MemoryTrack> gTracks;
 static std::atomic<size_t> gTotalAllocated = 0;
 static bool gStackTrace = false;
 static std::mutex gMemoryMutex;
+static bool gTrack = false;
 #endif
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
@@ -71,6 +72,10 @@ void sgl_Memory_StackTrace(bool enable)
 #endif
 }
 
+void sglIntern_Memory_SetTrack(bool enable) {
+    gTrack = enable;
+}
+
 size_t sgl_Memory_GetTotalAllocated()
 {
 #ifdef SGL_MEMORY_TRACK
@@ -101,6 +106,9 @@ void sgl_Memory_ReportLeaks()
 void sgl_Memory_AddTrack(void* ptr, size_t size, const char* T)
 {
 #ifdef SGL_MEMORY_TRACK
+    if (!gTrack)
+        return;
+
     sgl_MemoryTrack track
     {
         .ptr = ptr,
@@ -120,6 +128,9 @@ void sgl_Memory_AddTrack(void* ptr, size_t size, const char* T)
 void sgl_Memory_RetagTrack(void* ptr, const char* T)
 {
 #ifdef SGL_MEMORY_TRACK
+    if (!gTrack)
+        return;
+
     std::lock_guard lock(gMemoryMutex);
 
     auto it = std::find_if(gTracks.begin(), gTracks.end(),
@@ -208,7 +219,9 @@ void sgl_Free(void* ptr)
         return;
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
+    if (gTrack)
     {
+
         std::lock_guard lock(gMemoryMutex);
 
         auto it = gOwnedPointers.find(ptr);
@@ -224,6 +237,7 @@ void sgl_Free(void* ptr)
 #endif
 
 #ifdef SGL_MEMORY_TRACK
+    if (gTrack)
     {
         std::lock_guard lock(gMemoryMutex);
 

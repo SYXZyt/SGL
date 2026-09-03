@@ -34,6 +34,9 @@ typedef struct sgl_MemoryTrack sgl_sealed
 /// @param enable True to enable or false to disable
 SGL_API extern void sgl_Memory_StackTrace(bool enable);
 
+/// @brief For internal use. Start/stop tracking
+extern void sglIntern_Memory_SetTrack(bool enable);
+
 /// @brief Get the total amount of bytes currently allocated
 /// @return The total size in bytes
 SGL_API extern size_t sgl_Memory_GetTotalAllocated();
