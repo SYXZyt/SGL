@@ -28,7 +28,8 @@ sgl_Texture* sgl_Texture2DArray_New_Source(sgl_GraphicsDevice* device, void* dat
     sgl_Texture* texture = nullptr;
 
     int width, height;
-    stbi_set_flip_vertically_on_load_thread(true);
+
+    stbi_set_flip_vertically_on_load_thread(false);
 
     void* bytes = stbi_load_from_memory((const stbi_uc*)data, (int)dataSize, &width, &height, nullptr, 4);
     if (!bytes)
