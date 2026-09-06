@@ -20,6 +20,7 @@ typedef struct sgl_EngineConfig sgl_sealed
     sgl_Backend backend;
     uint32 width;
     uint32 height;
+    SDL_InitFlags sdlFlags;
     bool resizable;
     bool enableImGui;
 } sgl_EngineConfig;
