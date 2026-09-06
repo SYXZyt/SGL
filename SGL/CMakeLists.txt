@@ -82,6 +82,10 @@ add_library(SGL SHARED
     src/SGL/Input/Key.h
     src/SGL/Input/Keyboard.h
     src/SGL/Input/Keyboard.cpp
+    src/SGL/Input/GamepadButton.h
+    src/SGL/Input/GamepadAxis.h
+    src/SGL/Input/Gamepad.h
+    src/SGL/Input/Gamepad.cpp
     src/SGL/Graphics/Texture2D.h
     src/SGL/Graphics/Backends/DirectX/DXTexture2D.h
     src/SGL/Graphics/Texture2D.cpp
