@@ -63,7 +63,9 @@ static void DXEnsureGPUResources(sgl_DXSampler* self)
 static void DXDestroy(sgl_Sampler* sampler)
 {
     GetSelf;
-    self->samplerstate->Release();
+    if (self->samplerstate)
+        self->samplerstate->Release();
+
     sgl::Memory::Delete(self);
 }
 
