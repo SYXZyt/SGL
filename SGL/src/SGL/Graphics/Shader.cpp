@@ -180,6 +180,7 @@ sgl_Shader* sgl_Shader_Create(sgl_GraphicsDevice* gpu, sgl_VertexLayout* layout)
         shader = (sgl_Shader*)sgl_DXShader_Create();
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        return nullptr;
 #endif
     }
     else

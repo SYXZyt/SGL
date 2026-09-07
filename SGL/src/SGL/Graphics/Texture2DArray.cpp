@@ -9,7 +9,7 @@
 #include <SGL/Graphics/Backends/DirectX/DXTexture2DArray.h>
 #endif
 
-sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* device, const char* path, sgl_Vec2i frameSize)
+sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* device, const char* path, sgl_Vec2i frameSize, sgl_TextureFilter filter, sgl_TextureClamp clamp)
 {
     if (!std::filesystem::exists(path))
     {
@@ -20,10 +20,10 @@ sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* device, const char*
     std::ifstream f(path, std::ios::binary);
     std::vector<uint8> data((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
-    return sgl_Texture2DArray_New_Source(device, data.data(), data.size(), frameSize);
+    return sgl_Texture2DArray_New_Source(device, data.data(), data.size(), frameSize, filter, clamp);
 }
 
-sgl_Texture* sgl_Texture2DArray_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, sgl_Vec2i frameSize)
+sgl_Texture* sgl_Texture2DArray_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, sgl_Vec2i frameSize, sgl_TextureFilter filter, sgl_TextureClamp clamp)
 {
     sgl_Texture* texture = nullptr;
 
@@ -60,6 +60,7 @@ sgl_Texture* sgl_Texture2DArray_New_Source(sgl_GraphicsDevice* device, void* dat
         return nullptr;
     }
 
+    texture->sampler = sgl_Sampler_Create(device, filter, clamp);
     texture->gpu = device;
     return texture;
 }

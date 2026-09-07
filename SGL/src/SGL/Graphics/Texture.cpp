@@ -1,6 +1,8 @@
 #include "Texture.h"
 
-void sgl_Texture_Destroy(sgl_Texture* texture) {
+void sgl_Texture_Destroy(sgl_Texture* texture)
+{
+    sgl_Sampler_Destroy(texture->sampler);
     texture->vtable->Destroy(texture);
 }
 

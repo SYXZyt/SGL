@@ -19,7 +19,7 @@ typedef struct sgl_Texture2DArray sgl_sealed
 /// @param path The path of the texture to load
 /// @param frameSize How big each sub image is. Each sub image must be the same size.
 /// @return The loaded texture
-SGL_API extern sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* device, const char* path, sgl_Vec2i frameSize);
+SGL_API extern sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* device, const char* path, sgl_Vec2i frameSize, sgl_TextureFilter filter, sgl_TextureClamp clamp);
 
 /// @param frameSize 
 /// @brief Create a new 2D texture from binary file contents (not binary image data)
@@ -28,6 +28,6 @@ SGL_API extern sgl_Texture* sgl_Texture2DArray_New_File(sgl_GraphicsDevice* devi
 /// @param dataSize How many bytes to read
 /// @param frameSize How big each sub image is. Each sub image must be the same size.
 /// @return The loaded texture
-SGL_API extern sgl_Texture* sgl_Texture2DArray_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, sgl_Vec2i frameSize);
+SGL_API extern sgl_Texture* sgl_Texture2DArray_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, sgl_Vec2i frameSize, sgl_TextureFilter filter, sgl_TextureClamp clamp);
 
 SGL_END

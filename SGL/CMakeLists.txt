@@ -111,7 +111,9 @@ add_library(SGL SHARED
     src/SGL/Input/Mouse.cpp
     src/SGL/Graphics/Model.h
     src/SGL/Graphics/Model.cpp
-)
+    src/SGL/Graphics/Sampler.h
+    src/SGL/Graphics/Sampler.cpp
+ "src/SGL/Graphics/Backends/OpenGL/GLSampler.h" "src/SGL/Graphics/Backends/OpenGL/GLSampler.cpp" "src/SGL/Graphics/Backends/DirectX/DXSampler.h" "src/SGL/Graphics/Backends/DirectX/DXSampler.cpp")
 
 include(CMake/Dependencies.cmake)
 

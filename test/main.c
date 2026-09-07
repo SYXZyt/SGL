@@ -64,9 +64,14 @@ typedef struct sgl_alignas(16) FxaaParams
 static void ModelVertexCallback(const sgl_Model_VertexSource* source, void* outVertex, void* userdata)
 {
     ModelVertex* vertex = (ModelVertex*)outVertex;
+    const sgl_Vec3* offset = (const sgl_Vec3*)userdata;
 
     if (source->position)
+    {
         vertex->pos = sgl_Vec3_New_ScalarXYZ(source->position[0], source->position[1], source->position[2]);
+        if (offset)
+            vertex->pos = sgl_Vec3_Add_Vec3(vertex->pos, *offset);
+    }
 
     if (source->normal)
         vertex->normal = sgl_Vec3_New_ScalarXYZ(source->normal[0], source->normal[1], source->normal[2]);
@@ -255,10 +260,16 @@ int main(int argc, char** argv)
     sgl_Shader_Load_Slang_File(modelShader, "Object.slang", "vertexMain", "fragmentMain");
 
     sgl_Model_SetUnitScale(1.5f);
-    sgl_VertexArray* suzanne = sgl_Model_Load(gpu, "suzanne.obj", sizeof(ModelVertex), modelLayout, ModelVertexCallback, NULL);
 
-    sgl_Texture* texture = sgl_Texture2D_New_File(gpu, "stone.png", false);
-    sgl_Texture* fireTexture = sgl_Texture2D_New_File(gpu, "fire.png", false);
+    sgl_Vec3 suzanneLinearOffset = sgl_Vec3_New_ScalarXYZ(0.f, 0.f, -1.5f);
+    sgl_Vec3 suzanneNearestOffset = sgl_Vec3_New_ScalarXYZ(0.f, 0.f, 1.5f);
+
+    sgl_VertexArray* suzanneLinear = sgl_Model_Load(gpu, "suzanne.obj", sizeof(ModelVertex), modelLayout, ModelVertexCallback, &suzanneLinearOffset);
+    sgl_VertexArray* suzanneNearest = sgl_Model_Load(gpu, "suzanne.obj", sizeof(ModelVertex), modelLayout, ModelVertexCallback, &suzanneNearestOffset);
+
+    sgl_Texture* textureLinear = sgl_Texture2D_New_File(gpu, "stone.png", false, sgl_TextureFilter_LINEAR, sgl_TextureClamp_EDGE);
+    sgl_Texture* textureNearest = sgl_Texture2D_New_File(gpu, "stone.png", false, sgl_TextureFilter_NEAREST, sgl_TextureClamp_EDGE);
+    sgl_Texture* fireTexture = sgl_Texture2D_New_File(gpu, "fire.png", false, sgl_TextureFilter_LINEAR, sgl_TextureClamp_EDGE);
 
     LightUB lightData;
     lightData.direction = sgl_Maths_Vec3_Normalise(sgl_Vec3_New_ScalarXYZ(-0.4f, 1.0f, 0.3f));
@@ -359,7 +370,8 @@ int main(int argc, char** argv)
         sgl_UniformBuffer* modelBuffers[] = { cameraUB, lightUB };
 
         sgl_GraphicsDevice_BeginFrame(gpu);
-        sgl_GraphicsDevice_Draw(gpu, suzanne, modelShader, &texture, 1, modelBuffers, 2);
+        sgl_GraphicsDevice_Draw(gpu, suzanneLinear, modelShader, &textureLinear, 1, modelBuffers, 2);
+        sgl_GraphicsDevice_Draw(gpu, suzanneNearest, modelShader, &textureNearest, 1, modelBuffers, 2);
 
         sgl_GraphicsDevice_SetDepthWriteEnabled(gpu, false);
         sgl_GraphicsDevice_DrawInstanced(gpu, quad, shader, &fireTexture, 1, &cameraUB, 1, PARTICLE_COUNT);
@@ -370,15 +382,16 @@ int main(int argc, char** argv)
     }
 
     sgl_UniformBuffer_Destroy(gFxaaUb);
-    sgl_PostProcess_Destroy(gFxaaPP);
     sgl_UniformBuffer_Destroy(cameraUB);
     sgl_UniformBuffer_Destroy(lightUB);
-    sgl_Texture_Destroy(texture);
+    sgl_Texture_Destroy(textureLinear);
+    sgl_Texture_Destroy(textureNearest);
     sgl_Texture_Destroy(fireTexture);
     sgl_Shader_Destroy(shader);
     sgl_Shader_Destroy(modelShader);
     sgl_VertexArray_Destroy(quad);
-    sgl_VertexArray_Destroy(suzanne);
+    sgl_VertexArray_Destroy(suzanneLinear);
+    sgl_VertexArray_Destroy(suzanneNearest);
     sgl_VertexLayout_Destroy(layout);
     sgl_VertexLayout_Destroy(modelLayout);
     sgl_Keyboard_Destroy(kb);

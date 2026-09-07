@@ -89,6 +89,7 @@ static void GLBind(sgl_Texture* tex, uint32 unit)
         GLEnsureGPUResources(self);
 
     glBindTextureUnit(unit, self->texture);
+    sgl_Sampler_Bind(tex->sampler, unit);
 }
 
 static sgl_TextureVTable gGLVTable =

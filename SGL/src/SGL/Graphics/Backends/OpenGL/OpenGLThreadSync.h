@@ -31,6 +31,10 @@ extern void sgl_OpenGLThreadSync_DeleteFramebuffer(gluint id);
 /// @param id The buffer to delete
 extern void sgl_OpenGLThreadSync_DeleteBuffer(gluint id);
 
+/// @brief Queue a sampler for deletion
+/// @param id The sampler to delete
+extern void sgl_OpenGLThreadSync_DeleteSampler(gluint id);
+
 /// @brief Delete all queued items and clear the queues
 extern void sgl_OpenGLThreadSync_Update();
 

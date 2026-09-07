@@ -14,6 +14,7 @@ std::queue<gluint> gShaderDeleteQueue;
 std::queue<gluint> gTextureDeleteQueue;
 std::queue<gluint> gFramebufferDeleteQueue;
 std::queue<gluint> gBufferDeleteQueue;
+std::queue<gluint> gSamplerDeleteQueue;
 
 void sgl_OpenGLThreadSync_DeleteVAO(gluint id)
 {
@@ -55,6 +56,12 @@ void sgl_OpenGLThreadSync_DeleteBuffer(gluint id)
 {
     guard;
     gBufferDeleteQueue.push(id);
+}
+
+void sgl_OpenGLThreadSync_DeleteSampler(gluint id)
+{
+    guard;
+    gSamplerDeleteQueue.push(id);
 }
 
 void sgl_OpenGLThreadSync_Update()
@@ -108,5 +115,12 @@ void sgl_OpenGLThreadSync_Update()
         gluint id = gBufferDeleteQueue.front();
         gBufferDeleteQueue.pop();
         glDeleteBuffers(1, &id);
+    }
+
+    while (!gSamplerDeleteQueue.empty())
+    {
+        gluint id = gSamplerDeleteQueue.front();
+        gSamplerDeleteQueue.pop();
+        glDeleteSamplers(1, &id);
     }
 }

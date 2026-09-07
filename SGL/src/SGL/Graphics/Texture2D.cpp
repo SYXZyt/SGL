@@ -9,7 +9,7 @@
 #include <SGL/Graphics/Backends/DirectX/DXTexture2D.h>
 #endif
 
-sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool premultiplyAlpha)
+sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool premultiplyAlpha, sgl_TextureFilter filter, sgl_TextureClamp clamp)
 {
     if (!std::filesystem::exists(path))
     {
@@ -20,10 +20,10 @@ sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path
     std::ifstream f(path, std::ios::binary);
     std::vector<uint8> data((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
-    return sgl_Texture2D_New_Source(device, data.data(), data.size(), premultiplyAlpha);
+    return sgl_Texture2D_New_Source(device, data.data(), data.size(), premultiplyAlpha, filter, clamp);
 }
 
-sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, bool premultiplyAlpha)
+sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, bool premultiplyAlpha, sgl_TextureFilter filter, sgl_TextureClamp clamp)
 {
     sgl_Texture* texture = nullptr;
 
@@ -71,6 +71,8 @@ sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, si
         stbi_image_free(bytes);
         return nullptr;
     }
+
+    texture->sampler = sgl_Sampler_Create(device, filter, clamp);
 
     texture->gpu = device;
     return texture;

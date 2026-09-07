@@ -19,7 +19,7 @@ typedef struct sgl_Texture2D sgl_sealed
 /// @param path The path of the texture to use
 /// @param premultiplyAlpha Multiply RGB by alpha on load. Correct for colour+opacity textures. Fixes an issue with mips
 /// @return The loaded texture
-SGL_API extern sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool premultiplyAlpha);
+SGL_API extern sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool premultiplyAlpha, sgl_TextureFilter filter, sgl_TextureClamp clamp);
 
 /// @brief Create a new 2D texture from binary file contents (not binary image data)
 /// @param device The device to use
@@ -27,6 +27,6 @@ SGL_API extern sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, c
 /// @param dataSize How many bytes to read
 /// @param premultiplyAlpha Multiply RGB by alpha on load. Correct for colour+opacity textures. Fixes an issue with mips
 /// @return The loaded texture
-SGL_API extern sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, bool premultiplyAlpha);
+SGL_API extern sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, bool premultiplyAlpha, sgl_TextureFilter filter, sgl_TextureClamp clamp);
 
 SGL_END

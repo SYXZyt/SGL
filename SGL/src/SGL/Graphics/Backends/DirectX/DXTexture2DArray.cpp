@@ -120,6 +120,7 @@ static void DXBind(sgl_Texture* tex, uint32 unit)
 
     sgl_DXDevice* device = (sgl_DXDevice*)tex->gpu;
     device->ctx->PSSetShaderResources(unit, 1, &self->textureView);
+    sgl_Sampler_Bind(tex->sampler, unit);
 }
 
 static sgl_TextureVTable gDXVTable =
