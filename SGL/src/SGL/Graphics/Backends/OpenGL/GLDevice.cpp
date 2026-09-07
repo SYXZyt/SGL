@@ -248,6 +248,7 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
     .SwapBuffer = &GLDevice_SwapBuffer,
     .Draw = &GLDevice_Draw,
     .DrawInstanced = &GLDevice_DrawInstanced,
+    .SetVsync = &GLDevice_SetVsync,
 
     .ImGui_Init = &GLDevice_ImGui_Init,
     .ImGui_Shutdown = &GLDevice_ImGui_Shutdown,
