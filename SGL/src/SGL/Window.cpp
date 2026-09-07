@@ -54,7 +54,7 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
         SDL_GL_MakeCurrent(window->window, window->glContext);
         gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-        SDL_GL_SetSwapInterval(1);
+        SDL_GL_SetSwapInterval(cfg.vsync ? 1 : 0);
     }
 
     return window;

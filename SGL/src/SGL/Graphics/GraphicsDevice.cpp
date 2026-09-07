@@ -98,6 +98,8 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
 
     sgl_Window_RegisterResize(window, &OnResize, device);
 
+    sgl_GraphicsDevice_SetVsync(device, window->cfg.vsync);
+
     device->vecPtr = sgl::Memory::New<std::vector<sgl_PostProcess*>>();
     return device;
 }
@@ -177,6 +179,12 @@ size_t sgl_GraphicsDevice_GetEffects(sgl_GraphicsDevice* device, sgl_PostProcess
 
 sgl_VertexLayout* sgl_GraphicsDevice_GetPostProcessLayout(sgl_GraphicsDevice* device) {
     return device->screenQuadLayout;
+}
+
+void sgl_GraphicsDevice_SetVsync(sgl_GraphicsDevice* device, bool enable)
+{
+    device->vsync = enable;
+    device->vtable->SetVsync(device, enable);
 }
 
 void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device) {

@@ -26,6 +26,7 @@ typedef struct sgl_GraphicsDeviceVTable sgl_sealed
     void (*SwapBuffer)(struct sgl_GraphicsDevice* self);
     void (*Draw)(struct sgl_GraphicsDevice* self, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount);
     void (*DrawInstanced)(struct sgl_GraphicsDevice* self, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount, uint32 instanceCount);
+    void (*SetVsync)(struct sgl_GraphicsDevice* self, bool enable);
 
     void (*ImGui_Init)(struct sgl_GraphicsDevice* self);
     void (*ImGui_Shutdown)(struct sgl_GraphicsDevice* self);
@@ -46,6 +47,7 @@ typedef struct sgl_GraphicsDevice sgl_sealed
     uint32 height;
     bool depthTestEnabled;
     bool depthWriteEnabled;
+    bool vsync;
 } sgl_GraphicsDevice;
 
 /// @brief Create a new graphics device. This is thread unsafe and must be called on the main thread
@@ -130,6 +132,11 @@ SGL_API extern size_t sgl_GraphicsDevice_GetEffects(sgl_GraphicsDevice* device, 
 /// @param device The device to use
 /// @return The vertex layout
 SGL_API extern struct sgl_VertexLayout* sgl_GraphicsDevice_GetPostProcessLayout(sgl_GraphicsDevice* device);
+
+/// @brief Set the state of vsync
+/// @param device The device to use
+/// @param enable True to enable vsync, false to disable
+SGL_API extern void sgl_GraphicsDevice_SetVsync(sgl_GraphicsDevice* device, bool enable);
 
 SGL_API extern void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_ImGui_Shutdown(sgl_GraphicsDevice* device);

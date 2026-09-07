@@ -191,6 +191,10 @@ static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
         glDrawArrays(GL_TRIANGLES, 0, va->vertexCount);
 }
 
+static void GLDevice_SetVsync(sgl_GraphicsDevice* dev, bool enable) {
+    SDL_GL_SetSwapInterval(enable ? 1 : 0);
+}
+
 static void GLDevice_ImGui_Init(sgl_GraphicsDevice* dev)
 {
     if (!dev->window->cfg.enableImGui)

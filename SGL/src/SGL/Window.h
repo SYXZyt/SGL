@@ -23,6 +23,7 @@ typedef struct sgl_EngineConfig sgl_sealed
     SDL_InitFlags sdlFlags;
     bool resizable;
     bool enableImGui;
+    bool vsync;
 } sgl_EngineConfig;
 
 /// @brief Default configuration

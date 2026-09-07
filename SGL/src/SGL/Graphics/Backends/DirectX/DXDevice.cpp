@@ -342,7 +342,7 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
 static void DXDevice_SwapBuffer(sgl_GraphicsDevice* dev)
 {
     GetSelf;
-    self->swapchain->Present(1, 0);
+    self->swapchain->Present(dev->vsync, 0);
 }
 
 static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
@@ -428,6 +428,10 @@ static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
         self->ctx->Draw(va->vertexCount, 0);
 }
 
+// Vsync only requires sgl_GraphicsDevice::vsync which base sets. No calls needed unlike OpenGL
+static void DXDevice_SetVSync(sgl_GraphicsDevice* dev, bool enable) {
+}
+
 static void DXDevice_ImGui_Init(sgl_GraphicsDevice* dev)
 {
     GetSelf;
@@ -483,6 +487,7 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .SwapBuffer = &DXDevice_SwapBuffer,
     .Draw = &DXDevice_Draw,
     .DrawInstanced = &DXDevice_DrawInstanced,
+    .SetVsync = &DXDevice_SetVSync,
 
     .ImGui_Init = &DXDevice_ImGui_Init,
     .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
