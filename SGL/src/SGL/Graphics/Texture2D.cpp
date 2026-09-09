@@ -9,7 +9,7 @@
 #include <SGL/Graphics/Backends/DirectX/DXTexture2D.h>
 #endif
 
-sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool premultiplyAlpha, sgl_TextureFilter filter, sgl_TextureClamp clamp)
+sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path, bool generateMipmaps, sgl_TextureFilter filter, sgl_TextureClamp clamp)
 {
     if (!std::filesystem::exists(path))
     {
@@ -20,10 +20,10 @@ sgl_Texture* sgl_Texture2D_New_File(sgl_GraphicsDevice* device, const char* path
     std::ifstream f(path, std::ios::binary);
     std::vector<uint8> data((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
 
-    return sgl_Texture2D_New_Source(device, data.data(), data.size(), premultiplyAlpha, filter, clamp);
+    return sgl_Texture2D_New_Source(device, data.data(), data.size(), generateMipmaps, filter, clamp);
 }
 
-sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, bool premultiplyAlpha, sgl_TextureFilter filter, sgl_TextureClamp clamp)
+sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, size_t dataSize, bool generateMipmaps, sgl_TextureFilter filter, sgl_TextureClamp clamp)
 {
     sgl_Texture* texture = nullptr;
 
@@ -37,28 +37,15 @@ sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, si
         return nullptr;
     }
 
-    if (premultiplyAlpha)
-    {
-        stbi_uc* pixels = (stbi_uc*)bytes;
-        size_t pixelCount = (size_t)width * (size_t)height;
-        for (size_t i = 0; i < pixelCount; ++i)
-        {
-            stbi_uc a = pixels[i * 4 + 3];
-            pixels[i * 4 + 0] = (stbi_uc)((pixels[i * 4 + 0] * a) / 255);
-            pixels[i * 4 + 1] = (stbi_uc)((pixels[i * 4 + 1] * a) / 255);
-            pixels[i * 4 + 2] = (stbi_uc)((pixels[i * 4 + 2] * a) / 255);
-        }
-    }
-
     // Ownership of 'bytes' passes to the backend texture, which uploads it to the GPU on first Bind
     if (device->window->cfg.backend == sgl_Backend_OPENGL)
     {
-        texture = (sgl_Texture*)sgl_GLTexture2D_Create(bytes, { {{width, height}} });
+        texture = (sgl_Texture*)sgl_GLTexture2D_Create(bytes, { {{width, height}} }, generateMipmaps);
     }
     else if (device->window->cfg.backend == sgl_Backend_DIRECTX11)
     {
 #ifdef SGL_DIRECTX
-        texture = (sgl_Texture*)sgl_DXTexture2D_Create(bytes, { {{width, height}} });
+        texture = (sgl_Texture*)sgl_DXTexture2D_Create(bytes, { {{width, height}} }, generateMipmaps);
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
         stbi_image_free(bytes);
@@ -69,6 +56,37 @@ sgl_Texture* sgl_Texture2D_New_Source(sgl_GraphicsDevice* device, void* data, si
     {
         SGL_REPORT_ERROR("Unsupported backend");
         stbi_image_free(bytes);
+        return nullptr;
+    }
+
+    texture->sampler = sgl_Sampler_Create(device, filter, clamp);
+
+    texture->gpu = device;
+    return texture;
+}
+
+sgl_Texture* sgl_Texture2D_New_Raw(sgl_GraphicsDevice* device, void* pixels, sgl_Vec2i size, bool generateMipmaps, sgl_TextureFilter filter, sgl_TextureClamp clamp)
+{
+    sgl_Texture* texture = nullptr;
+
+    if (device->window->cfg.backend == sgl_Backend_OPENGL)
+    {
+        texture = (sgl_Texture*)sgl_GLTexture2D_Create(pixels, size, generateMipmaps);
+    }
+    else if (device->window->cfg.backend == sgl_Backend_DIRECTX11)
+    {
+#ifdef SGL_DIRECTX
+        texture = (sgl_Texture*)sgl_DXTexture2D_Create(pixels, size, generateMipmaps);
+#else
+        SGL_REPORT_ERROR("DirectX is not supported on this platform");
+        stbi_image_free(pixels);
+        return nullptr;
+#endif
+    }
+    else
+    {
+        SGL_REPORT_ERROR("Unsupported backend");
+        stbi_image_free(pixels);
         return nullptr;
     }
 

@@ -12,12 +12,12 @@ static void EnsureGLGPUResources(sgl_GLSampler* self)
     switch (self->base.filter)
     {
         case sgl_TextureFilter_LINEAR:
-            glSamplerParameteri(self->samplerId, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glSamplerParameteri(self->samplerId, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
             glSamplerParameteri(self->samplerId, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
             break;
         case sgl_TextureFilter_NEAREST:
         default:
-            glSamplerParameteri(self->samplerId, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glSamplerParameteri(self->samplerId, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
             glSamplerParameteri(self->samplerId, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             break;
     }

@@ -267,9 +267,9 @@ int main(int argc, char** argv)
     sgl_VertexArray* suzanneLinear = sgl_Model_Load(gpu, "suzanne.obj", sizeof(ModelVertex), modelLayout, ModelVertexCallback, &suzanneLinearOffset);
     sgl_VertexArray* suzanneNearest = sgl_Model_Load(gpu, "suzanne.obj", sizeof(ModelVertex), modelLayout, ModelVertexCallback, &suzanneNearestOffset);
 
-    sgl_Texture* textureLinear = sgl_Texture2D_New_File(gpu, "stone.png", false, sgl_TextureFilter_LINEAR, sgl_TextureClamp_EDGE);
-    sgl_Texture* textureNearest = sgl_Texture2D_New_File(gpu, "stone.png", false, sgl_TextureFilter_NEAREST, sgl_TextureClamp_EDGE);
-    sgl_Texture* fireTexture = sgl_Texture2D_New_File(gpu, "fire.png", false, sgl_TextureFilter_LINEAR, sgl_TextureClamp_EDGE);
+    sgl_Texture* textureLinear = sgl_Texture2D_New_File(gpu, "stone.png", true, sgl_TextureFilter_LINEAR, sgl_TextureClamp_EDGE);
+    sgl_Texture* textureNearest = sgl_Texture2D_New_File(gpu, "stone.png", true, sgl_TextureFilter_NEAREST, sgl_TextureClamp_EDGE);
+    sgl_Texture* fireTexture = sgl_Texture2D_New_File(gpu, "fire.png", true, sgl_TextureFilter_LINEAR, sgl_TextureClamp_EDGE);
 
     LightUB lightData;
     lightData.direction = sgl_Maths_Vec3_Normalise(sgl_Vec3_New_ScalarXYZ(-0.4f, 1.0f, 0.3f));

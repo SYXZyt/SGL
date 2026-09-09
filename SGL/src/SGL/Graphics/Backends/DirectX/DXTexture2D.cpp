@@ -40,14 +40,14 @@ static void DXEnsureGPUResources(sgl_DXTexture2D* self)
     D3D11_TEXTURE2D_DESC desc{};
     desc.Width = tex->size.width;
     desc.Height = tex->size.height;
-    desc.MipLevels = 0;
+    desc.MipLevels = self->generateMipmaps ? 0 : 1;
     desc.ArraySize = 1;
     desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
-    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+    desc.BindFlags = D3D11_BIND_SHADER_RESOURCE | (self->generateMipmaps ? D3D11_BIND_RENDER_TARGET : 0);
     desc.CPUAccessFlags = 0;
-    desc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+    desc.MiscFlags = self->generateMipmaps ? D3D11_RESOURCE_MISC_GENERATE_MIPS : 0;
 
     HRESULT hr = device->device->CreateTexture2D(&desc, nullptr, &self->texture);
 
@@ -83,7 +83,8 @@ static void DXEnsureGPUResources(sgl_DXTexture2D* self)
         return;
     }
 
-    device->ctx->GenerateMips(self->textureView);
+    if (self->generateMipmaps)
+        device->ctx->GenerateMips(self->textureView);
 
     tex->gpuLoaded = true;
 }
@@ -106,7 +107,7 @@ static sgl_TextureVTable gDXVTable =
     .Bind = &DXTexture_Bind,
 };
 
-sgl_DXTexture2D* sgl_DXTexture2D_Create(void* data, sgl_Vec2i size)
+sgl_DXTexture2D* sgl_DXTexture2D_Create(void* data, sgl_Vec2i size, bool generateMipmaps)
 {
     sgl_DXTexture2D* texture = sgl::Memory::New<sgl_DXTexture2D>();
     texture->base.base.size = size;
@@ -115,6 +116,7 @@ sgl_DXTexture2D* sgl_DXTexture2D_Create(void* data, sgl_Vec2i size)
     texture->base.pixels = data;
     texture->texture = nullptr;
     texture->textureView = nullptr;
+    texture->generateMipmaps = generateMipmaps;
 
     return texture;
 }
