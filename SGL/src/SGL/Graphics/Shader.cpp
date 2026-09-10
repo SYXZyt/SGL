@@ -200,6 +200,12 @@ sgl_Shader* sgl_Shader_Create(sgl_GraphicsDevice* gpu, sgl_VertexLayout* layout)
 
 void sgl_Shader_Destroy(sgl_Shader* shader)
 {
+    if (!shader->gpuLoaded)
+    {
+        sgl_FreeString(shader->data_vcode);
+        sgl_FreeString(shader->data_fcode);
+    }
+
     sgl_VertexLayout_Destroy(shader->layout);
     shader->vtable->Destroy(shader);
 }
