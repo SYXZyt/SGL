@@ -129,15 +129,15 @@ namespace sgl
             ptr = nullptr;
         }
 
-        void* Malloc(size_t size) {
+        static void* Malloc(size_t size) {
             return sgl_Malloc(size);
         }
 
-        void Free(void* ptr) {
+        static void Free(void* ptr) {
             sgl_Free(ptr);
         }
 
-        void* Realloc(void* ptr, size_t newSize) {
+        static void* Realloc(void* ptr, size_t newSize) {
             return sgl_Realloc(ptr, newSize);
         }
     };
