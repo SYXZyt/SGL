@@ -195,6 +195,20 @@ static void GLDevice_SetVsync(sgl_GraphicsDevice* dev, bool enable) {
     SDL_GL_SetSwapInterval(enable ? 1 : 0);
 }
 
+static void GLDevice_SetScissor(sgl_GraphicsDevice* dev, bool enabled, sgl_Vec2i position, sgl_Vec2i size)
+{
+    if (!enabled)
+    {
+        glDisable(GL_SCISSOR_TEST);
+        return;
+    }
+
+    glEnable(GL_SCISSOR_TEST);
+
+    GLint flippedY = (GLint)dev->height - (position.y + size.height);
+    glScissor(position.x, flippedY, size.width, size.height);
+}
+
 static void GLDevice_ImGui_Init(sgl_GraphicsDevice* dev)
 {
     if (!dev->window->cfg.enableImGui)
@@ -249,6 +263,7 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
     .Draw = &GLDevice_Draw,
     .DrawInstanced = &GLDevice_DrawInstanced,
     .SetVsync = &GLDevice_SetVsync,
+    .SetScissor = &GLDevice_SetScissor,
 
     .ImGui_Init = &GLDevice_ImGui_Init,
     .ImGui_Shutdown = &GLDevice_ImGui_Shutdown,

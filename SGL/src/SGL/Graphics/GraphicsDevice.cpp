@@ -187,6 +187,10 @@ void sgl_GraphicsDevice_SetVsync(sgl_GraphicsDevice* device, bool enable)
     device->vtable->SetVsync(device, enable);
 }
 
+void sgl_GraphicsDevice_SetScissor(sgl_GraphicsDevice* device, bool enabled, sgl_Vec2i position, sgl_Vec2i size) {
+    device->vtable->SetScissor(device, enabled, position, size);
+}
+
 void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device) {
     device->vtable->ImGui_Init(device);
 }

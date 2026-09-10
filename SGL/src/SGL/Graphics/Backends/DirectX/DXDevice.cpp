@@ -56,10 +56,13 @@ const char* BlitFragment =
 "}\n";
 
 template <typename T>
-static void TryRelease(T* t)
+static void TryRelease(T*& t)
 {
     if (t)
+    {
         t->Release();
+        t = nullptr;
+    }
 }
 
 static const char* FeatureLevelToString(D3D_FEATURE_LEVEL level)
@@ -267,6 +270,9 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     };
 
     self->ctx->RSSetViewports(1, &viewport);
+
+    D3D11_RECT defaultScissor = { 0, 0, (LONG)dev->width, (LONG)dev->height };
+    self->ctx->RSSetScissorRects(1, &defaultScissor);
 }
 
 static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
@@ -432,6 +438,30 @@ static void DXDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
 static void DXDevice_SetVSync(sgl_GraphicsDevice* dev, bool enable) {
 }
 
+static void DXDevice_SetScissor(sgl_GraphicsDevice* dev, bool enabled, sgl_Vec2i position, sgl_Vec2i size)
+{
+    GetSelf;
+
+    D3D11_RECT rect{};
+
+    if (enabled)
+    {
+        rect.left = position.x;
+        rect.top = position.y;
+        rect.right = position.x + size.width;
+        rect.bottom = position.y + size.height;
+    }
+    else
+    {
+        rect.left = 0;
+        rect.top = 0;
+        rect.right = (LONG)dev->width;
+        rect.bottom = (LONG)dev->height;
+    }
+
+    self->ctx->RSSetScissorRects(1, &rect);
+}
+
 static void DXDevice_ImGui_Init(sgl_GraphicsDevice* dev)
 {
     GetSelf;
@@ -488,6 +518,7 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .Draw = &DXDevice_Draw,
     .DrawInstanced = &DXDevice_DrawInstanced,
     .SetVsync = &DXDevice_SetVSync,
+    .SetScissor = &DXDevice_SetScissor,
 
     .ImGui_Init = &DXDevice_ImGui_Init,
     .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
@@ -545,6 +576,7 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     raster.FillMode = D3D11_FILL_SOLID;
     raster.CullMode = D3D11_CULL_BACK;
     raster.FrontCounterClockwise = true;
+    raster.ScissorEnable = TRUE;
 
     hr = device->device->CreateRasterizerState(&raster, &device->rasterState);
     if (FAILED(hr))
@@ -554,6 +586,9 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     }
 
     device->ctx->RSSetState(device->rasterState);
+
+    D3D11_RECT defaultScissor = { 0, 0, (LONG)device->base.width, (LONG)device->base.height };
+    device->ctx->RSSetScissorRects(1, &defaultScissor);
 
     raster.CullMode = D3D11_CULL_NONE;
     hr = device->device->CreateRasterizerState(&raster, &device->postProState);
