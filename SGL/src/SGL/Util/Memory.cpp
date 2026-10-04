@@ -73,7 +73,9 @@ void sgl_Memory_StackTrace(bool enable)
 }
 
 void sglIntern_Memory_SetTrack(bool enable) {
+#ifdef SGL_MEMORY_TRACK
     gTrack = enable;
+#endif
 }
 
 size_t sgl_Memory_GetTotalAllocated()
