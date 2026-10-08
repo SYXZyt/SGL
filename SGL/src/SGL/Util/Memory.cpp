@@ -13,10 +13,13 @@
 #include <execinfo.h>
 #endif
 
+#ifdef SGL_MEMORY_TRACK
 static std::vector<sgl_MemoryTrack> gTracks;
 static std::atomic<size_t> gTotalAllocated = 0;
 static bool gStackTrace = false;
 static std::mutex gMemoryMutex;
+static bool gTrack = false;
+#endif
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
 #include <unordered_set>
@@ -62,16 +65,31 @@ static size_t CaptureStack(void** outFrames, size_t maxFrames)
 #endif
 }
 
-void sgl_Memory_StackTrace(bool enable) {
+void sgl_Memory_StackTrace(bool enable)
+{
+#ifdef SGL_MEMORY_TRACK
     gStackTrace = enable;
+#endif
 }
 
-size_t sgl_Memory_GetTotalAllocated() {
+void sglIntern_Memory_SetTrack(bool enable) {
+#ifdef SGL_MEMORY_TRACK
+    gTrack = enable;
+#endif
+}
+
+size_t sgl_Memory_GetTotalAllocated()
+{
+#ifdef SGL_MEMORY_TRACK
     return gTotalAllocated.load();
+#else
+    return 0;
+#endif
 }
 
 void sgl_Memory_ReportLeaks()
 {
+#ifdef SGL_MEMORY_TRACK
     std::lock_guard lock(gMemoryMutex);
 
     for (const sgl_MemoryTrack& t : gTracks)
@@ -84,10 +102,15 @@ void sgl_Memory_ReportLeaks()
                 PrintSymbol(t.stack[i]);
         }
     }
+#endif
 }
 
 void sgl_Memory_AddTrack(void* ptr, size_t size, const char* T)
 {
+#ifdef SGL_MEMORY_TRACK
+    if (!gTrack)
+        return;
+
     sgl_MemoryTrack track
     {
         .ptr = ptr,
@@ -101,10 +124,15 @@ void sgl_Memory_AddTrack(void* ptr, size_t size, const char* T)
 
     std::lock_guard lock(gMemoryMutex);
     gTracks.push_back(track);
+#endif
 }
 
 void sgl_Memory_RetagTrack(void* ptr, const char* T)
 {
+#ifdef SGL_MEMORY_TRACK
+    if (!gTrack)
+        return;
+
     std::lock_guard lock(gMemoryMutex);
 
     auto it = std::find_if(gTracks.begin(), gTracks.end(),
@@ -112,6 +140,7 @@ void sgl_Memory_RetagTrack(void* ptr, const char* T)
 
     if (it != gTracks.end())
         it->T = T;
+#endif
 }
 
 void* sgl_Malloc(size_t size)
@@ -132,9 +161,9 @@ void* sgl_Malloc(size_t size)
 
 #ifdef SGL_MEMORY_TRACK
     sgl_Memory_AddTrack(ptr, size, "RawMemory");
-#endif
 
     gTotalAllocated += size;
+#endif
 
     return ptr;
 }
@@ -192,7 +221,9 @@ void sgl_Free(void* ptr)
         return;
 
 #ifdef SGL_DISALLOW_UNOWNED_POINTERS
+    if (gTrack)
     {
+
         std::lock_guard lock(gMemoryMutex);
 
         auto it = gOwnedPointers.find(ptr);
@@ -208,6 +239,7 @@ void sgl_Free(void* ptr)
 #endif
 
 #ifdef SGL_MEMORY_TRACK
+    if (gTrack)
     {
         std::lock_guard lock(gMemoryMutex);
 
@@ -221,8 +253,8 @@ void sgl_Free(void* ptr)
             return;
         }
     }
-#endif
 
     gTotalAllocated -= sgl_os_GetPointerSize(ptr);
+#endif
     std::free(ptr);
 }
