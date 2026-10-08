@@ -34,6 +34,9 @@ typedef struct sgl_MemoryTrack sgl_sealed
 /// @param enable True to enable or false to disable
 SGL_API extern void sgl_Memory_StackTrace(bool enable);
 
+/// @brief For internal use. Start/stop tracking
+extern void sglIntern_Memory_SetTrack(bool enable);
+
 /// @brief Get the total amount of bytes currently allocated
 /// @return The total size in bytes
 SGL_API extern size_t sgl_Memory_GetTotalAllocated();
@@ -111,6 +114,31 @@ namespace sgl
 
             ptr->~T();
             sgl_Free(ptr);
+        }
+
+        /// @brief Delete and object and set the pointer to null
+        /// @tparam T The objetc type
+        /// @param ptr Reference to the pointer to delete and null
+        template <typename T>
+        static void DeleteAndNull(T*& ptr)
+        {
+            if (!ptr)
+                return;
+
+            Delete(ptr);
+            ptr = nullptr;
+        }
+
+        static void* Malloc(size_t size) {
+            return sgl_Malloc(size);
+        }
+
+        static void Free(void* ptr) {
+            sgl_Free(ptr);
+        }
+
+        static void* Realloc(void* ptr, size_t newSize) {
+            return sgl_Realloc(ptr, newSize);
         }
     };
 }

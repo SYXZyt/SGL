@@ -33,7 +33,7 @@ ConstantBuffer<CameraBuffer> gCamera : register(b0);
 ConstantBuffer<LightBuffer> gLight : register(b1);
 
 [[vk::binding(0)]]
-Sampler2DArray gTex : register(t0);
+Sampler2D gTex : register(t0);
 
 [shader("vertex")]
 VSOutput vertexMain(VSInput input)
@@ -52,7 +52,7 @@ float4 fragmentMain(VSOutput input) : SV_Target
     float3 n = normalize(input.normal);
     float ndotl = max(dot(n, normalize(gLight.lightDir)), 0.0);
     float3 lighting = gLight.lightColour * (gLight.ambient + (1.0 - gLight.ambient) * ndotl);
-    float4 texColour = gTex.Sample(float3(input.uv, 0));
+    float4 texColour = gTex.Sample(input.uv);
 
     return float4(texColour.rgb * lighting, texColour.a);
 }

@@ -31,8 +31,15 @@ typedef struct sgl_VertexArray sgl_sealed
     uint32 indexCount;
     uint32 indexCapacity;
 
+    // If instanceSize is 0, this VertexArray was not created with instancing enabled
+    byte* instanceData;
+    uint32 instanceCount;
+    uint32 instanceCapacity;
+    uint32 instanceSize;
+
     bool needsVertexUpload;
     bool needsIndexUpload;
+    bool needsInstanceUpload;
     bool layoutDirty;
 } sgl_VertexArray;
 
@@ -68,8 +75,9 @@ SGL_API extern sgl_VertexArray_Triangulated sgl_Triangulate(void* tl, void* tr, 
 /// @param gpu The device to use
 /// @param vertexSize How large a vertex is, in bytes.
 /// @param layout The layout of the vertex
-/// @return 
-SGL_API extern sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize, sgl_VertexLayout* layout);
+/// @param instanceSize How large a single instance's data is, in bytes. Pass 0 to disable instancing for this buffer
+/// @return
+SGL_API extern sgl_VertexArray* sgl_VertexArray_Create(sgl_GraphicsDevice* gpu, uint32 vertexSize, sgl_VertexLayout* layout, uint32 instanceSize);
 
 /// @brief Bind a vertex array
 /// @param va The buffer to bind
@@ -110,6 +118,17 @@ SGL_API extern void sgl_VertexArray_SetIndices(sgl_VertexArray* va, const uint32
 /// @param va The buffer to use
 /// @param index The index to add
 SGL_API extern void sgl_VertexArray_AddIndex(sgl_VertexArray* va, uint32 index);
+
+/// @brief Set the per-instance data of a buffer to an existing array. Requires the buffer to have been created with instanceSize > 0
+/// @param va The buffer to use
+/// @param instances Array of instance data
+/// @param instanceCount How many instances to load
+SGL_API extern void sgl_VertexArray_SetInstances(sgl_VertexArray* va, byte* instances, uint32 instanceCount);
+
+/// @brief Add a single instance's data to the buffer. Requires the buffer to have been created with instanceSize > 0
+/// @param va The buffer to use
+/// @param instance Pointer to the instance data
+SGL_API extern void sgl_VertexArray_AddInstance(sgl_VertexArray* va, void* instance);
 
 /// @brief Add the indices for a tri
 /// @param va The bufer to use

@@ -1,13 +1,14 @@
 #include "GLPostProcess.h"
 #include <SGL/Util/Memory.h>
 #include <SGL/Util/Error.h>
+#include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
 
 #define GetSelf sgl_GLPostProcess* self = (sgl_GLPostProcess*)pp
 
 static void GL_Release(sgl_GLPostProcess* self)
 {
-    glDeleteTextures(1, &self->texture);
-    glDeleteFramebuffers(1, &self->framebuffer);
+    sgl_OpenGLThreadSync_DeleteTexture(self->texture);
+    sgl_OpenGLThreadSync_DeleteFramebuffer(self->framebuffer);
 }
 
 static void GL_Init(sgl_GLPostProcess* self, sgl_Vec2i screenSize)

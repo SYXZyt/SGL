@@ -81,8 +81,62 @@ float sgl_Maths_Pow(float base, float exponent) {
     return std::powf(base, exponent);
 }
 
-float sgl_Maths_LerpDT(float a, float b, float t, float dt) {
+float sgl_Maths_LerpDt(float a, float b, float t, float dt) {
     return sgl_Maths_Lerp(a, b, 1 - sgl_Maths_Pow(t, dt));
+}
+
+sgl_Vec2 sgl_Maths_Vec2_Lerp(sgl_Vec2 a,  sgl_Vec2 b, float t)
+{
+    const float x = sgl_Maths_Lerp(a.x, b.x, t);
+    const float y = sgl_Maths_Lerp(a.y, b.y, t);
+
+    return sgl_Vec2_New_ScalarXY(x, y);
+}
+
+sgl_Vec2 sgl_Maths_Vec2_LerpDt(sgl_Vec2 a,  sgl_Vec2 b, float t, float dt)
+{
+    const float x = sgl_Maths_LerpDt(a.x, b.x, t, dt);
+    const float y = sgl_Maths_LerpDt(a.y, b.y, t, dt);
+
+    return sgl_Vec2_New_ScalarXY(x, y);
+}
+
+sgl_Vec3 sgl_Maths_Vec3_Lerp(sgl_Vec3 a,  sgl_Vec3 b, float t)
+{
+    const float x = sgl_Maths_Lerp(a.x, b.x, t);
+    const float y = sgl_Maths_Lerp(a.y, b.y, t);
+    const float z = sgl_Maths_Lerp(a.z, b.z, t);
+
+    return sgl_Vec3_New_ScalarXYZ(x, y, z);
+}
+
+sgl_Vec3 sgl_Maths_Vec3_LerpDt(sgl_Vec3 a,  sgl_Vec3 b, float t, float dt)
+{
+    const float x = sgl_Maths_LerpDt(a.x, b.x, t, dt);
+    const float y = sgl_Maths_LerpDt(a.y, b.y, t, dt);
+    const float z = sgl_Maths_LerpDt(a.z, b.z, t, dt);
+
+    return sgl_Vec3_New_ScalarXYZ(x, y, z);
+}
+
+sgl_Vec4 sgl_Maths_Vec4_Lerp(sgl_Vec4 a,  sgl_Vec4 b, float t)
+{
+    const float x = sgl_Maths_Lerp(a.x, b.x, t);
+    const float y = sgl_Maths_Lerp(a.y, b.y, t);
+    const float z = sgl_Maths_Lerp(a.z, b.z, t);
+    const float w = sgl_Maths_Lerp(a.w, b.w, t);
+
+    return sgl_Vec4_New_ScalarXYZW(x, y, z, w);
+}
+
+sgl_Vec4 sgl_Maths_Vec4_LerpDt(sgl_Vec4 a,  sgl_Vec4 b, float t, float dt)
+{
+    const float x = sgl_Maths_LerpDt(a.x, b.x, t, dt);
+    const float y = sgl_Maths_LerpDt(a.y, b.y, t, dt);
+    const float z = sgl_Maths_LerpDt(a.z, b.z, t, dt);
+    const float w = sgl_Maths_LerpDt(a.w, b.w, t, dt);
+
+    return sgl_Vec4_New_ScalarXYZW(x, y, z, w);
 }
 
 float sgl_Maths_Vec2_Dist(sgl_Vec2 a, sgl_Vec2 b) {

@@ -33,7 +33,7 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
     window->callbacks = sgl::Memory::New<std::vector<sgl_Window_Resize_Callback>>();
     window->pendingScroll = sgl_Vec2_Zero;
 
-    if (!SDL_Init(SDL_INIT_VIDEO))
+    if (!SDL_Init(cfg.sdlFlags))
     {
         SGL_REPORT_ERROR("Failed to init SDL");
         return nullptr;
@@ -54,7 +54,7 @@ sgl_Window* sgl_Window_Create(sgl_EngineConfig cfg)
         SDL_GL_MakeCurrent(window->window, window->glContext);
         gladLoadGLLoader((GLADloadproc)SDL_GL_GetProcAddress);
 
-        SDL_GL_SetSwapInterval(1);
+        SDL_GL_SetSwapInterval(cfg.vsync ? 1 : 0);
     }
 
     return window;

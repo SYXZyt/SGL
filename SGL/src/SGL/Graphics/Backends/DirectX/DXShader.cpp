@@ -148,18 +148,21 @@ static void DXInitialise(sgl_Shader* shr)
 
     std::vector<D3D11_INPUT_ELEMENT_DESC> elements;
     elements.resize(shr->layout->elementCount);
+
+    int semanticCounts[4] = { 0, 0, 0, 0 }; // indexed by sgl_VertexElementSemantic
+
     for (uint32 i = 0; i < shr->layout->elementCount; ++i)
     {
         D3D11_INPUT_ELEMENT_DESC& element = elements[i];
         sgl_VertexElement& src = shr->layout->elements[i];
 
         element.SemanticName = ToSemanticName(src.semantic);
-        element.SemanticIndex = 0;
+        element.SemanticIndex = semanticCounts[src.semantic]++;
         element.Format = ToDXGIFormat(src.type);
-        element.InputSlot = 0;
+        element.InputSlot = src.perInstance ? 1 : 0;
         element.AlignedByteOffset = (UINT)src.offset;
-        element.InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-        element.InstanceDataStepRate = 0;
+        element.InputSlotClass = src.perInstance ? D3D11_INPUT_PER_INSTANCE_DATA : D3D11_INPUT_PER_VERTEX_DATA;
+        element.InstanceDataStepRate = src.perInstance ? 1 : 0;
     }
 
     hr = device->device->CreateInputLayout(elements.data(), (UINT)elements.size(), self->vertexBlob->GetBufferPointer(), self->vertexBlob->GetBufferSize(), &self->inputLayout);

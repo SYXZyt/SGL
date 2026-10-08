@@ -14,6 +14,26 @@ typedef struct sgl_Vec2 sgl_sealed
         struct { float width, height; };
         float values[2];
     };
+
+#ifdef __cplusplus
+    SGL_API static sgl_Vec2 Zero;
+    SGL_API static sgl_Vec2 One;
+    SGL_API static sgl_Vec2 Left;
+    SGL_API static sgl_Vec2 Right;
+    SGL_API static sgl_Vec2 Up;
+    SGL_API static sgl_Vec2 Down;
+    SGL_API static sgl_Vec2 Inf;
+    SGL_API static sgl_Vec2 NegativeInf;
+#endif
+
+    // We can't use a constructor since it causes compile errors
+    // well it does if you are using this in a c++ project
+#ifdef  __cplusplus
+    static sgl_Vec2 Make();
+    static sgl_Vec2 Make(float scalar);
+    static sgl_Vec2 Make(float x, float y);
+#endif
+
 } sgl_Vec2;
 
 SGL_API extern const sgl_Vec2 sgl_Vec2_Zero;
@@ -53,6 +73,17 @@ typedef struct sgl_Vec2i
         struct { int width, height; };
         int values[2];
     };
+
+#ifdef __cplusplus
+    SGL_API static sgl_Vec2i Zero;
+    SGL_API static sgl_Vec2i One;
+    SGL_API static sgl_Vec2i Left;
+    SGL_API static sgl_Vec2i Right;
+    SGL_API static sgl_Vec2i Up;
+    SGL_API static sgl_Vec2i Down;
+    SGL_API static sgl_Vec2i Inf;
+    SGL_API static sgl_Vec2i NegativeInf;
+#endif
 } sgl_Vec2i;
 
 SGL_API extern const sgl_Vec2i sgl_Vec2i_Zero;
@@ -80,6 +111,8 @@ SGL_API extern sgl_Vec2i sgl_Vec2i_Negate(sgl_Vec2i v);
 SGL_API extern bool sgl_Vec2i_Compare(sgl_Vec2i a, sgl_Vec2i b);
 
 #pragma endregion
+
+SGL_API extern sgl_Vec2 sgl_Vec2i_to_sgl_Vec2(sgl_Vec2i v);
 
 SGL_END
 
@@ -122,6 +155,53 @@ inline bool operator!=(sgl_Vec2 a, sgl_Vec2 b) {
     return !(a == b);
 }
 
+inline sgl_Vec2& operator+=(sgl_Vec2& self, sgl_Vec2 other)
+{
+    self.x += other.x;
+    self.y += other.y;
+
+    return self;
+}
+
+inline sgl_Vec2& operator+=(sgl_Vec2& self, float scalar)
+{
+    self.x += scalar;
+    self.y += scalar;
+
+    return self;
+}
+
+inline sgl_Vec2& operator-=(sgl_Vec2& self, sgl_Vec2 other)
+{
+    self.x -= other.x;
+    self.y -= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2& operator-=(sgl_Vec2& self, float scalar)
+{
+    self.x -= scalar;
+    self.y -= scalar;
+
+    return self;
+}
+
+inline sgl_Vec2& operator*=(sgl_Vec2& self, sgl_Vec2 other)
+{
+    self.x *= other.x;
+    self.y *= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2& operator*=(sgl_Vec2& self, float scalar)
+{
+    self.x *= scalar;
+    self.y *= scalar;
+
+    return self;
+}
 
 inline sgl_Vec2i operator+(sgl_Vec2i a, sgl_Vec2i b) {
     return sgl_Vec2i_Add_Vec2i(a, b);
@@ -157,6 +237,54 @@ inline bool operator==(sgl_Vec2i a, sgl_Vec2i b) {
 
 inline bool operator!=(sgl_Vec2i a, sgl_Vec2i b) {
     return !(a == b);
+}
+
+inline sgl_Vec2i& operator+=(sgl_Vec2i& self, sgl_Vec2i other)
+{
+    self.x += other.x;
+    self.y += other.y;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator+=(sgl_Vec2i& self, int scalar)
+{
+    self.x += scalar;
+    self.y += scalar;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator-=(sgl_Vec2i& self, sgl_Vec2i other)
+{
+    self.x -= other.x;
+    self.y -= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator-=(sgl_Vec2i& self, int scalar)
+{
+    self.x -= scalar;
+    self.y -= scalar;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator*=(sgl_Vec2i& self, sgl_Vec2i other)
+{
+    self.x *= other.x;
+    self.y *= other.y;
+
+    return self;
+}
+
+inline sgl_Vec2i& operator*=(sgl_Vec2i& self, int scalar)
+{
+    self.x *= scalar;
+    self.y *= scalar;
+
+    return self;
 }
 
 #endif

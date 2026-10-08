@@ -1,6 +1,7 @@
 #include "GLTexture2DArray.h"
 #include <SGL/Util/Memory.h>
 #include <stb/stb_image.h>
+#include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
 
 #define GetSelf sgl_GLTexture2DArray* self = (sgl_GLTexture2DArray*)tex
 
@@ -9,7 +10,7 @@ static void GLDestroy(sgl_Texture* tex)
     GetSelf;
 
     if (tex->gpuLoaded)
-        glDeleteTextures(1, &self->texture);
+        sgl_OpenGLThreadSync_DeleteTexture(self->texture);
 
     if (self->base.pixels)
         stbi_image_free(self->base.pixels);
@@ -88,6 +89,7 @@ static void GLBind(sgl_Texture* tex, uint32 unit)
         GLEnsureGPUResources(self);
 
     glBindTextureUnit(unit, self->texture);
+    sgl_Sampler_Bind(tex->sampler, unit);
 }
 
 static sgl_TextureVTable gGLVTable =

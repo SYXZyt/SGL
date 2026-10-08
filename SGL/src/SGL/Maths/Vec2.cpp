@@ -1,6 +1,17 @@
 #include "Vec2.h"
 #include <SGL/Maths/Maths.h>
 
+#define IMPL(t, v) t t::v = t##_##v; t##i t##i::v = t##i##_##v
+
+IMPL(sgl_Vec2, Zero);
+IMPL(sgl_Vec2, One);
+IMPL(sgl_Vec2, Left);
+IMPL(sgl_Vec2, Right);
+IMPL(sgl_Vec2, Up);
+IMPL(sgl_Vec2, Down);
+IMPL(sgl_Vec2, Inf);
+IMPL(sgl_Vec2, NegativeInf);
+
 const sgl_Vec2 sgl_Vec2_Zero = {{{ 0.0f, 0.0f }}};
 const sgl_Vec2 sgl_Vec2_One = {{{ 1.f, 1.f }}};
 const sgl_Vec2 sgl_Vec2_Left = {{{ -1, 0.f }}};
@@ -9,6 +20,18 @@ const sgl_Vec2 sgl_Vec2_Up = {{{ 0.f, 1.f }}};
 const sgl_Vec2 sgl_Vec2_Down = {{{ 0.f, -1.f }}};
 const sgl_Vec2 sgl_Vec2_Inf = {{{ sgl_Maths_INF, sgl_Maths_INF }}};
 const sgl_Vec2 sgl_Vec2_NegativeInf = {{{ sgl_Maths_NEG_INF, sgl_Maths_NEG_INF }}};
+
+sgl_Vec2 sgl_Vec2::Make() {
+    return sgl_Vec2_Zero;
+}
+
+sgl_Vec2 sgl_Vec2::Make(float scalar) {
+    return  sgl_Vec2_New_Scalar(scalar);
+}
+
+sgl_Vec2 sgl_Vec2::Make(float x, float y) {
+    return  sgl_Vec2_New_ScalarXY(x, y);
+}
 
 sgl_Vec2 sgl_Vec2_New_Scalar(float scalar) {
     return {{{ scalar, scalar }}};
@@ -99,4 +122,8 @@ sgl_Vec2i sgl_Vec2i_Negate(sgl_Vec2i v) {
 
 bool sgl_Vec2i_Compare(sgl_Vec2i a, sgl_Vec2i b) {
     return a.x == b.x && a.y == b.y;
+}
+
+sgl_Vec2 sgl_Vec2i_to_sgl_Vec2(sgl_Vec2i v) {
+    return {{{ (float)v.x, (float)v.y }}};
 }

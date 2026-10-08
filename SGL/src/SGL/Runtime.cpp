@@ -12,9 +12,12 @@ void sgl_Runtime_Init()
     SetConsoleOutputCP(CP_UTF8);
     SymInitialize(GetCurrentProcess(), nullptr, TRUE);
 #endif
+
+    sglIntern_Memory_SetTrack(true);
 }
 
 void sgl_Runtime_Shutdown()
 {
+    sglIntern_Memory_SetTrack(false);
     sgl_Memory_ReportLeaks();
 }

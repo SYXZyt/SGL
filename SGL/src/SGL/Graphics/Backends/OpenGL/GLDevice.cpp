@@ -11,6 +11,7 @@
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
 #include <SGL/Graphics/Backends/OpenGL/GLPostProcess.h>
+#include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
 
 template <typename T>
 T* GetBackend(void* ptr) {
@@ -31,6 +32,10 @@ static void GLDevice_SetDepthTestEnabled(sgl_GraphicsDevice* dev, bool enabled)
         glEnable(GL_DEPTH_TEST);
     else
         glDisable(GL_DEPTH_TEST);
+}
+
+static void GLDevice_SetDepthWriteEnabled(sgl_GraphicsDevice* dev, bool enabled) {
+    glDepthMask(enabled ? GL_TRUE : GL_FALSE);
 }
 
 static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
@@ -137,6 +142,8 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
 
     if (dev->depthTestEnabled)
         glEnable(GL_DEPTH_TEST);
+
+    sgl_OpenGLThreadSync_Update();
 }
 
 static void GLDevice_SwapBuffer(sgl_GraphicsDevice* dev) {
@@ -148,6 +155,23 @@ static void GLDevice_Destroy(sgl_GraphicsDevice* dev)
     GetSelf;
 
     sgl::Memory::Delete(self);
+}
+
+static void GLDevice_DrawInstanced(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount, uint32 instanceCount)
+{
+    sgl_Shader_Bind(shr);
+    sgl_VertexArray_Bind(va);
+
+    for (size_t i = 0; i < textureCount; ++i)
+        sgl_Texture_Bind(textures[i], (uint32)i);
+
+    for (size_t i = 0; i < bufferCount; ++i)
+        sgl_UniformBuffer_Bind(buffers[i], (uint32)i);
+
+    if (va->indexCount > 0)
+        glDrawElementsInstanced(GL_TRIANGLES, va->indexCount, GL_UNSIGNED_INT, nullptr, instanceCount);
+    else
+        glDrawArraysInstanced(GL_TRIANGLES, 0, va->vertexCount, instanceCount);
 }
 
 static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shader* shr, sgl_Texture** textures, size_t textureCount, sgl_UniformBuffer** buffers, size_t bufferCount)
@@ -165,6 +189,24 @@ static void GLDevice_Draw(sgl_GraphicsDevice* dev, sgl_VertexArray* va, sgl_Shad
         glDrawElements(GL_TRIANGLES, va->indexCount, GL_UNSIGNED_INT, nullptr);
     else
         glDrawArrays(GL_TRIANGLES, 0, va->vertexCount);
+}
+
+static void GLDevice_SetVsync(sgl_GraphicsDevice* dev, bool enable) {
+    SDL_GL_SetSwapInterval(enable ? 1 : 0);
+}
+
+static void GLDevice_SetScissor(sgl_GraphicsDevice* dev, bool enabled, sgl_Vec2i position, sgl_Vec2i size)
+{
+    if (!enabled)
+    {
+        glDisable(GL_SCISSOR_TEST);
+        return;
+    }
+
+    glEnable(GL_SCISSOR_TEST);
+
+    GLint flippedY = (GLint)dev->height - (position.y + size.height);
+    glScissor(position.x, flippedY, size.width, size.height);
 }
 
 static void GLDevice_ImGui_Init(sgl_GraphicsDevice* dev)
@@ -212,12 +254,16 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
 {
     .SetClearColour = &GLDevice_SetClearColour,
     .SetDepthTestEnabled = &GLDevice_SetDepthTestEnabled,
+    .SetDepthWriteEnabled = &GLDevice_SetDepthWriteEnabled,
     .Resize = &GLDevice_Resize,
     .BeginFrame = &GLDevice_BeginFrame,
     .EndFrame = &GLDevice_EndFrame,
     .Destroy = &GLDevice_Destroy,
     .SwapBuffer = &GLDevice_SwapBuffer,
     .Draw = &GLDevice_Draw,
+    .DrawInstanced = &GLDevice_DrawInstanced,
+    .SetVsync = &GLDevice_SetVsync,
+    .SetScissor = &GLDevice_SetScissor,
 
     .ImGui_Init = &GLDevice_ImGui_Init,
     .ImGui_Shutdown = &GLDevice_ImGui_Shutdown,

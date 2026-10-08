@@ -1,6 +1,8 @@
 #include "GLTexture2D.h"
 #include <SGL/Util/Memory.h>
 #include <stb/stb_image.h>
+#include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
+#include <algorithm>
 
 #define GetSelf sgl_GLTexture2D* self = (sgl_GLTexture2D*)tex
 
@@ -9,7 +11,7 @@ static void GLTexture_Destroy(sgl_Texture* tex)
     GetSelf;
 
     if (tex->gpuLoaded)
-        glDeleteTextures(1, &self->texture);
+        sgl_OpenGLThreadSync_DeleteTexture(self->texture);
 
     if (self->base.pixels)
         stbi_image_free(self->base.pixels);
@@ -29,10 +31,18 @@ static void GLEnsureGPUResources(sgl_GLTexture2D* self)
     glTextureParameteri(self->texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glTextureParameteri(self->texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-    glTextureStorage2D(self->texture, 1, GL_RGBA8, tex->size.width, tex->size.height);
+    GLsizei levels = 1;
+    if (self->generateMipmaps)
+    {
+        for (int dim = std::max(tex->size.width, tex->size.height); dim > 1; dim /= 2)
+            ++levels;
+    }
+
+    glTextureStorage2D(self->texture, levels, GL_RGBA8, tex->size.width, tex->size.height);
     glTextureSubImage2D(self->texture, 0, 0, 0, tex->size.width, tex->size.height, GL_RGBA, GL_UNSIGNED_BYTE, self->base.pixels);
 
-    glGenerateTextureMipmap(self->texture);
+    if (self->generateMipmaps)
+        glGenerateTextureMipmap(self->texture);
 
     stbi_image_free(self->base.pixels);
     self->base.pixels = nullptr;
@@ -48,6 +58,7 @@ static void GLTexture_Bind(sgl_Texture* tex, uint32 unit)
         GLEnsureGPUResources(self);
 
     glBindTextureUnit(unit, self->texture);
+    sgl_Sampler_Bind(tex->sampler, unit);
 }
 
 static sgl_TextureVTable gGLVTable =
@@ -56,7 +67,7 @@ static sgl_TextureVTable gGLVTable =
     .Bind = &GLTexture_Bind,
 };
 
-sgl_GLTexture2D* sgl_GLTexture2D_Create(void* data, sgl_Vec2i size)
+sgl_GLTexture2D* sgl_GLTexture2D_Create(void* data, sgl_Vec2i size, bool generateMipmaps)
 {
     sgl_GLTexture2D* texture = sgl::Memory::New<sgl_GLTexture2D>();
     texture->base.base.size = size;
@@ -64,6 +75,7 @@ sgl_GLTexture2D* sgl_GLTexture2D_Create(void* data, sgl_Vec2i size)
     texture->base.base.gpuLoaded = false;
     texture->base.pixels = data;
     texture->texture = 0;
+    texture->generateMipmaps = generateMipmaps;
 
     return texture;
 }

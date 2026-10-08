@@ -1,6 +1,19 @@
 #include "Vec3.h"
 #include <SGL/Maths/Maths.h>
 
+#define IMPL(t, v) t t::v = t##_##v; t##i t##i::v = t##i##_##v
+
+IMPL(sgl_Vec3, Zero);
+IMPL(sgl_Vec3, One);
+IMPL(sgl_Vec3, Left);
+IMPL(sgl_Vec3, Right);
+IMPL(sgl_Vec3, Up);
+IMPL(sgl_Vec3, Down);
+IMPL(sgl_Vec3, Forward);
+IMPL(sgl_Vec3, Backward);
+IMPL(sgl_Vec3, Inf);
+IMPL(sgl_Vec3, NegativeInf);
+
 const sgl_Vec3 sgl_Vec3_Zero = { {{ 0.0f, 0.0f, 0.f }} };
 const sgl_Vec3 sgl_Vec3_One = { {{ 1.f, 1.f, 1.f }} };
 const sgl_Vec3 sgl_Vec3_Left = { {{ -1.f, 0.f, 0.f }} };
@@ -11,6 +24,18 @@ const sgl_Vec3 sgl_Vec3_Forward = { {{ 0.f, 0.f, 1.f }} };
 const sgl_Vec3 sgl_Vec3_Backward = { {{ 0.f, 0.f, -1.f }} };
 const sgl_Vec3 sgl_Vec3_Inf = { {{ sgl_Maths_INF, sgl_Maths_INF, sgl_Maths_INF }} };
 const sgl_Vec3 sgl_Vec3_NegativeInf = { {{ sgl_Maths_NEG_INF, sgl_Maths_NEG_INF, sgl_Maths_NEG_INF }} };
+
+sgl_Vec3 sgl_Vec3::Make() {
+    return sgl_Vec3_Zero;
+}
+
+sgl_Vec3 sgl_Vec3::Make(float scalar) {
+    return  sgl_Vec3_New_Scalar(scalar);
+}
+
+sgl_Vec3 sgl_Vec3::Make(float x, float y, float z) {
+    return  sgl_Vec3_New_ScalarXYZ(x, y, z);
+}
 
 sgl_Vec3 sgl_Vec3_New_Scalar(float scalar) {
     return { {{ scalar, scalar, scalar }} };

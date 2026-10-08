@@ -11,6 +11,25 @@ typedef struct sgl_Vec4 sgl_sealed
         struct { float r, g, b, a; };
         float values[4];
     };
+
+#ifdef __cplusplus
+    SGL_API static sgl_Vec4 Zero;
+    SGL_API static sgl_Vec4 One;
+    SGL_API static sgl_Vec4 Left;
+    SGL_API static sgl_Vec4 Right;
+    SGL_API static sgl_Vec4 Up;
+    SGL_API static sgl_Vec4 Down;
+    SGL_API static sgl_Vec4 Forward;
+    SGL_API static sgl_Vec4 Backward;
+    SGL_API static sgl_Vec4 Inf;
+    SGL_API static sgl_Vec4 NegativeInf;
+#endif
+
+#ifdef  __cplusplus
+    static sgl_Vec4 Make();
+    static sgl_Vec4 Make(float scalar);
+    static sgl_Vec4 Make(float x, float y, float z, float w);
+#endif
 } sgl_Vec4;
 
 SGL_API extern const sgl_Vec4 sgl_Vec4_Zero;

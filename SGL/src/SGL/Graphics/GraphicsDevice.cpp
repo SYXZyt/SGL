@@ -74,9 +74,10 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
     }
 
     device->depthTestEnabled = true;
+    device->depthWriteEnabled = true;
 
     device->screenQuadLayout = screenQuadLayout;
-    device->screenQuad = sgl_VertexArray_Create(device, sizeof(PP_Vertex), device->screenQuadLayout);
+    device->screenQuad = sgl_VertexArray_Create(device, sizeof(PP_Vertex), device->screenQuadLayout, 0);
 
     PP_Vertex tl = { .pos = {{{-1,  1, 0}}}, .uv = {{{0, 1}}} };
     PP_Vertex tr = { .pos = {{{ 1,  1, 0}}}, .uv = {{{1, 1}}} };
@@ -97,6 +98,8 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
 
     sgl_Window_RegisterResize(window, &OnResize, device);
 
+    sgl_GraphicsDevice_SetVsync(device, window->cfg.vsync);
+
     device->vecPtr = sgl::Memory::New<std::vector<sgl_PostProcess*>>();
     return device;
 }
@@ -104,6 +107,10 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
 void sgl_GraphicsDevice_Destroy(sgl_GraphicsDevice* device)
 {
     std::vector<sgl_PostProcess*>* effectList = (std::vector<sgl_PostProcess*>*)device->vecPtr;
+
+    for (sgl_PostProcess* effect : *effectList)
+        sgl_PostProcess_Destroy(effect);
+
     sgl::Memory::Delete(effectList);
 
     sgl_VertexLayout_Destroy(device->screenQuadLayout);
@@ -126,6 +133,16 @@ bool sgl_GraphicsDevice_GetDepthTestEnabled(sgl_GraphicsDevice* device) {
     return device->depthTestEnabled;
 }
 
+void sgl_GraphicsDevice_SetDepthWriteEnabled(sgl_GraphicsDevice* device, bool enabled)
+{
+    device->depthWriteEnabled = enabled;
+    device->vtable->SetDepthWriteEnabled(device, enabled);
+}
+
+bool sgl_GraphicsDevice_GetDepthWriteEnabled(sgl_GraphicsDevice* device) {
+    return device->depthWriteEnabled;
+}
+
 void sgl_GraphicsDevice_BeginFrame(sgl_GraphicsDevice* device) {
     device->vtable->BeginFrame(device);
 }
@@ -140,6 +157,10 @@ void sgl_GraphicsDevice_SwapBuffer(sgl_GraphicsDevice* device) {
 
 void sgl_GraphicsDevice_Draw(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount) {
     device->vtable->Draw(device, va, shader, textures, textureCount, buffers, bufferCount);
+}
+
+void sgl_GraphicsDevice_DrawInstanced(sgl_GraphicsDevice* device, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount, uint32 instanceCount) {
+    device->vtable->DrawInstanced(device, va, shader, textures, textureCount, buffers, bufferCount, instanceCount);
 }
 
 void sgl_GraphicsDevice_AddEffect(sgl_GraphicsDevice* device, sgl_PostProcess* effect)
@@ -158,6 +179,16 @@ size_t sgl_GraphicsDevice_GetEffects(sgl_GraphicsDevice* device, sgl_PostProcess
 
 sgl_VertexLayout* sgl_GraphicsDevice_GetPostProcessLayout(sgl_GraphicsDevice* device) {
     return device->screenQuadLayout;
+}
+
+void sgl_GraphicsDevice_SetVsync(sgl_GraphicsDevice* device, bool enable)
+{
+    device->vsync = enable;
+    device->vtable->SetVsync(device, enable);
+}
+
+void sgl_GraphicsDevice_SetScissor(sgl_GraphicsDevice* device, bool enabled, sgl_Vec2i position, sgl_Vec2i size) {
+    device->vtable->SetScissor(device, enabled, position, size);
 }
 
 void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device) {

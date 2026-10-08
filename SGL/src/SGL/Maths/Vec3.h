@@ -1,4 +1,4 @@
-#pragma once
+ #pragma once
 #include <SGL/SGL.h>
 
 SGL_BEGIN
@@ -15,6 +15,25 @@ typedef struct sgl_Vec3 sgl_sealed
         struct { float width, height, depth; };
         float values[3];
     };
+
+#ifdef __cplusplus
+    SGL_API static sgl_Vec3 Zero;
+    SGL_API static sgl_Vec3 One;
+    SGL_API static sgl_Vec3 Left;
+    SGL_API static sgl_Vec3 Right;
+    SGL_API static sgl_Vec3 Up;
+    SGL_API static sgl_Vec3 Down;
+    SGL_API static sgl_Vec3 Forward;
+    SGL_API static sgl_Vec3 Backward;
+    SGL_API static sgl_Vec3 Inf;
+    SGL_API static sgl_Vec3 NegativeInf;
+#endif
+
+#ifdef  __cplusplus
+    static sgl_Vec3 Make();
+    static sgl_Vec3 Make(float scalar);
+    static sgl_Vec3 Make(float x, float y, float z);
+#endif
 } sgl_Vec3;
 
 SGL_API extern const sgl_Vec3 sgl_Vec3_Zero;
@@ -57,6 +76,19 @@ typedef struct sgl_Vec3i sgl_sealed
         struct { int width, height, depth; };
         int values[3];
     };
+
+#ifdef __cplusplus
+    SGL_API static sgl_Vec3i Zero;
+    SGL_API static sgl_Vec3i One;
+    SGL_API static sgl_Vec3i Left;
+    SGL_API static sgl_Vec3i Right;
+    SGL_API static sgl_Vec3i Up;
+    SGL_API static sgl_Vec3i Down;
+    SGL_API static sgl_Vec3i Forward;
+    SGL_API static sgl_Vec3i Backward;
+    SGL_API static sgl_Vec3i Inf;
+    SGL_API static sgl_Vec3i NegativeInf;
+#endif
 } sgl_Vec3i;
 
 SGL_API extern const sgl_Vec3i sgl_Vec3i_Zero;

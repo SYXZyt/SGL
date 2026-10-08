@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(SYXZGameLibrary)
 
+include(GNUInstallDirs)
+
+set(CMAKE_C_VER)
+
 add_library(SGL SHARED
     src/imgui/backends/imgui_impl_dx11.cpp
     src/imgui/backends/imgui_impl_opengl3.cpp
@@ -78,6 +82,10 @@ add_library(SGL SHARED
     src/SGL/Input/Key.h
     src/SGL/Input/Keyboard.h
     src/SGL/Input/Keyboard.cpp
+    src/SGL/Input/GamepadButton.h
+    src/SGL/Input/GamepadAxis.h
+    src/SGL/Input/Gamepad.h
+    src/SGL/Input/Gamepad.cpp
     src/SGL/Graphics/Texture2D.h
     src/SGL/Graphics/Backends/DirectX/DXTexture2D.h
     src/SGL/Graphics/Texture2D.cpp
@@ -103,7 +111,9 @@ add_library(SGL SHARED
     src/SGL/Input/Mouse.cpp
     src/SGL/Graphics/Model.h
     src/SGL/Graphics/Model.cpp
-)
+    src/SGL/Graphics/Sampler.h
+    src/SGL/Graphics/Sampler.cpp
+ "src/SGL/Graphics/Backends/OpenGL/GLSampler.h" "src/SGL/Graphics/Backends/OpenGL/GLSampler.cpp" "src/SGL/Graphics/Backends/DirectX/DXSampler.h" "src/SGL/Graphics/Backends/DirectX/DXSampler.cpp")
 
 include(CMake/Dependencies.cmake)
 
@@ -116,7 +126,10 @@ target_link_libraries(SGL PUBLIC SDL3::SDL3 glm::glm slang::gfx slang::slang)
 target_compile_definitions(SGL PRIVATE SGL_EXPORTS)
 target_compile_definitions(SGL PUBLIC UNICODE _UNICODE GLM_ENABLE_EXPERIMENTAL)
 
-target_include_directories(SGL PUBLIC ${CMAKE_CURRENT_LIST_DIR}/src)
+target_include_directories(SGL PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/src>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 target_include_directories(SGL PRIVATE ${CMAKE_CURRENT_LIST_DIR}/src/imgui)
 
 target_compile_definitions(SGL PUBLIC -DSGL_PATH="${CMAKE_CURRENT_LIST_DIR}")
@@ -153,3 +166,82 @@ endif ()
 set_target_properties(SGL PROPERTIES
 	DEBUG_POSTFIX "-d"
 )
+
+# Install stuff
+install(TARGETS SGL
+        EXPORT SGLTargets
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+        LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+)
+
+install(DIRECTORY src/
+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+        FILES_MATCHING PATTERN "*.h" PATTERN "LICENSE.txt"
+)
+
+include(CMakePackageConfigHelpers)
+
+configure_package_config_file(
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMake/SGLConfig.cmake.in
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfig.cmake
+        INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SGL
+)
+
+write_basic_package_version_file(
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfigVersion.cmake
+        VERSION 1.0.0
+        COMPATIBILITY SameMajorVersion
+)
+
+install(FILES
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfig.cmake
+        ${CMAKE_CURRENT_BINARY_DIR}/SGLConfigVersion.cmake
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SGL
+)
+
+install(EXPORT SGLTargets
+        FILE SGLTargets.cmake
+        NAMESPACE SGL::
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/SGL
+)
+
+get_filename_component(SGL_VCPKG_TRIPLET_DIR "${SDL3_DIR}/../.." ABSOLUTE)
+
+install(DIRECTORY
+        ${SGL_VCPKG_TRIPLET_DIR}/share/sdl3
+        ${SGL_VCPKG_TRIPLET_DIR}/share/glm
+        ${SGL_VCPKG_TRIPLET_DIR}/share/slang
+        DESTINATION share
+)
+
+install(DIRECTORY ${SGL_VCPKG_TRIPLET_DIR}/include/SDL3 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${SGL_VCPKG_TRIPLET_DIR}/include/glm DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+file(GLOB SGL_VCPKG_SLANG_HEADERS ${SGL_VCPKG_TRIPLET_DIR}/include/slang*.h)
+install(FILES ${SGL_VCPKG_SLANG_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+foreach(SGL_VCPKG_CFG_DIR "" "debug/")
+    file(GLOB SGL_VCPKG_LIBS
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/SDL3.lib
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/glm.lib
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/slang*.lib
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}lib/gfx.lib
+    )
+    if(SGL_VCPKG_LIBS)
+        install(FILES ${SGL_VCPKG_LIBS} DESTINATION ${SGL_VCPKG_CFG_DIR}${CMAKE_INSTALL_LIBDIR})
+    endif()
+
+    file(GLOB SGL_VCPKG_DLLS
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}bin/SDL3.dll
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}bin/slang*.dll
+            ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}bin/gfx.dll
+    )
+    if(SGL_VCPKG_DLLS)
+        install(FILES ${SGL_VCPKG_DLLS} DESTINATION ${SGL_VCPKG_CFG_DIR}${CMAKE_INSTALL_BINDIR})
+    endif()
+
+    file(GLOB SGL_VCPKG_TOOLS ${SGL_VCPKG_TRIPLET_DIR}/${SGL_VCPKG_CFG_DIR}tools/shader-slang/*.exe)
+    if(SGL_VCPKG_TOOLS)
+        install(FILES ${SGL_VCPKG_TOOLS} DESTINATION ${SGL_VCPKG_CFG_DIR}tools/shader-slang)
+    endif()
+endforeach()

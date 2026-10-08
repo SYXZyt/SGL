@@ -11,6 +11,10 @@ std::queue<gluint> gVaoDeleteQueue;
 std::queue<gluint> gVboDeleteQueue;
 std::queue<gluint> gEboDeleteQueue;
 std::queue<gluint> gShaderDeleteQueue;
+std::queue<gluint> gTextureDeleteQueue;
+std::queue<gluint> gFramebufferDeleteQueue;
+std::queue<gluint> gBufferDeleteQueue;
+std::queue<gluint> gSamplerDeleteQueue;
 
 void sgl_OpenGLThreadSync_DeleteVAO(gluint id)
 {
@@ -34,6 +38,30 @@ void sgl_OpenGLThreadSync_DeleteShader(gluint id)
 {
     guard;
     gShaderDeleteQueue.push(id);
+}
+
+void sgl_OpenGLThreadSync_DeleteTexture(gluint id)
+{
+    guard;
+    gTextureDeleteQueue.push(id);
+}
+
+void sgl_OpenGLThreadSync_DeleteFramebuffer(gluint id)
+{
+    guard;
+    gFramebufferDeleteQueue.push(id);
+}
+
+void sgl_OpenGLThreadSync_DeleteBuffer(gluint id)
+{
+    guard;
+    gBufferDeleteQueue.push(id);
+}
+
+void sgl_OpenGLThreadSync_DeleteSampler(gluint id)
+{
+    guard;
+    gSamplerDeleteQueue.push(id);
 }
 
 void sgl_OpenGLThreadSync_Update()
@@ -66,5 +94,33 @@ void sgl_OpenGLThreadSync_Update()
         gluint id = gShaderDeleteQueue.front();
         gShaderDeleteQueue.pop();
         glDeleteShader(id);
+    }
+
+    while (!gTextureDeleteQueue.empty())
+    {
+        gluint id = gTextureDeleteQueue.front();
+        gTextureDeleteQueue.pop();
+        glDeleteTextures(1, &id);
+    }
+
+    while (!gFramebufferDeleteQueue.empty())
+    {
+        gluint id = gFramebufferDeleteQueue.front();
+        gFramebufferDeleteQueue.pop();
+        glDeleteFramebuffers(1, &id);
+    }
+
+    while (!gBufferDeleteQueue.empty())
+    {
+        gluint id = gBufferDeleteQueue.front();
+        gBufferDeleteQueue.pop();
+        glDeleteBuffers(1, &id);
+    }
+
+    while (!gSamplerDeleteQueue.empty())
+    {
+        gluint id = gSamplerDeleteQueue.front();
+        gSamplerDeleteQueue.pop();
+        glDeleteSamplers(1, &id);
     }
 }

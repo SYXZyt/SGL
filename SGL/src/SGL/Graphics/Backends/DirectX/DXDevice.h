@@ -14,6 +14,7 @@ typedef struct sgl_DXDevice sgl_sealed
     ID3D11DeviceContext* ctx;
     IDXGISwapChain* swapchain;
     ID3D11SamplerState* sampler;
+    ID3D11SamplerState* postProSampler;
 
     ID3D11Texture2D* sceneTexture;
     ID3D11RenderTargetView* sceneRtv;
@@ -23,13 +24,18 @@ typedef struct sgl_DXDevice sgl_sealed
     ID3D11DepthStencilView* sceneDsv;
     ID3D11DepthStencilState* depthStencilState;
     ID3D11DepthStencilState* depthStencilDisabledState;
+    ID3D11DepthStencilState* depthStencilReadOnlyState;
 
     ID3D11RasterizerState* rasterState;
     ID3D11RasterizerState* postProState;
 
+    ID3D11BlendState* spriteBlendState;
+
     sgl_Shader* blitShader;
 
     ID3D11RenderTargetView* backBufferRtv;
+
+    size_t boundTextureCount;
 } sgl_DXDevice;
 
 /// @brief Create a new DirectX device
