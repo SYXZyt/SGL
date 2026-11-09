@@ -45,6 +45,8 @@ SGL_API extern float sgl_Maths_Sqrt(float x);
 #define sgl_Maths_Normalise(f, min, max) ((f) - (min)) / ((max) - (min))
 #define sgl_Maths_IsNan(f) ((f) != (f))
 
+#define sgl_Maths_Sign(f) (((f) > 0) - ((f) < 0))
+
 SGL_API extern float sgl_Maths_Sin(float f);
 SGL_API extern float sgl_Maths_SinRange(float f, float min, float max);
 
@@ -190,74 +192,79 @@ namespace sgl
 
         static inline const float& EPS = sgl_Maths_EPS;
         static inline const float& INF = sgl_Maths_INF;
-        static inline const float NegInf = sgl_Maths_NEG_INF;
+        static inline const float NEG_INF = sgl_Maths_NEG_INF;
         // Named NaN (not NAN) since <cmath>/<math.h> may already define NAN as a macro
         static inline const float& NaN = sgl_Maths_NAN;
 
         template<typename T>
-        static bool IsPowerOfTwo(T x) {
+        static constexpr bool IsPowerOfTwo(T x) {
             return x > 0 && (x & (x - 1)) == 0;
         }
 
         template<typename T>
-        static T Sq(T x) {
+        static constexpr T Sq(T x) {
             return x * x;
         }
 
-        static bool IsMultiple(int value, int multiple) {
+        static constexpr bool IsMultiple(int value, int multiple) {
             return value % multiple == 0;
         }
 
         template<typename T>
-        static T Lerp(T a, T b, float t) {
+        static constexpr T Lerp(T a, T b, float t) {
             return a * (1.f - t) + b * t;
         }
 
         template<typename T>
-        static T Min(T a, T b) {
+        static constexpr T Min(T a, T b) {
             return a < b ? a : b;
         }
 
         template<typename T>
-        static T Max(T a, T b) {
+        static constexpr T Max(T a, T b) {
             return a > b ? a : b;
         }
 
         template<typename T>
-        static T Clamp(T value, T min, T max) {
+        static constexpr T Clamp(T value, T min, T max) {
             return Max(min, Min(max, value));
         }
 
         template<typename T>
-        static T Abs(T f) {
+        static constexpr T Abs(T f) {
             return f < 0 ? -f : f;
         }
 
         template<typename T>
-        static T Copysign(T f, T sign) {
+        static constexpr T Copysign(T f, T sign) {
             return sign < 0 ? -Abs(f) : Abs(f);
         }
 
-        static float Trunc(float f) {
+        static constexpr float Trunc(float f) {
             return sgl_Maths_Trunc(f);
         }
 
-        static float Rad(float deg) {
+        static constexpr float Rad(float deg) {
             return deg * sgl_Maths_DEG2RAD;
         }
 
-        static float Deg(float rad) {
+        static constexpr float Deg(float rad) {
             return rad * sgl_Maths_RAD2DEG;
         }
 
         template<typename T>
-        static T Normalise(T f, T min, T max) {
+        static constexpr T Normalise(T f, T min, T max) {
             return (f - min) / (max - min);
         }
 
         template<typename T>
-        static bool IsNan(T f) {
+        static constexpr bool IsNan(T f) {
             return f != f;
+        }
+
+        template <typename T>
+        static constexpr int Sign(T t) {
+            return (t > T(0)) - (t < T(0));
         }
 
         static float Sqrt(float f) { return sgl_Maths_Sqrt(f); }
