@@ -6,6 +6,7 @@
 #include <vector>
 #include <SGL/Util/Memory.h>
 #include <SGL/Graphics/PostProcess.h>
+#include <SGL/Graphics/Framebuffer.h>
 
 static std::vector<sgl_PostProcess*>& GetEffectList(void* ptr) {
     return *((std::vector<sgl_PostProcess*>*)ptr);
@@ -87,10 +88,10 @@ sgl_GraphicsDevice* sgl_GraphicsDevice_Create(sgl_Window* window)
     // DirectX wants the Y uv flipping, otherwise each effect will cause the next buffer to flip
     if (window->cfg.backend == sgl_Backend_DIRECTX11)
     {
-        tl.uv.y *= -1;
-        tr.uv.y *= -1;
-        bl.uv.y *= -1;
-        br.uv.y *= -1;
+        tl.uv.y = 1.0f - tl.uv.y;
+        tr.uv.y = 1.0f - tr.uv.y;
+        bl.uv.y = 1.0f - bl.uv.y;
+        br.uv.y = 1.0f - br.uv.y;
     }
 
     sgl_VertexArray_Quad q = { .tl = &tl, .tr = &tr, .bl = &bl, .br = &br };
@@ -189,6 +190,25 @@ void sgl_GraphicsDevice_SetVsync(sgl_GraphicsDevice* device, bool enable)
 
 void sgl_GraphicsDevice_SetScissor(sgl_GraphicsDevice* device, bool enabled, sgl_Vec2i position, sgl_Vec2i size) {
     device->vtable->SetScissor(device, enabled, position, size);
+}
+
+void sgl_GraphicsDevice_SetSceneScale(sgl_GraphicsDevice* device, int scale)
+{
+    scale = scale < 1 ? 1 : scale;
+
+    if (device->sceneScale == scale)
+        return;
+
+    device->sceneScale = scale;
+    sgl_Framebuffer_Resize(device->sceneFramebuffer, { (int)(device->width / (uint32)scale), (int)(device->height / (uint32)scale) });
+}
+
+int sgl_GraphicsDevice_GetSceneScale(sgl_GraphicsDevice* device) {
+    return device->sceneScale;
+}
+
+sgl_Vec2i sgl_GraphicsDevice_GetSceneSize(sgl_GraphicsDevice* device) {
+    return sgl_Framebuffer_GetSize(device->sceneFramebuffer);
 }
 
 void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device) {

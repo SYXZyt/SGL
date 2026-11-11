@@ -11,7 +11,9 @@ struct sgl_VertexArray;
 struct sgl_Shader;
 struct sgl_UniformBuffer;
 struct sgl_Texture;
+struct sgl_Sampler;
 struct sgl_PostProcess;
+struct sgl_Framebuffer;
 
 struct sgl_GraphicsDevice;
 typedef struct sgl_GraphicsDeviceVTable sgl_sealed
@@ -28,6 +30,7 @@ typedef struct sgl_GraphicsDeviceVTable sgl_sealed
     void (*DrawInstanced)(struct sgl_GraphicsDevice* self, struct sgl_VertexArray* va, struct sgl_Shader* shader, struct sgl_Texture** textures, size_t textureCount, struct sgl_UniformBuffer** buffers, size_t bufferCount, uint32 instanceCount);
     void (*SetVsync)(struct sgl_GraphicsDevice* self, bool enable);
     void (*SetScissor)(struct sgl_GraphicsDevice* self, bool enabled, sgl_Vec2i position, sgl_Vec2i size);
+    void (*BindBackbuffer)(struct sgl_GraphicsDevice* self);
 
     void (*ImGui_Init)(struct sgl_GraphicsDevice* self);
     void (*ImGui_Shutdown)(struct sgl_GraphicsDevice* self);
@@ -43,9 +46,11 @@ typedef struct sgl_GraphicsDevice sgl_sealed
     sgl_Window* window;
     struct sgl_VertexArray* screenQuad;
     struct sgl_VertexLayout* screenQuadLayout;
+    struct sgl_Framebuffer* sceneFramebuffer;
     sgl_Colour clearColour;
     uint32 width;
     uint32 height;
+    int sceneScale;
     bool depthTestEnabled;
     bool depthWriteEnabled;
     bool vsync;
@@ -145,6 +150,21 @@ SGL_API extern void sgl_GraphicsDevice_SetVsync(sgl_GraphicsDevice* device, bool
 /// @param position The top-left screen coord
 /// @param size How large the scissor rect should be
 SGL_API extern void sgl_GraphicsDevice_SetScissor(sgl_GraphicsDevice* device, bool enabled, sgl_Vec2i position, sgl_Vec2i size);
+
+/// @brief Set the scale of the scene target. Resizes an off-screen target, rather than the backbuffer
+/// @param device The device to set the scale for
+/// @param scale The scale factor
+SGL_API extern void sgl_GraphicsDevice_SetSceneScale(sgl_GraphicsDevice* device, int scale);
+
+/// @brief Get the current scale of the scene target
+/// @param device The device to get the target of
+/// @return The scale factor
+SGL_API extern int sgl_GraphicsDevice_GetSceneScale(sgl_GraphicsDevice* device);
+
+/// @brief Get the size of the scene target
+/// @param device The device to get the target of
+/// @return The size in pixels
+SGL_API extern sgl_Vec2i sgl_GraphicsDevice_GetSceneSize(sgl_GraphicsDevice* device);
 
 SGL_API extern void sgl_GraphicsDevice_ImGui_Init(sgl_GraphicsDevice* device);
 SGL_API extern void sgl_GraphicsDevice_ImGui_Shutdown(sgl_GraphicsDevice* device);

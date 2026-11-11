@@ -5,23 +5,16 @@
 
 SGL_BEGIN
 
-struct sgl_PostProcess;
-
-typedef struct sgl_PostProcessVTable sgl_sealed
-{
-    void (*Destroy)(struct sgl_PostProcess* self);
-    void (*Bind)(struct sgl_PostProcess* self);
-    void (*OnResize)(struct sgl_PostProcess* self);
-} sgl_PostProcessVTable;
-
 struct sgl_UniformBuffer;
+struct sgl_Framebuffer;
+struct sgl_Texture;
 
 /// @brief A post processing effect
 typedef struct sgl_PostProcess sgl_sealed
 {
-    const sgl_PostProcessVTable* vtable;
     sgl_GraphicsDevice* gpu;
     sgl_Shader* shader;
+    struct sgl_Framebuffer* target;
     bool enabled;
     struct sgl_UniformBuffer** uniforms;
     size_t uniformCount;
@@ -42,12 +35,20 @@ SGL_API extern void sgl_PostProcess_AddUniformBuffer(sgl_PostProcess* pp, struct
 /// @param pp The effect to get the shader of
 SGL_API extern sgl_Shader* sgl_PostProcess_GetShader(sgl_PostProcess* pp);
 
+/// @brief The offscreen render target this effect draws into
+/// @param pp The effect to use
+SGL_API extern struct sgl_Framebuffer* sgl_PostProcess_GetTarget(sgl_PostProcess* pp);
+
+/// @brief The texture produced by the effect
+/// @param pp The effect to use
+SGL_API extern struct sgl_Texture* sgl_PostProcess_GetTexture(sgl_PostProcess* pp);
+
 /// @brief Bind a post processing effect
 /// @param pp The effect to bind
 SGL_API extern void sgl_PostProcess_Bind(sgl_PostProcess* pp);
 
-/// @brief Resize the internal texture of a post processing effect (DO NOT CALL. The graphics device will automatically call this)
-/// @param pp 
+/// @brief Resize the internal target of a post processing effect (DO NOT CALL. The graphics device will automatically call this)
+/// @param pp
 SGL_API extern void sgl_PostProcess_OnResize(sgl_PostProcess* pp);
 
 /// @brief Destroy a post processing effect

@@ -6,10 +6,13 @@
 #include <SGL/Graphics/Shader.h>
 #include <SGL/Graphics/UniformBuffer.h>
 #include <SGL/Graphics/Texture2D.h>
-#include <SGL/Graphics/Backends/DirectX/DXPostProcess.h>
+#include <SGL/Graphics/Framebuffer.h>
+#include <SGL/Graphics/PostProcess.h>
+#include <SGL/Graphics/Backends/DirectX/DXFramebuffer.h>
 #include <SGL/Util/Logger.h>
 #include <SGL/Util/Error.h>
 #include <sstream>
+#include <algorithm>
 #include <wrl/client.h>
 #include <dxgi.h>
 #include <imgui.h>
@@ -166,13 +169,6 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     TryRelease(self->backBufferRtv);
 
-    TryRelease(self->sceneSrv);
-    TryRelease(self->sceneRtv);
-    TryRelease(self->sceneTexture);
-
-    TryRelease(self->sceneDsv);
-    TryRelease(self->sceneDepthTexture);
-
     HRESULT hr = self->swapchain->ResizeBuffers(
         0,
         dev->width,
@@ -189,77 +185,8 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     RecreateBackbuffer(self);
 
-    D3D11_TEXTURE2D_DESC sceneDesc = {};
-    sceneDesc.Width = dev->width;
-    sceneDesc.Height = dev->height;
-    sceneDesc.MipLevels = 1;
-    sceneDesc.ArraySize = 1;
-    sceneDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-    sceneDesc.SampleDesc.Count = 1;
-    sceneDesc.Usage = D3D11_USAGE_DEFAULT;
-    sceneDesc.BindFlags =
-        D3D11_BIND_RENDER_TARGET |
-        D3D11_BIND_SHADER_RESOURCE;
-
-    hr = self->device->CreateTexture2D(
-        &sceneDesc,
-        nullptr,
-        &self->sceneTexture
-    );
-
-    if (FAILED(hr))
-    {
-        ReportHRError("Failed to create scene texture", hr);
-        return;
-    }
-
-    hr = self->device->CreateRenderTargetView(
-        self->sceneTexture,
-        nullptr,
-        &self->sceneRtv
-    );
-
-    if (FAILED(hr))
-    {
-        ReportHRError("Failed to create scene RTV", hr);
-        return;
-    }
-
-    hr = self->device->CreateShaderResourceView(
-        self->sceneTexture,
-        nullptr,
-        &self->sceneSrv
-    );
-
-    if (FAILED(hr))
-    {
-        ReportHRError("Failed to create scene SRV", hr);
-        return;
-    }
-
-    D3D11_TEXTURE2D_DESC depthDesc = {};
-    depthDesc.Width = dev->width;
-    depthDesc.Height = dev->height;
-    depthDesc.MipLevels = 1;
-    depthDesc.ArraySize = 1;
-    depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-    depthDesc.SampleDesc.Count = 1;
-    depthDesc.Usage = D3D11_USAGE_DEFAULT;
-    depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-
-    hr = self->device->CreateTexture2D(&depthDesc, nullptr, &self->sceneDepthTexture);
-    if (FAILED(hr))
-    {
-        ReportHRError("Failed to create scene depth texture", hr);
-        return;
-    }
-
-    hr = self->device->CreateDepthStencilView(self->sceneDepthTexture, nullptr, &self->sceneDsv);
-    if (FAILED(hr))
-    {
-        ReportHRError("Failed to create scene DSV", hr);
-        return;
-    }
+    int scale = dev->sceneScale < 1 ? 1 : dev->sceneScale;
+    sgl_Framebuffer_Resize(dev->sceneFramebuffer, { (int)(dev->width / (uint32)scale), (int)(dev->height / (uint32)scale) });
 
     D3D11_VIEWPORT viewport =
     {
@@ -279,17 +206,17 @@ static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
 {
     GetSelf;
 
-    self->ctx->OMSetRenderTargets(1, &self->sceneRtv, self->sceneDsv);
-
-    self->ctx->ClearRenderTargetView(
-        self->sceneRtv,
-        &dev->clearColour.r
-    );
-
-    self->ctx->ClearDepthStencilView(self->sceneDsv, D3D11_CLEAR_DEPTH, 1.0f, 0);
+    sgl_Framebuffer_Bind(dev->sceneFramebuffer);
+    sgl_Framebuffer_Clear(dev->sceneFramebuffer, dev->clearColour);
 
     float blendFactor[4] = { 0, 0, 0, 0 };
     self->ctx->OMSetBlendState(self->spriteBlendState, blendFactor, 0xffffffff);
+}
+
+static void DXDevice_BindBackbuffer(sgl_GraphicsDevice* dev)
+{
+    GetSelf;
+    self->ctx->OMSetRenderTargets(1, &self->backBufferRtv, nullptr);
 }
 
 static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
@@ -297,28 +224,32 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
     GetSelf;
 
     self->ctx->OMSetBlendState(nullptr, nullptr, 0xffffffff);
-
     self->ctx->RSSetState(self->postProState);
+
+    D3D11_VIEWPORT fullViewport =
+    {
+        .Width = (FLOAT)dev->width,
+        .Height = (FLOAT)dev->height,
+        .MinDepth = 0.0f,
+        .MaxDepth = 1.0f,
+    };
+
+    self->ctx->RSSetViewports(1, &fullViewport);
 
     sgl_PostProcess** effects;
     size_t effectCount = sgl_GraphicsDevice_GetEffects(dev, &effects);
 
-    ID3D11ShaderResourceView* currentSrv = self->sceneSrv;
-
-    self->ctx->PSSetSamplers(0, 1, &self->postProSampler);
+    sgl_Texture* currentTexture = sgl_Framebuffer_GetTexture(dev->sceneFramebuffer);
 
     for (size_t i = 0; i < effectCount; ++i)
     {
-        sgl_DXPostProcess* effect = (sgl_DXPostProcess*)effects[i];
+        sgl_PostProcess* effect = effects[i];
 
-        if (!effect->base.enabled)
+        if (!sgl_PostProcess_GetEnabled(effect))
             continue;
 
-        self->ctx->OMSetRenderTargets(1, &effect->renderTargetView, nullptr);
-
-        sgl_PostProcess_Bind(effects[i]);
-
-        self->ctx->PSSetShaderResources(0, 1, &currentSrv);
+        sgl_PostProcess_Bind(effect);
+        sgl_Texture_Bind(currentTexture, 0);
 
         sgl_VertexArray_Bind(dev->screenQuad);
 
@@ -327,22 +258,22 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
         ID3D11ShaderResourceView* nullSrv = nullptr;
         self->ctx->PSSetShaderResources(0, 1, &nullSrv);
 
-        currentSrv = effect->shaderResourceView;
+        currentTexture = sgl_PostProcess_GetTexture(effect);
     }
 
-    self->ctx->PSSetSamplers(0, 1, &self->sampler);
-
-    self->ctx->OMSetRenderTargets(1, &self->backBufferRtv, nullptr);
+    dev->vtable->BindBackbuffer(dev);
     sgl_Shader_Bind(self->blitShader);
-    self->ctx->PSSetShaderResources(0, 1, &currentSrv);
+    sgl_Texture_Bind(currentTexture, 0);
     sgl_VertexArray_Bind(dev->screenQuad);
 
     self->ctx->Draw(dev->screenQuad->vertexCount, 0);
 
     ID3D11ShaderResourceView* nullSrv = nullptr;
     self->ctx->PSSetShaderResources(0, 1, &nullSrv);
-
     self->ctx->RSSetState(self->rasterState);
+
+    float blendFactor[4] = { 0, 0, 0, 0 };
+    self->ctx->OMSetBlendState(self->spriteBlendState, blendFactor, 0xffffffff);
 }
 
 static void DXDevice_SwapBuffer(sgl_GraphicsDevice* dev)
@@ -355,17 +286,12 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
 {
     GetSelf;
 
+    sgl_Framebuffer_Destroy(dev->sceneFramebuffer);
+
     TryRelease(self->backBufferRtv);
     TryRelease(self->ctx);
     TryRelease(self->device);
     TryRelease(self->swapchain);
-    TryRelease(self->sampler);
-    TryRelease(self->postProSampler);
-    TryRelease(self->sceneRtv);
-    TryRelease(self->sceneSrv);
-    TryRelease(self->sceneTexture);
-    TryRelease(self->sceneDsv);
-    TryRelease(self->sceneDepthTexture);
     TryRelease(self->depthStencilState);
     TryRelease(self->depthStencilDisabledState);
     TryRelease(self->depthStencilReadOnlyState);
@@ -519,6 +445,7 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .DrawInstanced = &DXDevice_DrawInstanced,
     .SetVsync = &DXDevice_SetVSync,
     .SetScissor = &DXDevice_SetScissor,
+    .BindBackbuffer = &DXDevice_BindBackbuffer,
 
     .ImGui_Init = &DXDevice_ImGui_Init,
     .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
@@ -595,59 +522,8 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
 
 #pragma region Framebuffer
     {
-        D3D11_TEXTURE2D_DESC desc = {};
-        desc.Width = device->base.width;
-        desc.Height = device->base.height;
-        desc.MipLevels = 1;
-        desc.ArraySize = 1;
-        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        desc.SampleDesc.Count = 1;
-        desc.Usage = D3D11_USAGE_DEFAULT;
-        desc.BindFlags =
-            D3D11_BIND_RENDER_TARGET |
-            D3D11_BIND_SHADER_RESOURCE;
-
-        device->device->CreateTexture2D(
-            &desc,
-            nullptr,
-            &device->sceneTexture
-        );
-
-        device->device->CreateRenderTargetView(
-            device->sceneTexture,
-            nullptr,
-            &device->sceneRtv
-        );
-
-        device->device->CreateShaderResourceView(
-            device->sceneTexture,
-            nullptr,
-            &device->sceneSrv
-        );
-
-        D3D11_TEXTURE2D_DESC depthDesc = {};
-        depthDesc.Width = device->base.width;
-        depthDesc.Height = device->base.height;
-        depthDesc.MipLevels = 1;
-        depthDesc.ArraySize = 1;
-        depthDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-        depthDesc.SampleDesc.Count = 1;
-        depthDesc.Usage = D3D11_USAGE_DEFAULT;
-        depthDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-
-        hr = device->device->CreateTexture2D(&depthDesc, nullptr, &device->sceneDepthTexture);
-        if (FAILED(hr))
-        {
-            ReportHRError("Failed to create scene depth texture", hr);
-            return device;
-        }
-
-        hr = device->device->CreateDepthStencilView(device->sceneDepthTexture, nullptr, &device->sceneDsv);
-        if (FAILED(hr))
-        {
-            ReportHRError("Failed to create scene DSV", hr);
-            return device;
-        }
+        device->base.sceneScale = 1;
+        device->base.sceneFramebuffer = sgl_Framebuffer_Create((sgl_GraphicsDevice*)device, { (int)device->base.width, (int)device->base.height }, true);
 
         D3D11_DEPTH_STENCIL_DESC depthStateDesc = {};
         depthStateDesc.DepthEnable = true;
@@ -710,36 +586,6 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
     float blendFactor[4] = { 0, 0, 0, 0 };
     device->ctx->OMSetBlendState(device->spriteBlendState, blendFactor, 0xffffffff);
 
-#pragma endregion
-
-#pragma region Sampler State
-    D3D11_SAMPLER_DESC sampDesc{};
-    sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
-    sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-    sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-    sampDesc.MinLOD = 0;
-    sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-
-    hr = device->device->CreateSamplerState(&sampDesc, &device->sampler);
-    if (FAILED(hr))
-    {
-        ReportHRError("Failed to create sampler state", hr);
-        return device;
-    }
-
-    device->ctx->PSSetSamplers(0, 1, &device->sampler);
-
-    D3D11_SAMPLER_DESC postProSampDesc = sampDesc;
-    postProSampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-
-    hr = device->device->CreateSamplerState(&postProSampDesc, &device->postProSampler);
-    if (FAILED(hr))
-    {
-        ReportHRError("Failed to create post-process sampler state", hr);
-        return device;
-    }
 #pragma endregion
 
     device->blitShader = sgl_Shader_Create((sgl_GraphicsDevice*)device, screenQuadLayout);

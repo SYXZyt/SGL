@@ -7,9 +7,6 @@ SGL_BEGIN
 typedef struct sgl_GLDevice sgl_sealed
 {
     sgl_GraphicsDevice base;
-    gluint sceneFBO;
-    gluint sceneTexture;
-    gluint sceneDepth;
 } sgl_GLDevice;
 
 /// @brief Create an OpenGL graphics device

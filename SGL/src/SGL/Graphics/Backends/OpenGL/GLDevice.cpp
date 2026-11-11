@@ -10,7 +10,9 @@
 #include <SGL/Graphics/UniformBuffer.h>
 #include <backends/imgui_impl_opengl3.h>
 #include <backends/imgui_impl_sdl3.h>
-#include <SGL/Graphics/Backends/OpenGL/GLPostProcess.h>
+#include <SGL/Graphics/Framebuffer.h>
+#include <SGL/Graphics/PostProcess.h>
+#include <SGL/Graphics/Backends/OpenGL/GLFramebuffer.h>
 #include <SGL/Graphics/Backends/OpenGL/OpenGLThreadSync.h>
 
 template <typename T>
@@ -40,8 +42,6 @@ static void GLDevice_SetDepthWriteEnabled(sgl_GraphicsDevice* dev, bool enabled)
 
 static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 {
-    GetSelf;
-
     if (newSize.width <= 0 || newSize.height <= 0)
         return;
 
@@ -50,86 +50,57 @@ static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
 
     glViewport(0, 0, dev->width, dev->height);
 
-    glDeleteTextures(1, &self->sceneTexture);
-    glDeleteTextures(1, &self->sceneDepth);
+    int scale = dev->sceneScale < 1 ? 1 : dev->sceneScale;
+    sgl_Framebuffer_Resize(dev->sceneFramebuffer, { (int)(dev->width / (uint32)scale), (int)(dev->height / (uint32)scale) });
+}
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &self->sceneTexture);
-    glTextureStorage2D(
-        self->sceneTexture,
-        1,
-        GL_RGBA8,
-        (GLsizei)dev->width,
-        (GLsizei)dev->height
-    );
-
-    glNamedFramebufferTexture(
-        self->sceneFBO,
-        GL_COLOR_ATTACHMENT0,
-        self->sceneTexture,
-        0
-    );
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &self->sceneDepth);
-    glTextureStorage2D(
-        self->sceneDepth,
-        1,
-        GL_DEPTH_COMPONENT24,
-        (GLsizei)dev->width,
-        (GLsizei)dev->height
-    );
-
-    glNamedFramebufferTexture(
-        self->sceneFBO,
-        GL_DEPTH_ATTACHMENT,
-        self->sceneDepth,
-        0
-    );
+static void GLDevice_BindBackbuffer(sgl_GraphicsDevice* dev) {
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 static void GLDevice_BeginFrame(sgl_GraphicsDevice* dev)
 {
-    GetSelf;
-    glBindFramebuffer(GL_FRAMEBUFFER, self->sceneFBO);
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    sgl_Framebuffer_Bind(dev->sceneFramebuffer);
+    sgl_Framebuffer_Clear(dev->sceneFramebuffer, dev->clearColour);
 }
 
 static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
 {
-    GetSelf;
-
     sgl_PostProcess** effects;
     size_t effectCount = sgl_GraphicsDevice_GetEffects(dev, &effects);
 
-    gluint currentTexture = self->sceneTexture;
-    gluint currentFbo = self->sceneFBO;
+    sgl_Framebuffer* currentFramebuffer = dev->sceneFramebuffer;
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
 
+    glViewport(0, 0, (GLsizei)dev->width, (GLsizei)dev->height);
+
     for (size_t i = 0; i < effectCount; ++i)
     {
-        sgl_GLPostProcess* effect = (sgl_GLPostProcess*)effects[i];
+        sgl_PostProcess* effect = effects[i];
 
-        if (!effect->base.enabled)
+        if (!sgl_PostProcess_GetEnabled(effect))
             continue;
 
-        sgl_PostProcess_Bind((sgl_PostProcess*)effect);
+        sgl_PostProcess_Bind(effect);
         sgl_VertexArray_Bind(dev->screenQuad);
-        glBindTextureUnit(0, currentTexture);
+        sgl_Texture_Bind(sgl_Framebuffer_GetTexture(currentFramebuffer), 0);
 
         glDrawArrays(GL_TRIANGLES, 0, dev->screenQuad->vertexCount);
 
-        currentTexture = effect->texture;
-        currentFbo = effect->framebuffer;
+        currentFramebuffer = sgl_PostProcess_GetTarget(effect);
     }
 
-    glBindFramebuffer(GL_READ_FRAMEBUFFER, currentFbo);
+    sgl_Vec2i sourceSize = sgl_Framebuffer_GetSize(currentFramebuffer);
+    gluint sourceFbo = ((sgl_GLFramebuffer*)currentFramebuffer)->fbo;
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
     glBlitFramebuffer(
         0, 0,
-        dev->width, dev->height,
+        sourceSize.width, sourceSize.height,
         0, 0,
         dev->width, dev->height,
         GL_COLOR_BUFFER_BIT,
@@ -153,6 +124,8 @@ static void GLDevice_SwapBuffer(sgl_GraphicsDevice* dev) {
 static void GLDevice_Destroy(sgl_GraphicsDevice* dev)
 {
     GetSelf;
+
+    sgl_Framebuffer_Destroy(dev->sceneFramebuffer);
 
     sgl::Memory::Delete(self);
 }
@@ -264,6 +237,7 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
     .DrawInstanced = &GLDevice_DrawInstanced,
     .SetVsync = &GLDevice_SetVsync,
     .SetScissor = &GLDevice_SetScissor,
+    .BindBackbuffer = &GLDevice_BindBackbuffer,
 
     .ImGui_Init = &GLDevice_ImGui_Init,
     .ImGui_Shutdown = &GLDevice_ImGui_Shutdown,
@@ -292,15 +266,8 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    glCreateTextures(GL_TEXTURE_2D, 1, &device->sceneTexture);
-    glTextureStorage2D(device->sceneTexture, 1, GL_RGBA8, (GLsizei)window->screenSize.width, (GLsizei)window->screenSize.height);
-
-    glCreateTextures(GL_TEXTURE_2D, 1, &device->sceneDepth);
-    glTextureStorage2D(device->sceneDepth, 1, GL_DEPTH_COMPONENT24, (GLsizei)window->screenSize.width, (GLsizei)window->screenSize.height);
-
-    glCreateFramebuffers(1, &device->sceneFBO);
-    glNamedFramebufferTexture(device->sceneFBO, GL_COLOR_ATTACHMENT0, device->sceneTexture, 0);
-    glNamedFramebufferTexture(device->sceneFBO, GL_DEPTH_ATTACHMENT, device->sceneDepth, 0);
+    device->base.sceneScale = 1;
+    device->base.sceneFramebuffer = sgl_Framebuffer_Create((sgl_GraphicsDevice*)device, { (int)device->base.width, (int)device->base.height }, true);
 
     std::stringstream ss;
 
