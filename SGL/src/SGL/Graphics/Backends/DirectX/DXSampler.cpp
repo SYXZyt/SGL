@@ -19,6 +19,7 @@ static void DXEnsureGPUResources(sgl_DXSampler* self)
     self->base.gpuLoaded = true;
 
     D3D11_SAMPLER_DESC desc = {};
+    bool nearest = self->base.filter != sgl_TextureFilter_LINEAR;
 
     switch (self->base.filter)
     {
@@ -48,7 +49,7 @@ static void DXEnsureGPUResources(sgl_DXSampler* self)
     desc.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
     desc.MinLOD = 0;
-    desc.MaxLOD = D3D11_FLOAT32_MAX;
+    desc.MaxLOD = nearest ? 0.0f : D3D11_FLOAT32_MAX;
 
     sgl_DXDevice* dev = (sgl_DXDevice*)self->base.gpu;
     HRESULT hr = dev->device->CreateSamplerState(&desc, &self->samplerstate);

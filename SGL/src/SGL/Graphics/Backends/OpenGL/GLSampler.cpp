@@ -19,6 +19,7 @@ static void EnsureGLGPUResources(sgl_GLSampler* self)
         default:
             glSamplerParameteri(self->samplerId, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
             glSamplerParameteri(self->samplerId, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glSamplerParameterf(self->samplerId, GL_TEXTURE_MAX_LOD, 0.0f);
             break;
     }
 

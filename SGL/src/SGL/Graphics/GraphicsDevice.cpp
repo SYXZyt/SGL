@@ -200,7 +200,13 @@ void sgl_GraphicsDevice_SetSceneScale(sgl_GraphicsDevice* device, int scale)
         return;
 
     device->sceneScale = scale;
-    sgl_Framebuffer_Resize(device->sceneFramebuffer, { (int)(device->width / (uint32)scale), (int)(device->height / (uint32)scale) });
+    uint32 uscale = (uint32)scale;
+    uint32 w = (device->width + uscale - 1) / uscale;
+    uint32 h = (device->height + uscale - 1) / uscale;
+    w += (w & 1);
+    h += (h & 1);
+
+    sgl_Framebuffer_Resize(device->sceneFramebuffer, { (int)w, (int)h });
 }
 
 int sgl_GraphicsDevice_GetSceneScale(sgl_GraphicsDevice* device) {

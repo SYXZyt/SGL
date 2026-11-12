@@ -51,7 +51,13 @@ static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     glViewport(0, 0, dev->width, dev->height);
 
     int scale = dev->sceneScale < 1 ? 1 : dev->sceneScale;
-    sgl_Framebuffer_Resize(dev->sceneFramebuffer, { (int)(dev->width / (uint32)scale), (int)(dev->height / (uint32)scale) });
+    uint32 uscale = (uint32)scale;
+    uint32 w = (dev->width + uscale - 1) / uscale;
+    uint32 h = (dev->height + uscale - 1) / uscale;
+    w += (w & 1);
+    h += (h & 1);
+
+    sgl_Framebuffer_Resize(dev->sceneFramebuffer, { (int)w, (int)h });
 }
 
 static void GLDevice_BindBackbuffer(sgl_GraphicsDevice* dev) {
@@ -70,6 +76,7 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
     size_t effectCount = sgl_GraphicsDevice_GetEffects(dev, &effects);
 
     sgl_Framebuffer* currentFramebuffer = dev->sceneFramebuffer;
+    bool ranEffect = false;
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
@@ -90,6 +97,7 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
         glDrawArrays(GL_TRIANGLES, 0, dev->screenQuad->vertexCount);
 
         currentFramebuffer = sgl_PostProcess_GetTarget(effect);
+        ranEffect = true;
     }
 
     sgl_Vec2i sourceSize = sgl_Framebuffer_GetSize(currentFramebuffer);
@@ -98,11 +106,25 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
     glBindFramebuffer(GL_READ_FRAMEBUFFER, sourceFbo);
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 
+    int destX0 = 0, destY0 = 0, destX1 = dev->width, destY1 = dev->height;
+
+    if (!ranEffect)
+    {
+        int scale = dev->sceneScale < 1 ? 1 : dev->sceneScale;
+        int scaledWidth = sourceSize.width * scale;
+        int scaledHeight = sourceSize.height * scale;
+
+        destX0 = (dev->width - scaledWidth) / 2;
+        destY0 = (dev->height - scaledHeight) / 2;
+        destX1 = destX0 + scaledWidth;
+        destY1 = destY0 + scaledHeight;
+    }
+
     glBlitFramebuffer(
         0, 0,
         sourceSize.width, sourceSize.height,
-        0, 0,
-        dev->width, dev->height,
+        destX0, destY0,
+        destX1, destY1,
         GL_COLOR_BUFFER_BIT,
         GL_NEAREST
     );

@@ -186,7 +186,13 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     RecreateBackbuffer(self);
 
     int scale = dev->sceneScale < 1 ? 1 : dev->sceneScale;
-    sgl_Framebuffer_Resize(dev->sceneFramebuffer, { (int)(dev->width / (uint32)scale), (int)(dev->height / (uint32)scale) });
+    uint32 uscale = (uint32)scale;
+    uint32 w = (dev->width + uscale - 1) / uscale;
+    uint32 h = (dev->height + uscale - 1) / uscale;
+    w += (w & 1);
+    h += (h & 1);
+
+    sgl_Framebuffer_Resize(dev->sceneFramebuffer, { (int)w, (int)h });
 
     D3D11_VIEWPORT viewport =
     {
@@ -240,6 +246,7 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
     size_t effectCount = sgl_GraphicsDevice_GetEffects(dev, &effects);
 
     sgl_Texture* currentTexture = sgl_Framebuffer_GetTexture(dev->sceneFramebuffer);
+    bool ranEffect = false;
 
     for (size_t i = 0; i < effectCount; ++i)
     {
@@ -259,9 +266,29 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
         self->ctx->PSSetShaderResources(0, 1, &nullSrv);
 
         currentTexture = sgl_PostProcess_GetTexture(effect);
+        ranEffect = true;
     }
 
     dev->vtable->BindBackbuffer(dev);
+
+    if (!ranEffect)
+    {
+        sgl_Vec2i sceneSize = sgl_Framebuffer_GetSize(dev->sceneFramebuffer);
+        int scale = dev->sceneScale < 1 ? 1 : dev->sceneScale;
+
+        D3D11_VIEWPORT blitViewport =
+        {
+            .TopLeftX = ((FLOAT)dev->width - (FLOAT)sceneSize.width * scale) * 0.5f,
+            .TopLeftY = ((FLOAT)dev->height - (FLOAT)sceneSize.height * scale) * 0.5f,
+            .Width = (FLOAT)sceneSize.width * scale,
+            .Height = (FLOAT)sceneSize.height * scale,
+            .MinDepth = 0.0f,
+            .MaxDepth = 1.0f,
+        };
+
+        self->ctx->RSSetViewports(1, &blitViewport);
+    }
+
     sgl_Shader_Bind(self->blitShader);
     sgl_Texture_Bind(currentTexture, 0);
     sgl_VertexArray_Bind(dev->screenQuad);
@@ -271,6 +298,8 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
     ID3D11ShaderResourceView* nullSrv = nullptr;
     self->ctx->PSSetShaderResources(0, 1, &nullSrv);
     self->ctx->RSSetState(self->rasterState);
+
+    self->ctx->RSSetViewports(1, &fullViewport);
 
     float blendFactor[4] = { 0, 0, 0, 0 };
     self->ctx->OMSetBlendState(self->spriteBlendState, blendFactor, 0xffffffff);
