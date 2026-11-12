@@ -5,18 +5,22 @@
 #include <SGL/Graphics/Sampler.h>
 #include <SGL/Util/Error.h>
 
-sgl_Framebuffer* sgl_Framebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth)
+sgl_Framebuffer* sgl_Framebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth) {
+    return sgl_Framebuffer_CreateEx(device, size, hasDepth, sgl_FramebufferFormat_RGBA8, false);
+}
+
+sgl_Framebuffer* sgl_Framebuffer_CreateEx(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth, sgl_FramebufferFormat format, bool linearFilter)
 {
     sgl_Framebuffer* framebuffer = nullptr;
 
     if (device->window->cfg.backend == sgl_Backend_OPENGL)
     {
-        framebuffer = (sgl_Framebuffer*)sgl_GLFramebuffer_Create(device, size, hasDepth);
+        framebuffer = (sgl_Framebuffer*)sgl_GLFramebuffer_Create(device, size, hasDepth, format);
     }
     else if (device->window->cfg.backend == sgl_Backend_DIRECTX11)
     {
 #ifdef SGL_DIRECTX
-        framebuffer = (sgl_Framebuffer*)sgl_DXFramebuffer_Create(device, size, hasDepth);
+        framebuffer = (sgl_Framebuffer*)sgl_DXFramebuffer_Create(device, size, hasDepth, format);
 #else
         SGL_REPORT_ERROR("DirectX is not supported on this platform");
         return nullptr;
@@ -29,7 +33,7 @@ sgl_Framebuffer* sgl_Framebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i si
     }
 
     framebuffer->gpu = device;
-    framebuffer->colourTexture->sampler = sgl_Sampler_Create(device, sgl_TextureFilter_NEAREST, sgl_TextureClamp_EDGE);
+    framebuffer->colourTexture->sampler = sgl_Sampler_Create(device, linearFilter ? sgl_TextureFilter_LINEAR : sgl_TextureFilter_NEAREST, sgl_TextureClamp_EDGE);
 
     return framebuffer;
 }

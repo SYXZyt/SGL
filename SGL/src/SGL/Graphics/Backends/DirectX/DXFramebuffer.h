@@ -20,7 +20,7 @@ typedef struct sgl_DXFramebuffer sgl_sealed
 } sgl_DXFramebuffer;
 
 /// @brief Create a DirectX offscreen render target
-SGL_API extern sgl_DXFramebuffer* sgl_DXFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth);
+SGL_API extern sgl_DXFramebuffer* sgl_DXFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth, sgl_FramebufferFormat format);
 
 SGL_END
 

@@ -73,6 +73,17 @@ static void DX_ReleaseTargets(sgl_DXFramebuffer* self)
     }
 }
 
+static DXGI_FORMAT DX_ToFormat(sgl_FramebufferFormat format)
+{
+    switch (format)
+    {
+        case sgl_FramebufferFormat_RGBA16F: return DXGI_FORMAT_R16G16B16A16_FLOAT;
+        case sgl_FramebufferFormat_R8: return DXGI_FORMAT_R8_UNORM;
+        case sgl_FramebufferFormat_RGBA8:
+        default: return DXGI_FORMAT_R8G8B8A8_UNORM;
+    }
+}
+
 static void DX_CreateTargets(sgl_DXFramebuffer* self, sgl_Vec2i size)
 {
     sgl_DXDevice* device = (sgl_DXDevice*)self->base.gpu;
@@ -82,7 +93,7 @@ static void DX_CreateTargets(sgl_DXFramebuffer* self, sgl_Vec2i size)
     desc.Height = (UINT)size.height;
     desc.MipLevels = 1;
     desc.ArraySize = 1;
-    desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+    desc.Format = DX_ToFormat(self->base.format);
     desc.SampleDesc.Count = 1;
     desc.Usage = D3D11_USAGE_DEFAULT;
     desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
@@ -149,6 +160,7 @@ static void DX_Resize(sgl_Framebuffer* fb, sgl_Vec2i size)
     GetSelf;
     DX_ReleaseTargets(self);
     self->base.size = size;
+    self->base.colourTexture->size = size;
     DX_CreateTargets(self, size);
 }
 
@@ -156,6 +168,13 @@ static void DX_Bind(sgl_Framebuffer* fb)
 {
     GetSelf;
     sgl_DXDevice* device = (sgl_DXDevice*)fb->gpu;
+
+    if (device->boundTextureCount > 0)
+    {
+        static ID3D11ShaderResourceView* const nullSrvs[D3D11_COMMONSHADER_INPUT_RESOURCE_SLOT_COUNT] = {};
+        device->ctx->PSSetShaderResources(0, (UINT)device->boundTextureCount, nullSrvs);
+        device->boundTextureCount = 0;
+    }
 
     device->ctx->OMSetRenderTargets(1, &self->rtv, self->dsv);
 
@@ -189,13 +208,14 @@ static sgl_FramebufferVTable gDXVTable =
     .Clear = &DX_Clear,
 };
 
-sgl_DXFramebuffer* sgl_DXFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth)
+sgl_DXFramebuffer* sgl_DXFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth, sgl_FramebufferFormat format)
 {
     sgl_DXFramebuffer* framebuffer = sgl::Memory::New<sgl_DXFramebuffer>();
     framebuffer->base.vtable = &gDXVTable;
     framebuffer->base.gpu = device;
     framebuffer->base.size = size;
     framebuffer->base.hasDepth = hasDepth;
+    framebuffer->base.format = format;
 
     DX_CreateTargets(framebuffer, size);
 

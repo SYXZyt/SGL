@@ -41,10 +41,21 @@ static void GL_ReleaseTargets(sgl_GLFramebuffer* self)
     }
 }
 
+static GLenum GL_ToFormat(sgl_FramebufferFormat format)
+{
+    switch (format)
+    {
+        case sgl_FramebufferFormat_RGBA16F: return GL_RGBA16F;
+        case sgl_FramebufferFormat_R8: return GL_R8;
+        case sgl_FramebufferFormat_RGBA8:
+        default: return GL_RGBA8;
+    }
+}
+
 static void GL_CreateTargets(sgl_GLFramebuffer* self, sgl_Vec2i size)
 {
     glCreateTextures(GL_TEXTURE_2D, 1, &self->texture);
-    glTextureStorage2D(self->texture, 1, GL_RGBA8, size.width, size.height);
+    glTextureStorage2D(self->texture, 1, GL_ToFormat(self->base.format), size.width, size.height);
     glTextureParameteri(self->texture, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTextureParameteri(self->texture, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTextureParameteri(self->texture, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -78,6 +89,7 @@ static void GL_Resize(sgl_Framebuffer* fb, sgl_Vec2i size)
     GetSelf;
     GL_ReleaseTargets(self);
     self->base.size = size;
+    self->base.colourTexture->size = size;
     GL_CreateTargets(self, size);
 }
 
@@ -111,13 +123,14 @@ static sgl_FramebufferVTable gGLVTable =
     .Clear = &GL_Clear,
 };
 
-sgl_GLFramebuffer* sgl_GLFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth)
+sgl_GLFramebuffer* sgl_GLFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth, sgl_FramebufferFormat format)
 {
     sgl_GLFramebuffer* framebuffer = sgl::Memory::New<sgl_GLFramebuffer>();
     framebuffer->base.vtable = &gGLVTable;
     framebuffer->base.gpu = device;
     framebuffer->base.size = size;
     framebuffer->base.hasDepth = hasDepth;
+    framebuffer->base.format = format;
 
     glCreateFramebuffers(1, &framebuffer->fbo);
     GL_CreateTargets(framebuffer, size);

@@ -15,6 +15,17 @@ struct sgl_Sampler;
 struct sgl_PostProcess;
 struct sgl_Framebuffer;
 
+/// @brief How a draw's output is combined with what is already in the render target
+typedef enum sgl_BlendMode
+{
+    sgl_BlendMode_ALPHA = 0,   // src * srcAlpha + dst * (1 - srcAlpha)
+    sgl_BlendMode_ADDITIVE,    // src + dst
+    sgl_BlendMode_MULTIPLY,    // src * dst
+    sgl_BlendMode_OPAQUE,      // src
+    sgl_BlendMode_MAX,         // max(src, dst)
+    sgl_BlendMode_COUNT,
+} sgl_BlendMode;
+
 struct sgl_GraphicsDevice;
 typedef struct sgl_GraphicsDeviceVTable sgl_sealed
 {
@@ -31,6 +42,7 @@ typedef struct sgl_GraphicsDeviceVTable sgl_sealed
     void (*SetVsync)(struct sgl_GraphicsDevice* self, bool enable);
     void (*SetScissor)(struct sgl_GraphicsDevice* self, bool enabled, sgl_Vec2i position, sgl_Vec2i size);
     void (*BindBackbuffer)(struct sgl_GraphicsDevice* self);
+    void (*SetBlendMode)(struct sgl_GraphicsDevice* self, sgl_BlendMode mode);
 
     void (*ImGui_Init)(struct sgl_GraphicsDevice* self);
     void (*ImGui_Shutdown)(struct sgl_GraphicsDevice* self);
@@ -51,6 +63,7 @@ typedef struct sgl_GraphicsDevice sgl_sealed
     uint32 width;
     uint32 height;
     int sceneScale;
+    sgl_BlendMode blendMode;
     bool depthTestEnabled;
     bool depthWriteEnabled;
     bool vsync;
@@ -150,6 +163,20 @@ SGL_API extern void sgl_GraphicsDevice_SetVsync(sgl_GraphicsDevice* device, bool
 /// @param position The top-left screen coord
 /// @param size How large the scissor rect should be
 SGL_API extern void sgl_GraphicsDevice_SetScissor(sgl_GraphicsDevice* device, bool enabled, sgl_Vec2i position, sgl_Vec2i size);
+
+/// @brief Change how subsequent draws are blended into the bound render target
+/// @param device The device to use
+/// @param mode The blend mode
+SGL_API extern void sgl_GraphicsDevice_SetBlendMode(sgl_GraphicsDevice* device, sgl_BlendMode mode);
+
+/// @brief Get the current blend mode
+/// @param device The device to use
+/// @return The active blend mode
+SGL_API extern sgl_BlendMode sgl_GraphicsDevice_GetBlendMode(sgl_GraphicsDevice* device);
+
+/// @brief Bind the scene target for rendering, without clearing it
+/// @param device The device to use
+SGL_API extern void sgl_GraphicsDevice_BindSceneTarget(sgl_GraphicsDevice* device);
 
 /// @brief Set the scale of the scene target. Resizes an off-screen target, rather than the backbuffer
 /// @param device The device to set the scale for

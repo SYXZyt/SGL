@@ -209,6 +209,23 @@ void sgl_GraphicsDevice_SetSceneScale(sgl_GraphicsDevice* device, int scale)
     sgl_Framebuffer_Resize(device->sceneFramebuffer, { (int)w, (int)h });
 }
 
+void sgl_GraphicsDevice_SetBlendMode(sgl_GraphicsDevice* device, sgl_BlendMode mode)
+{
+    if (mode < 0 || mode >= sgl_BlendMode_COUNT)
+        mode = sgl_BlendMode_ALPHA;
+
+    device->blendMode = mode;
+    device->vtable->SetBlendMode(device, mode);
+}
+
+sgl_BlendMode sgl_GraphicsDevice_GetBlendMode(sgl_GraphicsDevice* device) {
+    return device->blendMode;
+}
+
+void sgl_GraphicsDevice_BindSceneTarget(sgl_GraphicsDevice* device) {
+    sgl_Framebuffer_Bind(device->sceneFramebuffer);
+}
+
 int sgl_GraphicsDevice_GetSceneScale(sgl_GraphicsDevice* device) {
     return device->sceneScale;
 }

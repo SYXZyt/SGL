@@ -9,6 +9,14 @@ SGL_BEGIN
 struct sgl_Texture;
 struct sgl_Framebuffer;
 
+/// @brief Pixel format of a framebuffer's colour attachment
+typedef enum sgl_FramebufferFormat
+{
+    sgl_FramebufferFormat_RGBA8 = 0,
+    sgl_FramebufferFormat_RGBA16F,
+    sgl_FramebufferFormat_R8,
+} sgl_FramebufferFormat;
+
 typedef struct sgl_FramebufferVTable sgl_sealed
 {
     void (*Destroy)(struct sgl_Framebuffer* self);
@@ -24,6 +32,7 @@ typedef struct sgl_Framebuffer sgl_sealed
     sgl_GraphicsDevice* gpu;
     sgl_Vec2i size;
     bool hasDepth;
+    sgl_FramebufferFormat format;
 
     struct sgl_Texture* colourTexture;
 } sgl_Framebuffer;
@@ -34,6 +43,14 @@ typedef struct sgl_Framebuffer sgl_sealed
 /// @param hasDepth Does the framebuffer have a depth buffer
 /// @return 
 SGL_API extern sgl_Framebuffer* sgl_Framebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth);
+
+/// @brief Create a new framebuffer with a specific colour format
+/// @param device The device to own the buffer
+/// @param size The size of the framebuffer
+/// @param hasDepth Does the framebuffer have a depth buffer
+/// @param format The pixel format of the colour attachment
+/// @param linearFilter True to sample the colour texture with linear filtering, otherwise nearest
+SGL_API extern sgl_Framebuffer* sgl_Framebuffer_CreateEx(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth, sgl_FramebufferFormat format, bool linearFilter);
 
 /// @brief Destroy a framebuffer
 /// @param framebuffer The buffer to destroy

@@ -60,6 +60,38 @@ static void GLDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     sgl_Framebuffer_Resize(dev->sceneFramebuffer, { (int)w, (int)h });
 }
 
+static void GLDevice_SetBlendMode(sgl_GraphicsDevice* dev, sgl_BlendMode mode)
+{
+    if (mode == sgl_BlendMode_OPAQUE)
+    {
+        glDisable(GL_BLEND);
+        return;
+    }
+
+    glEnable(GL_BLEND);
+
+    switch (mode)
+    {
+        case sgl_BlendMode_ADDITIVE:
+            glBlendEquation(GL_FUNC_ADD);
+            glBlendFunc(GL_ONE, GL_ONE);
+            break;
+        case sgl_BlendMode_MULTIPLY:
+            glBlendEquation(GL_FUNC_ADD);
+            glBlendFunc(GL_DST_COLOR, GL_ZERO);
+            break;
+        case sgl_BlendMode_MAX:
+            glBlendEquation(GL_MAX);
+            glBlendFunc(GL_ONE, GL_ONE);
+            break;
+        case sgl_BlendMode_ALPHA:
+        default:
+            glBlendEquation(GL_FUNC_ADD);
+            glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+            break;
+    }
+}
+
 static void GLDevice_BindBackbuffer(sgl_GraphicsDevice* dev) {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -68,6 +100,9 @@ static void GLDevice_BeginFrame(sgl_GraphicsDevice* dev)
 {
     sgl_Framebuffer_Bind(dev->sceneFramebuffer);
     sgl_Framebuffer_Clear(dev->sceneFramebuffer, dev->clearColour);
+
+    dev->blendMode = sgl_BlendMode_ALPHA;
+    GLDevice_SetBlendMode(dev, sgl_BlendMode_ALPHA);
 }
 
 static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
@@ -80,6 +115,9 @@ static void GLDevice_EndFrame(sgl_GraphicsDevice* dev)
 
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
+
+    dev->blendMode = sgl_BlendMode_ALPHA;
+    GLDevice_SetBlendMode(dev, sgl_BlendMode_ALPHA);
 
     glViewport(0, 0, (GLsizei)dev->width, (GLsizei)dev->height);
 
@@ -260,6 +298,7 @@ static const sgl_GraphicsDeviceVTable gGlVTable =
     .SetVsync = &GLDevice_SetVsync,
     .SetScissor = &GLDevice_SetScissor,
     .BindBackbuffer = &GLDevice_BindBackbuffer,
+    .SetBlendMode = &GLDevice_SetBlendMode,
 
     .ImGui_Init = &GLDevice_ImGui_Init,
     .ImGui_Shutdown = &GLDevice_ImGui_Shutdown,
@@ -285,8 +324,8 @@ sgl_GLDevice* sgl_GLDevice_Create(sgl_Window* window)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    device->base.blendMode = sgl_BlendMode_ALPHA;
+    GLDevice_SetBlendMode(&device->base, sgl_BlendMode_ALPHA);
 
     device->base.sceneScale = 1;
     device->base.sceneFramebuffer = sgl_Framebuffer_Create((sgl_GraphicsDevice*)device, { (int)device->base.width, (int)device->base.height }, true);

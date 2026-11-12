@@ -22,6 +22,7 @@ typedef struct sgl_DXDevice sgl_sealed
     ID3D11RasterizerState* postProState;
 
     ID3D11BlendState* spriteBlendState;
+    ID3D11BlendState* blendStates[sgl_BlendMode_COUNT];
 
     sgl_Shader* blitShader;
 

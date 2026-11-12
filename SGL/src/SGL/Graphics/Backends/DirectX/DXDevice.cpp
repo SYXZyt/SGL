@@ -208,6 +208,13 @@ static void DXDevice_Resize(sgl_GraphicsDevice* dev, sgl_Vec2i newSize)
     self->ctx->RSSetScissorRects(1, &defaultScissor);
 }
 
+static void DXDevice_SetBlendMode(sgl_GraphicsDevice* dev, sgl_BlendMode mode)
+{
+    GetSelf;
+    float blendFactor[4] = { 0, 0, 0, 0 };
+    self->ctx->OMSetBlendState(self->blendStates[mode], blendFactor, 0xffffffff);
+}
+
 static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
 {
     GetSelf;
@@ -215,6 +222,7 @@ static void DXDevice_BeginFrame(sgl_GraphicsDevice* dev)
     sgl_Framebuffer_Bind(dev->sceneFramebuffer);
     sgl_Framebuffer_Clear(dev->sceneFramebuffer, dev->clearColour);
 
+    dev->blendMode = sgl_BlendMode_ALPHA;
     float blendFactor[4] = { 0, 0, 0, 0 };
     self->ctx->OMSetBlendState(self->spriteBlendState, blendFactor, 0xffffffff);
 }
@@ -301,6 +309,7 @@ static void DXDevice_EndFrame(sgl_GraphicsDevice* dev)
 
     self->ctx->RSSetViewports(1, &fullViewport);
 
+    dev->blendMode = sgl_BlendMode_ALPHA;
     float blendFactor[4] = { 0, 0, 0, 0 };
     self->ctx->OMSetBlendState(self->spriteBlendState, blendFactor, 0xffffffff);
 }
@@ -326,7 +335,9 @@ static void DXDevice_Destroy(sgl_GraphicsDevice* dev)
     TryRelease(self->depthStencilReadOnlyState);
     TryRelease(self->rasterState);
     TryRelease(self->postProState);
-    TryRelease(self->spriteBlendState);
+    for (ID3D11BlendState*& state : self->blendStates)
+        TryRelease(state);
+    self->spriteBlendState = nullptr;
 
     sgl_Shader_Destroy(self->blitShader);
 
@@ -475,6 +486,7 @@ static const sgl_GraphicsDeviceVTable gDxVTable =
     .SetVsync = &DXDevice_SetVSync,
     .SetScissor = &DXDevice_SetScissor,
     .BindBackbuffer = &DXDevice_BindBackbuffer,
+    .SetBlendMode = &DXDevice_SetBlendMode,
 
     .ImGui_Init = &DXDevice_ImGui_Init,
     .ImGui_Shutdown = &DXDevice_ImGui_Shutdown,
@@ -595,22 +607,48 @@ sgl_DXDevice* sgl_DXDevice_Create(sgl_Window* window, sgl_VertexLayout* screenQu
 #pragma endregion
 
 #pragma region Blend State
-    D3D11_BLEND_DESC blendDesc{};
-    blendDesc.RenderTarget[0].BlendEnable = true;
-    blendDesc.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
-    blendDesc.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
-    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-
-    hr = device->device->CreateBlendState(&blendDesc, &device->spriteBlendState);
-    if (FAILED(hr))
+    struct BlendSetup
     {
-        ReportHRError("Failed to create blend state", hr);
-        return device;
+        bool enable;
+        D3D11_BLEND src, dst;
+        D3D11_BLEND_OP op;
+        D3D11_BLEND srcAlpha, dstAlpha;
+        D3D11_BLEND_OP opAlpha;
+    };
+
+    const BlendSetup blendSetups[sgl_BlendMode_COUNT] =
+    {
+        /* ALPHA    */ { true,  D3D11_BLEND_SRC_ALPHA, D3D11_BLEND_INV_SRC_ALPHA, D3D11_BLEND_OP_ADD, D3D11_BLEND_ONE, D3D11_BLEND_ZERO, D3D11_BLEND_OP_ADD },
+        /* ADDITIVE */ { true,  D3D11_BLEND_ONE,       D3D11_BLEND_ONE,           D3D11_BLEND_OP_ADD, D3D11_BLEND_ONE, D3D11_BLEND_ONE,  D3D11_BLEND_OP_ADD },
+        /* MULTIPLY */ { true,  D3D11_BLEND_DEST_COLOR, D3D11_BLEND_ZERO,         D3D11_BLEND_OP_ADD, D3D11_BLEND_DEST_ALPHA, D3D11_BLEND_ZERO, D3D11_BLEND_OP_ADD },
+        /* OPAQUE   */ { false, D3D11_BLEND_ONE,       D3D11_BLEND_ZERO,          D3D11_BLEND_OP_ADD, D3D11_BLEND_ONE, D3D11_BLEND_ZERO, D3D11_BLEND_OP_ADD },
+        /* MAX      */ { true,  D3D11_BLEND_ONE,       D3D11_BLEND_ONE,           D3D11_BLEND_OP_MAX, D3D11_BLEND_ONE, D3D11_BLEND_ONE,  D3D11_BLEND_OP_MAX },
+    };
+
+    for (int i = 0; i < sgl_BlendMode_COUNT; ++i)
+    {
+        const BlendSetup& setup = blendSetups[i];
+
+        D3D11_BLEND_DESC blendDesc{};
+        blendDesc.RenderTarget[0].BlendEnable = setup.enable;
+        blendDesc.RenderTarget[0].SrcBlend = setup.src;
+        blendDesc.RenderTarget[0].DestBlend = setup.dst;
+        blendDesc.RenderTarget[0].BlendOp = setup.op;
+        blendDesc.RenderTarget[0].SrcBlendAlpha = setup.srcAlpha;
+        blendDesc.RenderTarget[0].DestBlendAlpha = setup.dstAlpha;
+        blendDesc.RenderTarget[0].BlendOpAlpha = setup.opAlpha;
+        blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+
+        hr = device->device->CreateBlendState(&blendDesc, &device->blendStates[i]);
+        if (FAILED(hr))
+        {
+            ReportHRError("Failed to create blend state", hr);
+            return device;
+        }
     }
+
+    device->spriteBlendState = device->blendStates[sgl_BlendMode_ALPHA];
+    device->base.blendMode = sgl_BlendMode_ALPHA;
 
     float blendFactor[4] = { 0, 0, 0, 0 };
     device->ctx->OMSetBlendState(device->spriteBlendState, blendFactor, 0xffffffff);

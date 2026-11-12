@@ -17,6 +17,6 @@ typedef struct sgl_GLFramebuffer sgl_sealed
 } sgl_GLFramebuffer;
 
 /// @brief Create an OpenGL offscreen render target
-SGL_API extern sgl_GLFramebuffer* sgl_GLFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth);
+SGL_API extern sgl_GLFramebuffer* sgl_GLFramebuffer_Create(sgl_GraphicsDevice* device, sgl_Vec2i size, bool hasDepth, sgl_FramebufferFormat format);
 
 SGL_END
